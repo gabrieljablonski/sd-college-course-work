@@ -1,6 +1,6 @@
 # Distributed Systems - College Course Work
 
-This project seeks to implement a distributed system for geolocalization and access control of means of transportion, tipically electrical (scooters, bikes, etc.).
+This project seeks to implement a distributed system for geolocalization and access control of means of transportion, typically electrical (scooters, bikes, etc.).
 
 ## Project Specifications
 
