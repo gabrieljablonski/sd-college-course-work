@@ -1,12 +1,12 @@
 package entities
 
 import (
-	"spidTCPServer/gps"
+	"main/gps"
 )
 
 type Spid struct {
-	ID            string
-	Location      gps.GlobalPosition
-	CurrentUserID string
-	BatteryLevel  float32
+	ID            string `json:"id"`
+	Location      gps.GlobalPosition `json:"location"`
+	CurrentUserID string `json:"current_user_id"`
+	BatteryLevel  float32 `json:"battery_level"`
 }

@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"main/tcpServer"
 	"os"
 	"runtime"
-	"spidTCPServer/tcpServer"
 	"strings"
 )
+
+const BasePath = "D:/GitReps/SD-College-Course-Work/src/spidTCPServer"
 
 func main() {
 	arguments := os.Args
