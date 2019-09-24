@@ -2,11 +2,10 @@ package tcpServer
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"net"
+	"spidTCPServer/utils"
 	"strings"
-	"../utils"
 )
 
 const DefaultResponse = "CONNECTION SUCCESSFUL"
@@ -14,7 +13,7 @@ const DefaultEndConnection = "END CONNECTION"
 
 func handleConnection(c net.Conn) {
 	remoteAddr := c.RemoteAddr().String()
-	fmt.Printf("Serving %s\n", remoteAddr)
+	log.Printf("Serving %s\n", remoteAddr)
 	for {
 		netData, err := bufio.NewReader(c).ReadString('\n')
 		utils.HandleFatal(err)
@@ -43,7 +42,7 @@ func Listen(port string) {
 	listener, err := net.Listen("tcp4", port)
 
 	utils.HandleFatal(err)
-	defer listener.Close()
+	defer utils.HandleCloseListener(listener)
 
 	log.Printf("Waiting for connection of port %s...\n", port[1:])
 	for {
