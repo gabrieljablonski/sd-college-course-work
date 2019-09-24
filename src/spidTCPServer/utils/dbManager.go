@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -9,27 +9,41 @@ import (
 const UsersDefaultLocation = "/db/users.spd"
 const SpidsDefaultLocation = "/db/spids.spd"
 
-func checkExists(path string) bool {
-	_, err := os.Stat(path)
-	return !os.IsNotExist(err)
+func readFile(path string) []byte {
+	file, err := os.Open(path)
+	HandleFatal(err)
+	defer HandleCloseFile(file, path)
+
+	content, err := ioutil.ReadAll(file)
+	HandleFatal(err)
+	return content
 }
 
-func RegisterUser(user interface{}) bool {
-	u, err := json.Marshal(user)
-	if err != nil {
-		log.Printf("Error creating user. %s", err)
-		return false
-	}
-	log.Printf("Creating user: %s", u)
+func writeToFile(path string, content []byte) {
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
+	HandleFatal(err)
+	defer HandleCloseFile(file, path)
 
-	if !checkExists(UsersDefaultLocation) {
-		log.Printf("%s does not exist, creating file...", UsersDefaultLocation)
-		newFile, err := os.Create(UsersDefaultLocation)
-		HandleFatal(err)
-
-		defer HandleCloseFile(newFile, UsersDefaultLocation)
-
-	}
-	return true
+	_, err = file.Write(content)
+	HandleFatal(err)
 }
 
+func GetUsersFromFile() []byte {
+	log.Print("Reading users.")
+	return readFile(UsersDefaultLocation)
+}
+
+func WriteToUsersFile(users []byte) {
+	log.Printf("Writing users: %s", string(users))
+	writeToFile(SpidsDefaultLocation, users)
+}
+
+func GetSpidsFromFile() []byte {
+	log.Print("Reading spids.")
+	return readFile(SpidsDefaultLocation)
+}
+
+func WriteToSpidsFile(spids []byte) bool {
+	log.Printf("Writing users: %s", string(spids))
+	writeToFile(SpidsDefaultLocation, spids)
+}

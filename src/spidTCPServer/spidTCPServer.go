@@ -1,11 +1,11 @@
-package spidTCPServer
+package main
 
 import (
 	"fmt"
 	"os"
 	"runtime"
+	"spidTCPServer/tcpServer"
 	"strings"
-	"./tcpServer"
 )
 
 func main() {

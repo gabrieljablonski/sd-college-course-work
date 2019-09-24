@@ -1,10 +1,12 @@
 package entities
 
-import "../utils"
+import (
+	"spidTCPServer/gps"
+)
 
 type Spid struct {
-	ID string
-	Location utils.GlobalPosition
+	ID            string
+	Location      gps.GlobalPosition
 	CurrentUserID string
-	BatteryLevel float32
+	BatteryLevel  float32
 }
