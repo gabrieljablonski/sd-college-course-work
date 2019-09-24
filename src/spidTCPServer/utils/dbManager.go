@@ -9,7 +9,12 @@ import (
 const UsersDefaultLocation = "/db/users.spd"
 const SpidsDefaultLocation = "/db/spids.spd"
 
-func readFile(path string) []byte {
+type DBManager struct {
+	BasePath string
+}
+
+func (d DBManager) readFile(path string) []byte {
+	path = d.BasePath + path
 	file, err := os.Open(path)
 	HandleFatal(err)
 	defer HandleCloseFile(file, path)
@@ -19,8 +24,9 @@ func readFile(path string) []byte {
 	return content
 }
 
-func writeToFile(path string, content []byte) {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
+func (d DBManager) writeToFile(path string, content []byte) {
+	path = d.BasePath + path
+	file, err := os.Open(path)
 	HandleFatal(err)
 	defer HandleCloseFile(file, path)
 
@@ -28,22 +34,22 @@ func writeToFile(path string, content []byte) {
 	HandleFatal(err)
 }
 
-func GetUsersFromFile() []byte {
+func (d DBManager) GetUsersFromFile() []byte {
 	log.Print("Reading users.")
-	return readFile(UsersDefaultLocation)
+	return d.readFile(UsersDefaultLocation)
 }
 
-func WriteToUsersFile(users []byte) {
+func (d DBManager) WriteUsersToFile(users []byte) {
 	log.Printf("Writing users: %s", string(users))
-	writeToFile(SpidsDefaultLocation, users)
+	d.writeToFile(SpidsDefaultLocation, users)
 }
 
-func GetSpidsFromFile() []byte {
+func (d DBManager) GetSpidsFromFile() []byte {
 	log.Print("Reading spids.")
-	return readFile(SpidsDefaultLocation)
+	return d.readFile(SpidsDefaultLocation)
 }
 
-func WriteToSpidsFile(spids []byte) bool {
+func (d DBManager) WriteSpidsToFile(spids []byte) {
 	log.Printf("Writing users: %s", string(spids))
-	writeToFile(SpidsDefaultLocation, spids)
+	d.writeToFile(SpidsDefaultLocation, spids)
 }

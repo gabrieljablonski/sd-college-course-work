@@ -1,8 +1,8 @@
 package gps
 
 type GlobalPosition struct {
-	Latitude float64
-	Longitude float64
+	Latitude float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 func NullPosition() GlobalPosition {
