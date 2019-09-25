@@ -1,3 +1,13 @@
 {
-    "users": []
+    "users": {
+        "5fc82534-f31f-4cdc-8814-3e1f47741395": {
+            "id": "5fc82534-f31f-4cdc-8814-3e1f47741395",
+            "name": "João",
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "current_spid_id": ""
+        }
+    }
 }

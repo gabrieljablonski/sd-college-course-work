@@ -3,8 +3,8 @@ package tcpServer
 import (
 	"bufio"
 	"log"
+	eh "main/errorHandling"
 	"net"
-	"main/utils"
 	"strings"
 )
 
@@ -16,7 +16,7 @@ func handleConnection(c net.Conn) {
 	log.Printf("Serving %s\n", remoteAddr)
 	for {
 		netData, err := bufio.NewReader(c).ReadString('\n')
-		utils.HandleFatal(err)
+		eh.HandleFatal(err)
 
 		temp := strings.TrimSpace(string(netData))
 
@@ -31,23 +31,23 @@ func handleConnection(c net.Conn) {
 
 		result := DefaultResponse
 		_, err = c.Write([]byte(string(result)+"\n"))
-		utils.HandleFatal(err)
+		eh.HandleFatal(err)
 	}
 	err := c.Close()
-	utils.HandleFatal(err)
+	eh.HandleFatal(err)
 }
 
 func Listen(port string) {
 	port = ":" + port
 	listener, err := net.Listen("tcp4", port)
 
-	utils.HandleFatal(err)
-	defer utils.HandleCloseListener(listener)
+	eh.HandleFatal(err)
+	defer eh.HandleCloseListener(listener)
 
 	log.Printf("Waiting for connection of port %s...\n", port[1:])
 	for {
 		conn, err := listener.Accept()
-		utils.HandleFatal(err)
+		eh.HandleFatal(err)
 		go handleConnection(conn)
 	}
 }
