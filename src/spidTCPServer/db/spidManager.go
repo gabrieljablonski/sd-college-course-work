@@ -23,7 +23,7 @@ func (d Manager) writeSpid(spid entities.Spid) {
 	spids := d.GetSpidsFromFile()
 	spids.Spids[spid.ID] = spid
 	log.Printf("Writing spid: %s.", spid)
-	d.WriteUsersToFile(entities.MarshalSpids(spids))
+	d.WriteSpidsToFile(entities.MarshalSpids(spids))
 	log.Print("Spid written.")
 }
 
@@ -58,7 +58,7 @@ func (d Manager) UpdateSpid(spid entities.Spid) {
 }
 
 func (d Manager) DeleteSpid(spid entities.Spid) {
-	if d.QueryUser(spid.ID) == (entities.User{}) {
+	if d.QuerySpid(spid.ID) == (entities.Spid{}) {
 		log.Fatalf("Spid with ID %s doesn't exist.", spid.ID)
 	}
 	log.Printf("Deleting spid: %s.", spid)

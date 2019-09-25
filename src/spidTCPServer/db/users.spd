@@ -1,12 +1,26 @@
 {
-    "users": {
-        "5fc82534-f31f-4cdc-8814-3e1f47741395": {
-            "id": "5fc82534-f31f-4cdc-8814-3e1f47741395",
-            "name": "João",
+    "spids": {
+        "5276e194-3ec3-40d4-a28f-f9ab5045a9b4": {
+            "id": "5276e194-3ec3-40d4-a28f-f9ab5045a9b4",
+            "battery_level": 100,
+            "lock_state": "locked",
             "location": {
                 "latitude": 0,
                 "longitude": 0
             },
+            "last_updated": "1969-12-31T21:00:00-03:00",
+            "current_user_id": ""
+        }
+    }
+}-4693-80b8-a7683ce3ee97": {
+            "id": "88b7dd20-a91c-4693-80b8-a7683ce3ee97",
+            "name": "João",
+            "on_ride": false,
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "last_updated": "1969-12-31T21:00:00-03:00",
             "current_spid_id": ""
         }
     }
