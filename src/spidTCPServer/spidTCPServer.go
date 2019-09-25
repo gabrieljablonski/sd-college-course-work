@@ -9,8 +9,10 @@ const BasePath = "D:/GitReps/SD-College-Course-Work/src/spidTCPServer"
 
 func main() {
 	dbm := db.NewManager(BasePath)
-	user := entities.NewUser("João")
-	dbm.RegisterUser(user)
+	//user := entities.NewUser("João")
+	//dbm.RegisterUser(user)
+	spid := entities.NewSpid()
+	dbm.RegisterSpid(spid)
 
 	//newUUID, err := uuid.Parse("5fc82534-f31f-4cdc-8814-3e1f47741395")
 	//eh.HandleFatal(err)
