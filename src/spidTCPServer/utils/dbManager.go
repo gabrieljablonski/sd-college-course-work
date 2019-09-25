@@ -21,9 +21,7 @@ func NewManager(basePath string) DBManager {
 
 func (d DBManager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
-	var users entities.Users
-	err := json.Unmarshal(d.FM.readFile(UsersDefaultLocation), &users)
-	eh.HandleFatal(err)
+	entities.UnmarshalUsers(d.FM.readFile(UsersDefaultLocation))
 	log.Printf("Read users: %s.", users)
 	return users
 }
