@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"encoding/json"
+	"github.com/google/uuid"
 	"log"
 	"main/entities"
+	eh "main/errorHandling"
 )
 
 const UsersDefaultLocation = "/db/users.spd"
@@ -16,14 +19,19 @@ func NewManager(basePath string) DBManager {
 	return DBManager{FM: FileManager{BasePath: basePath}}
 }
 
-func (d DBManager) GetUsersFromFile() []byte {
+func (d DBManager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
-	return d.FM.readFile(UsersDefaultLocation)
+	var users entities.Users
+	err := json.Unmarshal(d.FM.readFile(UsersDefaultLocation), &users)
+	eh.HandleFatal(err)
+	log.Printf("Read users: %s.", users)
+	return users
 }
 
 func (d DBManager) WriteUsersToFile(users []byte) {
 	log.Printf("Writing users: %s", string(users))
-	d.FM.writeToFile(SpidsDefaultLocation, users)
+	d.FM.writeToFile(UsersDefaultLocation, users)
+	log.Print("Finished writing users.")
 }
 
 func (d DBManager) GetSpidsFromFile() []byte {
@@ -32,10 +40,56 @@ func (d DBManager) GetSpidsFromFile() []byte {
 }
 
 func (d DBManager) WriteSpidsToFile(spids []byte) {
-	log.Printf("Writing users: %s", string(spids))
+	log.Printf("Writing spids: %s", string(spids))
 	d.FM.writeToFile(SpidsDefaultLocation, spids)
+	log.Print("Finished writing spids.")
+}
+
+func (d DBManager) writeUser(user entities.User) {
+	users := d.GetUsersFromFile()
+	users.Users[user.ID] = user
+	log.Printf("Writing user: %s.", user)
+	d.WriteUsersToFile(entities.MarshalUsers(users))
+	log.Print("User written.")
+}
+
+func (d DBManager) QueryUser(userID uuid.UUID) entities.User {
+	users := d.GetUsersFromFile()
+	log.Printf("Querying user with ID %s.", userID)
+	_, ok := users.Users[userID]
+	if ok {
+		log.Printf("User found: %s", users.Users[userID])
+		return users.Users[userID]
+	}
+	log.Printf("User with ID %s not found.", users.Users[userID])
+	return entities.User{}
 }
 
 func (d DBManager) RegisterUser(user entities.User) {
-	user.Register(d)
+	if d.QueryUser(user.ID) != (entities.User{}) {
+		log.Fatalf("User with ID %s already exists.", user.ID)
+	}
+	log.Printf("Registering user: %s.", user)
+	d.writeUser(user)
+	log.Print("User registered.")
+}
+
+func (d DBManager) UpdateUser(user entities.User) {
+	if d.QueryUser(user.ID) == (entities.User{}) {
+		log.Fatalf("User with ID %s doesn't exist.", user.ID)
+	}
+	log.Printf("Updating user: %s.", user)
+	d.writeUser(user)
+	log.Print("User updated.")
+}
+
+func (d DBManager) DeleteUser(user entities.User) {
+	if d.QueryUser(user.ID) == (entities.User{}) {
+		log.Fatalf("User with ID %s doesn't exist.", user.ID)
+	}
+	log.Printf("Deleting user: %s.", user)
+	users := d.GetUsersFromFile()
+	delete(users.Users, user.ID)
+	d.WriteUsersToFile(entities.MarshalUsers(users))
+	log.Print("User updated.")
 }

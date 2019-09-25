@@ -2,6 +2,7 @@ package utils
 
 import (
 	"io/ioutil"
+	"main/errorHandling"
 	"os"
 )
 
@@ -12,22 +13,22 @@ type FileManager struct {
 func (f FileManager) readFile(path string) []byte {
 	path = f.BasePath + path
 	file, err := os.Open(path)
-	HandleFatal(err)
-	defer HandleCloseFile(file, path)
+	errorHandling.HandleFatal(err)
+	defer errorHandling.HandleCloseFile(file, path)
 
 	content, err := ioutil.ReadAll(file)
-	HandleFatal(err)
+	errorHandling.HandleFatal(err)
 	return content
 }
 
 func (f FileManager) writeToFile(path string, content []byte) {
 	path = f.BasePath + path
-	file, err := os.Open(path)
-	HandleFatal(err)
-	defer HandleCloseFile(file, path)
+	file, err := os.OpenFile(path, os.O_WRONLY, 0644)
+	errorHandling.HandleFatal(err)
+	defer errorHandling.HandleCloseFile(file, path)
 
 	_, err = file.Write(content)
-	HandleFatal(err)
+	errorHandling.HandleFatal(err)
 }
 
 

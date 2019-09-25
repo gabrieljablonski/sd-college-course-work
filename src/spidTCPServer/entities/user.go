@@ -3,50 +3,55 @@ package entities
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	eh "main/errorHandling"
 	"main/gps"
-	"main/utils"
+	"time"
 )
 
 type User struct {
-	ID            uuid.UUID `json:"id"`
-	Name          string `json:"name"`
+	ID            uuid.UUID          `json:"id"`
+	Name          string             `json:"name"`
+	OnRide        bool               `json:"on_ride"`
 	Location      gps.GlobalPosition `json:"location"`
-	CurrentSpidID string `json:"current_spid_id"`
+	LastUpdated   time.Time          `json:"last_updated"`
+	CurrentSpidID string             `json:"current_spid_id"`
 }
 
 type Users struct {
-	Users []User `json:"users"`
+	Users map[uuid.UUID]User `json:"users"`
 }
 
 func NewUser(name string) User {
-	return User{uuid.New(), name, gps.NullPosition(), ""}
+	return User{
+		uuid.New(),
+		name,
+		false,
+		gps.NullPosition(),
+		time.Unix(0,0),
+		"",
+	}
 }
 
 func (u User) Marshal() []byte {
 	um, err := json.Marshal(u)
-	utils.HandleFatal(err)
+	eh.HandleFatal(err)
 	return um
 }
 
-func Unmarshal(um []byte) User {
-	var u User
-	err := json.Unmarshal(um, &u)
-	utils.HandleFatal(err)
-	return u
+func UnmarshalUsers(marshaledUsers []byte) Users {
+	var users Users
+	err := json.Unmarshal(marshaledUsers, &users)
+	eh.HandleFatal(err)
+	return users
 }
 
-func marshalUsers(users Users) []byte {
-	m, err := json.Marshal(users)
-	utils.HandleFatal(err)
+func MarshalUsers(users Users) []byte {
+	m, err := json.MarshalIndent(users, "", "    ")
+	eh.HandleFatal(err)
 	return m
 }
 
-// TODO: move to manager class
-func (u User) Register(manager utils.DBManager) {
-	var users Users
-	err := json.Unmarshal(manager.GetUsersFromFile(), &users)
-	utils.HandleFatal(err)
-	users.Users = append(users.Users, u)
-
-	manager.WriteUsersToFile(marshalUsers(users))
+func (u User) UpdateLocation(position gps.GlobalPosition) {
+	u.Location = position
+	u.LastUpdated = time.Now()
 }
