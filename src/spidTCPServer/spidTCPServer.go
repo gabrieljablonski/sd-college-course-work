@@ -1,9 +1,6 @@
 package main
 
 import (
-	"fmt"
-	"github.com/google/uuid"
-	eh "main/errorHandling"
 	"main/utils"
 )
 
