@@ -1,15 +1,16 @@
 package main
 
 import (
-	"main/utils"
+	"main/db"
+	"main/entities"
 )
 
 const BasePath = "D:/GitReps/SD-College-Course-Work/src/spidTCPServer"
 
 func main() {
-	dbm := utils.NewManager(BasePath)
-	//user := entities.NewUser("João")
-	//dbm.RegisterUser(user)
+	dbm := db.NewManager(BasePath)
+	user := entities.NewUser("João")
+	dbm.RegisterUser(user)
 
 	//newUUID, err := uuid.Parse("5fc82534-f31f-4cdc-8814-3e1f47741395")
 	//eh.HandleFatal(err)

@@ -33,13 +33,13 @@ func NewSpid() Spid {
 }
 
 func (s Spid) Marshal() []byte {
-	um, err := json.Marshal(u)
+	marshaledSpid, err := json.Marshal(s)
 	eh.HandleFatal(err)
-	return um
+	return marshaledSpid
 }
 
 func MarshalSpids(spids Spids) []byte {
-	marshaledSpids, err := json.MarshalIndent(users, "", "    ")
+	marshaledSpids, err := json.MarshalIndent(spids, "", "    ")
 	eh.HandleFatal(err)
 	return marshaledSpids
 }
