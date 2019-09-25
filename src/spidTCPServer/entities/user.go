@@ -33,9 +33,15 @@ func NewUser(name string) User {
 }
 
 func (u User) Marshal() []byte {
-	um, err := json.Marshal(u)
+	marshaledUser, err := json.Marshal(u)
 	eh.HandleFatal(err)
-	return um
+	return marshaledUser
+}
+
+func MarshalUsers(users Users) []byte {
+	marshaledUsers, err := json.MarshalIndent(users, "", "    ")
+	eh.HandleFatal(err)
+	return marshaledUsers
 }
 
 func UnmarshalUsers(marshaledUsers []byte) Users {
@@ -43,12 +49,6 @@ func UnmarshalUsers(marshaledUsers []byte) Users {
 	err := json.Unmarshal(marshaledUsers, &users)
 	eh.HandleFatal(err)
 	return users
-}
-
-func MarshalUsers(users Users) []byte {
-	m, err := json.MarshalIndent(users, "", "    ")
-	eh.HandleFatal(err)
-	return m
 }
 
 func (u User) UpdateLocation(position gps.GlobalPosition) {
