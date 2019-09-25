@@ -10,7 +10,7 @@ type FileManager struct {
 	BasePath string
 }
 
-func (f FileManager) readFile(path string) []byte {
+func (f FileManager) ReadFile(path string) []byte {
 	path = f.BasePath + path
 	file, err := os.Open(path)
 	errorHandling.HandleFatal(err)
@@ -21,7 +21,7 @@ func (f FileManager) readFile(path string) []byte {
 	return content
 }
 
-func (f FileManager) writeToFile(path string, content []byte) {
+func (f FileManager) WriteToFile(path string, content []byte) {
 	path = f.BasePath + path
 	file, err := os.OpenFile(path, os.O_WRONLY, 0644)
 	errorHandling.HandleFatal(err)
