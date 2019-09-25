@@ -1,11 +1,9 @@
 package utils
 
 import (
-	"encoding/json"
 	"github.com/google/uuid"
 	"log"
 	"main/entities"
-	eh "main/errorHandling"
 )
 
 const UsersDefaultLocation = "/db/users.spd"
@@ -21,7 +19,7 @@ func NewManager(basePath string) DBManager {
 
 func (d DBManager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
-	entities.UnmarshalUsers(d.FM.readFile(UsersDefaultLocation))
+	users := entities.UnmarshalUsers(d.FM.readFile(UsersDefaultLocation))
 	log.Printf("Read users: %s.", users)
 	return users
 }
