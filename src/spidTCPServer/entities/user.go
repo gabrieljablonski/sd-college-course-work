@@ -14,7 +14,7 @@ type User struct {
 	OnRide        bool               `json:"on_ride"`
 	Location      gps.GlobalPosition `json:"location"`
 	LastUpdated   time.Time          `json:"last_updated"`
-	CurrentSpidID string             `json:"current_spid_id"`
+	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
 }
 
 type Users struct {
@@ -28,7 +28,7 @@ func NewUser(name string) User {
 		false,
 		gps.NullPosition(),
 		time.Unix(0,0),
-		"",
+		nil,
 	}
 }
 

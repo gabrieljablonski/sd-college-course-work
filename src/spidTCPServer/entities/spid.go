@@ -2,6 +2,7 @@ package entities
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	eh "main/errorHandling"
 	"main/gps"
@@ -20,7 +21,7 @@ type Spid struct {
 	Lock          LockInfo           `json:"lock"`
 	Location      gps.GlobalPosition `json:"location"`
 	LastUpdated   time.Time          `json:"last_updated"`
-	CurrentUserID string             `json:"current_user_id"`
+	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
 
 type Spids struct {
@@ -34,8 +35,18 @@ func NewSpid() Spid {
 		LockInfo{false, false, "locked"},
 		gps.NullPosition(),
 		time.Unix(0,0),
-		"",
+		nil,
 	}
+}
+
+func IsValidLockState(lockState string) bool {
+	switch lockState {
+	case
+		"locked",
+		"unlocked":
+		return true
+	}
+	return false
 }
 
 func (s Spid) Marshal() []byte {
@@ -60,4 +71,19 @@ func UnmarshalSpids(marshaledSpids []byte) Spids {
 func (s Spid) UpdateLocation(position gps.GlobalPosition) {
 	s.Location = position
 	s.LastUpdated = time.Now()
+}
+
+func (s Spid) UpdateLockState(lockState string, userID uuid.UUID) error {
+	if userID != s.CurrentUserID {
+		return fmt.Errorf("user with id %s not associated with spid", userID)
+	}
+	if !IsValidLockState(lockState) {
+		return fmt.Errorf("invalid lock state")
+	}
+	if s.Lock.Override {
+		return fmt.Errorf("change lock state is unavailable")
+	}
+	s.Lock.State = lockState
+	s.Lock.Pending = true
+	return nil
 }

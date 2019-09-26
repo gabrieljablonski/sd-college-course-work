@@ -10,6 +10,19 @@ import (
 	"main/tcpServer"
 )
 
+const (
+	GetUserInfo        = "GET USER INFO"
+	RegisterUser       = "REGISTER USER"
+	UpdateUserLocation = "UPDATE USER LOCATION"
+	DeleteUser         = "DELETE USER"
+	RequestLockChange  = "REQUEST LOCK CHANGE"
+
+	GetSpidInfo        = "GET SPID INFO"
+	RegisterSpid       = "REGISTER SPID"
+	UpdateSpidLocation = "UPDATE SPID LOCATION"
+	DeleteSpid         = "DELETE SPID"
+)
+
 type Request struct {
 	ID   uuid.UUID              `json:"id"`
 	Type string                 `json:"type"`
@@ -26,19 +39,6 @@ type Response struct {
 type Handler struct {
 	Manager db.Manager
 }
-
-const (
-	GetUserInfo        = "GET USER INFO"
-	RegisterUser       = "REGISTER USER"
-	UpdateUserLocation = "UPDATE USER LOCATION"
-	DeleteUser         = "DELETE USER"
-	RequestLockChange  = "REQUEST LOCK CHANGE"
-
-	GetSpidInfo        = "GET SPID INFO"
-	RegisterSpid       = "REGISTER SPID"
-	UpdateSpidLocation = "UPDATE SPID LOCATION"
-	DeleteSpid         = "DELETE SPID"
-)
 
 func NewHandler(basePath string) Handler {
 	return Handler{db.NewManager(basePath)}
@@ -61,6 +61,15 @@ func invalidRequest(request Request) (response Response, ok bool) {
 	response = DefaultResponse(request)
 	response.Body["message"] = fmt.Sprintf("Invalid request type '%s'", request.Type)
 	return response, false
+}
+
+func checkKeys(m map[string]interface{}, keys []string) string {
+	for _, key := range keys {
+		if m[key] == nil {
+			return key
+		}
+	}
+	return ""
 }
 
 func (h Handler) ProcessRequest(message string) (jsonResponse string, ok bool) {
