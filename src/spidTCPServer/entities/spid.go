@@ -8,10 +8,16 @@ import (
 	"time"
 )
 
+type LockInfo struct {
+	Override bool `json:"override"`  // override user control
+	Pending bool `json:"pending"`
+	State string `json:"state"`
+}
+
 type Spid struct {
 	ID            uuid.UUID          `json:"id"`
 	BatteryLevel  uint8              `json:"battery_level"`
-	LockState     string             `json:"lock_state"`
+	Lock          LockInfo           `json:"lock"`
 	Location      gps.GlobalPosition `json:"location"`
 	LastUpdated   time.Time          `json:"last_updated"`
 	CurrentUserID string             `json:"current_user_id"`
@@ -25,7 +31,7 @@ func NewSpid() Spid {
 	return Spid{
 		uuid.New(),
 		100,
-		"locked",
+		LockInfo{false, false, "locked"},
 		gps.NullPosition(),
 		time.Unix(0,0),
 		"",
