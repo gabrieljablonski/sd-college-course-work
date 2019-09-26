@@ -95,8 +95,11 @@ func (h Handler) ProcessRequest(message string) (jsonResponse string, ok bool) {
 	}
 	response, ok := handler(request)
 	if !ok {
-		log.Printf("Request failed: %s", response)
+		log.Print("Request failed.\n")
+	} else {
+		log.Print("Request successful.\n")
 	}
+	log.Printf("Response: %s", response)
 	marshaledResponse, err := json.Marshal(response)
 	eh.HandleFatal(err)
 	return string(marshaledResponse), ok
