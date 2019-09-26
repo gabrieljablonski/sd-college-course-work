@@ -35,7 +35,7 @@ func NewSpid() Spid {
 		LockInfo{false, false, "locked"},
 		gps.NullPosition(),
 		time.Unix(0,0),
-		nil,
+		uuid.Nil,
 	}
 }
 

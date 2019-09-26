@@ -126,7 +126,64 @@ func (h Handler) deleteUser(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) requestAssociation(request Request) (response Response, ok bool) {
-	return Response{}, false
+	response = DefaultResponse(request)
+	missingKey := checkKeys(request.Body, []string{"user_id", "spid_id"})
+	if missingKey != "" {
+		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
+		return response, false
+	}
+	userID := request.Body["user_id"].(string)
+	spidID := request.Body["spid_id"].(string)
+	user, err := h.queryUser(userID)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate user id: %s", err)
+		return response, false
+	}
+	if user.CurrentSpidID != uuid.Nil {
+		response.Body["message"] = fmt.Sprintf("User already associated to spid %s.", user.CurrentSpidID)
+	}
+	spid, err := h.querySpid(spidID)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate spid id: %s", err)
+		return response, false
+	}
+	if spid.CurrentUserID != uuid.Nil {
+		response.Body["message"] = fmt.Sprintf("Spid already associated to user %s.", spid.CurrentUserID)
+		return response, false
+	}
+	spid.CurrentUserID = user.ID
+	user.CurrentSpidID = spid.ID
+	response.Body["message"] = fmt.Sprintf("User %s associated to spid %s.", user.ID, spid.ID)
+	response.Ok = true
+	return response, true
+}
+
+func (h Handler) requestDissociation(request Request) (response Response, ok bool) {
+	response = DefaultResponse(request)
+	if request.Body["user_id"] == nil {
+		response.Body["message"] = "Missing user id."
+		return response ,false
+	}
+	userID := request.Body["user_id"].(string)
+	user, err := h.queryUser(userID)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate user id: %s", err)
+		return response, false
+	}
+	if user.CurrentSpidID == uuid.Nil {
+		response.Body["message"] = "User not currently associated to any spids."
+		return response, false
+	}
+	spidID := user.CurrentSpidID
+	user.CurrentSpidID = uuid.Nil
+	err = h.Manager.UpdateUser(user)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to dissociate user: %s", err)
+		return response, false
+	}
+	response.Body["message"] = fmt.Sprintf("User dissociated from spid %s.", spidID)
+	response.Ok = true
+	return response, true
 }
 
 func (h Handler) requestLockChange(request Request) (response Response, ok bool) {

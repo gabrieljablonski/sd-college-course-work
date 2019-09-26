@@ -11,7 +11,6 @@ import (
 type User struct {
 	ID            uuid.UUID          `json:"id"`
 	Name          string             `json:"name"`
-	OnRide        bool               `json:"on_ride"`
 	Location      gps.GlobalPosition `json:"location"`
 	LastUpdated   time.Time          `json:"last_updated"`
 	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
@@ -25,10 +24,9 @@ func NewUser(name string) User {
 	return User{
 		uuid.New(),
 		name,
-		false,
 		gps.NullPosition(),
 		time.Unix(0,0),
-		nil,
+		uuid.Nil,
 	}
 }
 
