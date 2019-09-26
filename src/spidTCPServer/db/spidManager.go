@@ -7,6 +7,8 @@ import (
 	"main/entities"
 )
 
+// TODO: error handling for file operations
+
 func (d Manager) GetSpidsFromFile() entities.Spids {
 	log.Print("Reading spids.")
 	spids := entities.UnmarshalSpids(d.FM.ReadFile(SpidsDefaultLocation))
@@ -40,31 +42,37 @@ func (d Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	return spids.Spids[spidID], nil
 }
 
-func (d Manager) RegisterSpid(spid entities.Spid) {
-	if d.QuerySpid(spid.ID) != (entities.Spid{}) {
-		log.Fatalf("Spid with ID %s already exists.", spid.ID)
+func (d Manager) RegisterSpid(spid entities.Spid) error {
+	_, err := d.QuerySpid(spid.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Registering spid: %s.", spid)
 	d.writeSpid(spid)
 	log.Print("Spid registered.")
+	return nil
 }
 
-func (d Manager) UpdateSpid(spid entities.Spid) {
-	if d.QuerySpid(spid.ID) == (entities.Spid{}) {
-		log.Fatalf("Spid with ID %s doesn't exist.", spid.ID)
+func (d Manager) UpdateSpid(spid entities.Spid) error {
+	_, err := d.QuerySpid(spid.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Updating spid: %s.", spid)
 	d.writeSpid(spid)
 	log.Print("Spid updated.")
+	return nil
 }
 
-func (d Manager) DeleteSpid(spid entities.Spid) {
-	if d.QuerySpid(spid.ID) == (entities.Spid{}) {
-		log.Fatalf("Spid with ID %s doesn't exist.", spid.ID)
+func (d Manager) DeleteSpid(spid entities.Spid) error {
+	_, err := d.QuerySpid(spid.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Deleting spid: %s.", spid)
 	spids := d.GetSpidsFromFile()
 	delete(spids.Spids, spid.ID)
 	d.WriteSpidsToFile(entities.MarshalSpids(spids))
 	log.Print("Spid updated.")
+	return nil
 }
