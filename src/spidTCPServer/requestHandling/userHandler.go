@@ -3,7 +3,6 @@ package requestHandling
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"main/entities"
 	"main/gps"
 	"time"
@@ -32,7 +31,6 @@ func (h Handler) getUserInfo(request Request) (response Response, ok bool) {
 		response.Body["message"] = fmt.Sprintf("Failed to validate user id: %s", err)
 		return response, false
 	}
-	log.Printf("Responding with user: %s", user)
 	response.Ok = true
 	response.Body["user"] = user
 	return response, true
@@ -48,13 +46,11 @@ func (h Handler) registerUser(request Request) (response Response, ok bool) {
 	err := h.Manager.RegisterUser(user)
 	if err != nil {
 		response.Body["message"] = fmt.Sprintf("Failed to register user: %s", err)
-		ok = false
-	} else {
-		response.Body["user"] = user
-		response.Ok = true
-		ok = true
+		return response, false
 	}
-	return response, ok
+	response.Body["user"] = user
+	response.Ok = true
+	return response, true
 }
 
 func (h Handler) updateUserLocation(request Request) (response Response, ok bool) {
@@ -94,7 +90,7 @@ func (h Handler) updateUserLocation(request Request) (response Response, ok bool
 	user.LastUpdated = time.Now()
 	err = h.Manager.UpdateUser(user)
 	if err != nil {
-		response.Body["message"] = fmt.Sprintf("Failed to update user: %s", err)
+		response.Body["message"] = fmt.Sprintf("Failed to update user location: %s", err)
 		return response, false
 	}
 	response.Body["message"] = "Location updated."

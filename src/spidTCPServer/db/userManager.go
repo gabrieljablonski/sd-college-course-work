@@ -8,6 +8,7 @@ import (
 )
 
 // TODO: error handling for file stuff
+
 func (d Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
 	users := entities.UnmarshalUsers(d.FM.ReadFile(UsersDefaultLocation))
@@ -43,7 +44,7 @@ func (d Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
 }
 
 func (d Manager) RegisterUser(user entities.User) error {
-	user, err := d.QueryUser(user.ID)
+	_, err := d.QueryUser(user.ID)
 	if err != nil {
 		return err
 	}
@@ -54,7 +55,7 @@ func (d Manager) RegisterUser(user entities.User) error {
 }
 
 func (d Manager) UpdateUser(user entities.User) error {
-	user, err := d.QueryUser(user.ID)
+	_, err := d.QueryUser(user.ID)
 	if err != nil {
 		return err
 	}
@@ -65,7 +66,7 @@ func (d Manager) UpdateUser(user entities.User) error {
 }
 
 func (d Manager) DeleteUser(user entities.User) error {
-	user, err := d.QueryUser(user.ID)
+	_, err := d.QueryUser(user.ID)
 	if err != nil {
 		return err
 	}
@@ -74,4 +75,5 @@ func (d Manager) DeleteUser(user entities.User) error {
 	delete(users.Users, user.ID)
 	d.WriteUsersToFile(entities.MarshalUsers(users))
 	log.Print("User deleted.")
+	return nil
 }
