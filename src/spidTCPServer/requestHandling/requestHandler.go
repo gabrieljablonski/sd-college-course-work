@@ -15,10 +15,13 @@ const (
 	RegisterUser       = "REGISTER USER"
 	UpdateUserLocation = "UPDATE USER LOCATION"
 	DeleteUser         = "DELETE USER"
+	RequestAssociation = "REQUEST ASSOCIATION"
+	RequestDissociation = "REQUEST DISSOCIATION"
 	RequestLockChange  = "REQUEST LOCK CHANGE"
 
 	GetSpidInfo        = "GET SPID INFO"
 	RegisterSpid       = "REGISTER SPID"
+	UpdateBatteryInfo  = "UPDATE BATTERY INFO"
 	UpdateSpidLocation = "UPDATE SPID LOCATION"
 	DeleteSpid         = "DELETE SPID"
 )
@@ -112,12 +115,18 @@ func (h Handler) ProcessRequest(incomingRequest string) (jsonResponse string, ok
 		handler = h.updateUserLocation
 	case DeleteUser:
 		handler = h.deleteUser
+	case RequestAssociation:
+		handler = h.requestAssociation
+	case RequestDissociation:
+		handler = h.requestDissociation
 	case RequestLockChange:
 		handler = h.requestLockChange
 	case GetSpidInfo:
 		handler = h.getSpidInfo
 	case RegisterSpid:
 		handler = h.registerSpid
+	case UpdateBatteryInfo:
+		handler = h.updateBatteryInfo
 	case UpdateSpidLocation:
 		handler = h.updateSpidLocation
 	case DeleteSpid:
