@@ -1,13 +1,13 @@
 package db
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"main/entities"
 )
 
-//TODO: implement ok in response
-
+// TODO: error handling for file stuff
 func (d Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
 	users := entities.UnmarshalUsers(d.FM.ReadFile(UsersDefaultLocation))
@@ -29,45 +29,49 @@ func (d Manager) writeUser(user entities.User) {
 	log.Print("User written.")
 }
 
-func (d Manager) QueryUser(userID uuid.UUID) entities.User {
+func (d Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
 	users := d.GetUsersFromFile()
 	log.Printf("Querying user with ID %s.", userID)
 	_, ok := users.Users[userID]
-	if ok {
-		log.Printf("User found: %s", users.Users[userID])
-		return users.Users[userID]
+	if !ok {
+		err := fmt.Errorf("user with ID %s not found", userID)
+		log.Print(err)
+		return entities.User{}, err
 	}
-	log.Printf("User with ID %s not found.", users.Users[userID])
-	return entities.User{}
+	log.Printf("User found: %s", users.Users[userID])
+	return users.Users[userID], nil
 }
 
-func (d Manager) RegisterUser(user entities.User) (ok bool) {
-	if d.QueryUser(user.ID) != (entities.User{}) {
-		log.Printf("User with ID %s already exists.", user.ID)
-		return false
+func (d Manager) RegisterUser(user entities.User) error {
+	user, err := d.QueryUser(user.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Registering user: %s.", user)
 	d.writeUser(user)
 	log.Print("User registered.")
-	return true
+	return nil
 }
 
-func (d Manager) UpdateUser(user entities.User) {
-	if d.QueryUser(user.ID) == (entities.User{}) {
-		log.Fatalf("User with ID %s doesn't exist.", user.ID)
+func (d Manager) UpdateUser(user entities.User) error {
+	user, err := d.QueryUser(user.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Updating user: %s.", user)
 	d.writeUser(user)
 	log.Print("User updated.")
+	return nil
 }
 
-func (d Manager) DeleteUser(user entities.User) {
-	if d.QueryUser(user.ID) == (entities.User{}) {
-		log.Fatalf("User with ID %s doesn't exist.", user.ID)
+func (d Manager) DeleteUser(user entities.User) error {
+	user, err := d.QueryUser(user.ID)
+	if err != nil {
+		return err
 	}
 	log.Printf("Deleting user: %s.", user)
 	users := d.GetUsersFromFile()
 	delete(users.Users, user.ID)
 	d.WriteUsersToFile(entities.MarshalUsers(users))
-	log.Print("User updated.")
+	log.Print("User deleted.")
 }
