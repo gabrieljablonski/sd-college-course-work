@@ -2,9 +2,12 @@ package requestHandling
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"log"
+	"main/db"
 	eh "main/errorHandling"
+	"main/tcpServer"
 )
 
 type Request struct {
@@ -17,6 +20,11 @@ type Response struct {
 	ID uuid.UUID `json:"id"`
 	Type string `json:"type"`
 	Ok bool `json:"ok"`
+	Body map[string]interface{} `json:"body"`
+}
+
+type Handler struct {
+	Manager db.Manager
 }
 
 const (
@@ -32,34 +40,64 @@ const (
 	DeleteSpid         = "DELETE SPID"
 )
 
-func ProcessRequest(message string) Response {
+func NewHandler(basePath string) Handler {
+	return Handler{db.NewManager(basePath)}
+}
+
+func DefaultResponse(request Request) Response {
+	return Response{
+		ID:   request.ID,
+		Type: request.Type,
+		Ok:   false,
+		Body: map[string]interface{}{},
+	}
+}
+
+func (h Handler) Listen(port string) {
+	tcpServer.Listen(port)
+}
+
+func invalidRequest(request Request) (response Response, ok bool) {
+	response = DefaultResponse(request)
+	response.Body["message"] = fmt.Sprintf("Invalid request type '%s'", request.Type)
+	return response, false
+}
+
+func (h Handler) ProcessRequest(message string) (jsonResponse string, ok bool) {
 	var request Request
 	err := json.Unmarshal([]byte(message), &request)
 	eh.HandleFatal(err)
 
-	var handler func(request Request) Response
+	log.Printf("Processing request: %s", request)
+	var handler func(Request) (Response, bool)
 
 	switch request.Type {
 	case GetUserInfo:
-		handler = getUserInfo
+		handler = h.getUserInfo
 	case RegisterUser:
-		handler = registerUser
+		handler = h.registerUser
 	case UpdateUserLocation:
-		handler = updateUserLocation
+		handler = h.updateUserLocation
 	case DeleteUser:
-		handler = deleteUser
+		handler = h.deleteUser
 	case RequestLockChange:
-		handler = requestLockChange
+		handler = h.requestLockChange
 	case GetSpidInfo:
-		handler = getSpidInfo
+		handler = h.getSpidInfo
 	case RegisterSpid:
-		handler = registerSpid
+		handler = h.registerSpid
 	case UpdateSpidLocation:
-		handler = updateSpidLocation
+		handler = h.updateSpidLocation
 	case DeleteSpid:
-		handler = deleteSpid
+		handler = h.deleteSpid
 	default:
-		log.Fatalf("Invalid request type '%s'", request.Type)
+		handler = invalidRequest
 	}
-	return handler(request)
+	response, ok := handler(request)
+	if !ok {
+		log.Printf("Request failed: %s", response)
+	}
+	marshaledResponse, err := json.Marshal(response)
+	eh.HandleFatal(err)
+	return string(marshaledResponse), ok
 }

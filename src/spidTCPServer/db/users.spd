@@ -1,18 +1,28 @@
 {
-    "spids": {
-        "5276e194-3ec3-40d4-a28f-f9ab5045a9b4": {
-            "id": "5276e194-3ec3-40d4-a28f-f9ab5045a9b4",
-            "battery_level": 100,
-            "lock_state": "locked",
+    "users": {
+        "1c0501fe-a829-4257-b8ab-166299009f03": {
+            "id": "1c0501fe-a829-4257-b8ab-166299009f03",
+            "name": "João da Silva",
+            "on_ride": false,
             "location": {
                 "latitude": 0,
                 "longitude": 0
             },
             "last_updated": "1969-12-31T21:00:00-03:00",
-            "current_user_id": ""
-        }
-    }
-}-4693-80b8-a7683ce3ee97": {
+            "current_spid_id": ""
+        },
+        "43eb4d5a-4bdd-47ca-9873-9af5a8f469b3": {
+            "id": "43eb4d5a-4bdd-47ca-9873-9af5a8f469b3",
+            "name": "João da Silva",
+            "on_ride": false,
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "last_updated": "1969-12-31T21:00:00-03:00",
+            "current_spid_id": ""
+        },
+        "88b7dd20-a91c-4693-80b8-a7683ce3ee97": {
             "id": "88b7dd20-a91c-4693-80b8-a7683ce3ee97",
             "name": "João",
             "on_ride": false,
