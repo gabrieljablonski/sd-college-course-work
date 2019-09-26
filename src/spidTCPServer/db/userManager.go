@@ -6,6 +6,8 @@ import (
 	"main/entities"
 )
 
+//TODO: implement ok in response
+
 func (d Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
 	users := entities.UnmarshalUsers(d.FM.ReadFile(UsersDefaultLocation))
@@ -39,13 +41,15 @@ func (d Manager) QueryUser(userID uuid.UUID) entities.User {
 	return entities.User{}
 }
 
-func (d Manager) RegisterUser(user entities.User) {
+func (d Manager) RegisterUser(user entities.User) (ok bool) {
 	if d.QueryUser(user.ID) != (entities.User{}) {
-		log.Fatalf("User with ID %s already exists.", user.ID)
+		log.Printf("User with ID %s already exists.", user.ID)
+		return false
 	}
 	log.Printf("Registering user: %s.", user)
 	d.writeUser(user)
 	log.Print("User registered.")
+	return true
 }
 
 func (d Manager) UpdateUser(user entities.User) {

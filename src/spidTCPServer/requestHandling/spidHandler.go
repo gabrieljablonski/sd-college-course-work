@@ -1,9 +1,17 @@
 package requestHandling
 
-func getSpidInfo(request Request) Response { }
+func (h Handler) getSpidInfo(request Request) (response Response, ok bool) {
+	return Response{}, false
+}
 
-func registerSpid(request Request) Response { }
+func (h Handler) registerSpid(request Request) (response Response, ok bool) {
+	return Response{}, false
+}
 
-func updateSpidLocation(request Request) Response { }
+func (h Handler) updateSpidLocation(request Request) (response Response, ok bool) {
+	return Response{}, false
+}
 
-func deleteSpid(request Request) Response { }
+func (h Handler) deleteSpid(request Request) (response Response, ok bool) {
+	return Response{}, false
+}
