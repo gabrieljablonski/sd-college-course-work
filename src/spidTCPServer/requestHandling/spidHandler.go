@@ -49,6 +49,30 @@ func (h Handler) registerSpid(request Request) (response Response, ok bool) {
 	return response, true
 }
 
+func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool) {
+	response = DefaultResponse(request)
+	missingKey := checkKeys(request.Body, []string{"spid_id", "battery_level"})
+	if missingKey != "" {
+		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
+		return response, false
+	}
+	spid, err := h.querySpid(request.Body["spid_id"].(string))
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate spid id: %s", err)
+		return response, false
+	}
+	batteryLevel, okBattery := request.Body["battery_level"].(int)
+	if !okBattery || (batteryLevel < 0 || batteryLevel > 100) {
+		response.Body["message"] = "Invalid battery value."
+		return response, false
+	}
+	spid.BatteryLevel = uint8(batteryLevel)
+	response.Body["message"] = "Battery level updated."
+	response.Body["battery_level"] = spid.BatteryLevel
+	response.Ok = true
+	return response, true
+}
+
 func (h Handler) updateSpidLocation(request Request) (response Response, ok bool) {
 	response = DefaultResponse(request)
 	missingKey := checkKeys(request.Body, []string{"location", "spid_id"})
