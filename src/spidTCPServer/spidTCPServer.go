@@ -23,15 +23,6 @@ func main() {
 		return
 	}
 	handler := requestHandling.NewHandler(BasePath)
-
-	fmt.Print(handler.ProcessRequest(
-		`{
-			"id": "88b7dd20-a91c-4693-80b8-a7683ce3ee97",
-			"type": "REGISTER USER",
-			"body": {
-				"name": "João da Silva"
-			}
-		}`))
-	//port := arguments[1]
-	//handler.Listen(port)
+	port := arguments[1]
+	handler.Listen(port)
 }

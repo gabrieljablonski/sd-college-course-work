@@ -47,14 +47,25 @@ func NewHandler(basePath string) Handler {
 func DefaultResponse(request Request) Response {
 	return Response{
 		ID:   request.ID,
-		Type: request.Type,
+		Type: "<RESPONSE>:" + request.Type,
 		Ok:   false,
 		Body: map[string]interface{}{},
 	}
 }
 
+func (h Handler) requestProcessor(incomingRequests chan string, outgoingResponses chan string) {
+	for {
+		incomingRequest := <-incomingRequests
+		response, _ := h.ProcessRequest(incomingRequest)
+		outgoingResponses <- response
+	}
+}
+
 func (h Handler) Listen(port string) {
-	tcpServer.Listen(port)
+	incomingRequests := make(chan string)
+	outgoingResponses := make(chan string)
+	go h.requestProcessor(incomingRequests, outgoingResponses)
+	tcpServer.Listen(port, incomingRequests, outgoingResponses)
 }
 
 func invalidRequest(request Request) (response Response, ok bool) {
@@ -72,10 +83,22 @@ func checkKeys(m map[string]interface{}, keys []string) string {
 	return ""
 }
 
-func (h Handler) ProcessRequest(message string) (jsonResponse string, ok bool) {
+func (h Handler) ProcessRequest(incomingRequest string) (jsonResponse string, ok bool) {
 	var request Request
-	err := json.Unmarshal([]byte(message), &request)
-	eh.HandleFatal(err)
+	err := json.Unmarshal([]byte(incomingRequest), &request)
+
+	if err != nil {
+		errorMessage := fmt.Sprintf("Invalid request: `%s`\n`%s`", incomingRequest, err)
+		log.Print(errorMessage)
+		marshaledResponse, err := json.Marshal(Response{
+			ID:   uuid.Nil,
+			Type: "<RESPONSE>:INVALID",
+			Ok:   false,
+			Body: map[string]interface{}{"message": errorMessage},
+		})
+		eh.HandleFatal(err)
+		return string(marshaledResponse), false
+	}
 
 	log.Printf("Processing request: %s", request)
 	var handler func(Request) (Response, bool)
@@ -108,7 +131,7 @@ func (h Handler) ProcessRequest(message string) (jsonResponse string, ok bool) {
 	} else {
 		log.Print("Request successful.\n")
 	}
-	log.Printf("Response: %s", response)
+	log.Printf("Response: `%s`", response)
 	marshaledResponse, err := json.Marshal(response)
 	eh.HandleFatal(err)
 	return string(marshaledResponse), ok

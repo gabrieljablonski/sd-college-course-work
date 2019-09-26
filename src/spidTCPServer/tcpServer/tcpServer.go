@@ -8,36 +8,30 @@ import (
 	"strings"
 )
 
-const DefaultResponse = "CONNECTION SUCCESSFUL"
 const DefaultEndConnection = "END CONNECTION"
 
-func handleConnection(c net.Conn) {
+func handleConnection(c net.Conn, incomingRequests, outgoingResponses chan string) {
 	remoteAddr := c.RemoteAddr().String()
 	log.Printf("Serving %s\n", remoteAddr)
 	for {
-		netData, err := bufio.NewReader(c).ReadString('\n')
+		incomingData, err := bufio.NewReader(c).ReadString('\n')
 		eh.HandleFatal(err)
 
-		temp := strings.TrimSpace(string(netData))
-
-		switch temp {
-			case DefaultEndConnection:
-				log.Printf("Ending connection with %s.\n", remoteAddr)
-				break
-		}
-		if temp == DefaultEndConnection {
+		request := strings.TrimSpace(string(incomingData))
+		if request == DefaultEndConnection {
+			log.Printf("Ending connection with %s.\n", remoteAddr)
 			break
 		}
-
-		result := DefaultResponse
-		_, err = c.Write([]byte(string(result)+"\n"))
+		incomingRequests <- request
+		response := <-outgoingResponses
+		_, err = c.Write([]byte(response + "\n"))
 		eh.HandleFatal(err)
 	}
 	err := c.Close()
 	eh.HandleFatal(err)
 }
 
-func Listen(port string) {
+func Listen(port string, incomingRequests, outgoingResponses chan string) {
 	port = ":" + port
 	listener, err := net.Listen("tcp4", port)
 
@@ -48,6 +42,6 @@ func Listen(port string) {
 	for {
 		conn, err := listener.Accept()
 		eh.HandleFatal(err)
-		go handleConnection(conn)
+		go handleConnection(conn, incomingRequests, outgoingResponses)
 	}
 }
