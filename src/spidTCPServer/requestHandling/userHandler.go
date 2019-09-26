@@ -81,7 +81,6 @@ func (h Handler) updateUserLocation(request Request) (response Response, ok bool
 		response.Body["message"] = "Invalid latitude or longitude values."
 		return response, false
 	}
-
 	if request.Body["user_id"] == nil {
 		response.Body["message"] = "Missing user id."
 		return response, false
@@ -108,7 +107,25 @@ func (h Handler) updateUserLocation(request Request) (response Response, ok bool
 }
 
 func (h Handler) deleteUser(request Request) (response Response, ok bool) {
-	return Response{}, false
+	response = DefaultResponse(request)
+	if request.Body["user_id"] == nil {
+		response.Body["message"] = "Missing user id."
+		return response, false
+	}
+	user, err := h.queryUser(request.Body["user_id"].(string))
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Invalid user id: %s", err)
+		return response, false
+	}
+	err = h.Manager.DeleteUser(user)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to delete user: %s", err)
+		return response, false
+	}
+	response.Body["message"] = fmt.Sprintf("User deleted.")
+	response.Body["user"] = user
+	response.Ok = true
+	return response, true
 }
 
 func (h Handler) requestLockChange(request Request) (response Response, ok bool) {
