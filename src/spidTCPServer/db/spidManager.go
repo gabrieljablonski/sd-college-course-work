@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"main/entities"
@@ -27,16 +28,16 @@ func (d Manager) writeSpid(spid entities.Spid) {
 	log.Print("Spid written.")
 }
 
-func (d Manager) QuerySpid(spidID uuid.UUID) entities.Spid {
+func (d Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	spids := d.GetSpidsFromFile()
 	log.Printf("Querying spid with ID %s.", spidID)
 	_, ok := spids.Spids[spidID]
-	if ok {
-		log.Printf("Spid found: %s", spids.Spids[spidID])
-		return spids.Spids[spidID]
+	if !ok {
+		err := fmt.Errorf("spid with ID %s not found", spidID)
+		return entities.Spid{}, err
 	}
-	log.Printf("Spid with ID %s not found.", spids.Spids[spidID])
-	return entities.Spid{}
+	log.Printf("Spid found: %s", spids.Spids[spidID])
+	return spids.Spids[spidID], nil
 }
 
 func (d Manager) RegisterSpid(spid entities.Spid) {
