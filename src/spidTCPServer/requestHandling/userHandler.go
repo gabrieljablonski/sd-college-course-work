@@ -125,6 +125,10 @@ func (h Handler) deleteUser(request Request) (response Response, ok bool) {
 	return response, true
 }
 
+func (h Handler) requestAssociation(request Request) (response Response, ok bool) {
+	return Response{}, false
+}
+
 func (h Handler) requestLockChange(request Request) (response Response, ok bool) {
 	response = DefaultResponse(request)
 	missingKey := checkKeys(request.Body, []string{"user_id", "spid_id", "lock_state"})
@@ -162,5 +166,5 @@ func (h Handler) requestLockChange(request Request) (response Response, ok bool)
 	// TODO: call back when spid checks the pending update
 	response.Body["message"] = fmt.Sprintf("Lock state for spid %s updated to `%s`.", spid.ID, lockState)
 	response.Ok = true
-	return response, false
+	return response, true
 }
