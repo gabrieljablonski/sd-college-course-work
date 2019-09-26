@@ -25,7 +25,9 @@ func handleConnection(c net.Conn, incomingRequests, outgoingResponses chan strin
 		incomingRequests <- request
 		response := <-outgoingResponses
 		_, err = c.Write([]byte(response + "\n"))
-		eh.HandleFatal(err)
+		if err != nil {
+			log.Printf("Connection with %s lost.", remoteAddr)
+		}
 	}
 	err := c.Close()
 	eh.HandleFatal(err)
