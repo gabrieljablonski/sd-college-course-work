@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"main/entities"
 	"main/gps"
+	"main/utils"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func (h Handler) querySpid(spidID string) (entities.Spid, error) {
 }
 
 func (h Handler) getSpidInfo(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["spid_id"] == nil {
 		response.Body["message"] = "Missing spid id."
 		return response, false
@@ -37,7 +38,7 @@ func (h Handler) getSpidInfo(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) registerSpid(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	spid := entities.NewSpid()
 	err := h.Manager.RegisterSpid(spid)
 	if err != nil {
@@ -50,8 +51,8 @@ func (h Handler) registerSpid(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
-	missingKey := checkKeys(request.Body, []string{"spid_id", "battery_level"})
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"spid_id", "battery_level"})
 	if missingKey != "" {
 		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
 		return response, false
@@ -74,8 +75,8 @@ func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool)
 }
 
 func (h Handler) updateSpidLocation(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
-	missingKey := checkKeys(request.Body, []string{"location", "spid_id"})
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"location", "spid_id"})
 	if missingKey != "" {
 		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
 		return response, false
@@ -120,7 +121,7 @@ func (h Handler) updateSpidLocation(request Request) (response Response, ok bool
 }
 
 func (h Handler) deleteSpid(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["spid_id"] == nil {
 		response.Body["message"] = "Missing spid id."
 		return response, false

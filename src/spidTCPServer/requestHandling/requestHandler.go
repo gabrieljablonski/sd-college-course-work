@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/ActiveState/tail"
 	"log"
 	"main/db"
 	eh "main/errorHandling"
-	"main/tcpServer"
+	"os"
+	"time"
 )
 
 const (
@@ -24,7 +26,16 @@ const (
 	UpdateBatteryInfo  = "UPDATE BATTERY INFO"
 	UpdateSpidLocation = "UPDATE SPID LOCATION"
 	DeleteSpid         = "DELETE SPID"
+
+	DefaultLogPath     = "requestHandling/request_logs.spd"
+	DefaultMaxBufferedRequests = 100
 )
+
+type GenericMessage struct {
+	Message string `json:"message"`
+	Received time.Time `json:"received"`
+	Sum [16]byte   `json:"sum"`
+}
 
 type Request struct {
 	ID   uuid.UUID              `json:"id"`
@@ -41,13 +52,25 @@ type Response struct {
 
 type Handler struct {
 	Manager db.Manager
+	OutGoingResponses chan GenericMessage
+	Logger *log.Logger
 }
 
 func NewHandler(basePath string) Handler {
-	return Handler{db.NewManager(basePath)}
+	//TODO: if file is not empty, process requests
+	logFile, err := os.OpenFile(DefaultLogPath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	eh.HandleFatal(err)
+	h := Handler{
+		Manager: db.NewManager(basePath),
+		OutGoingResponses: make(chan GenericMessage, DefaultMaxBufferedRequests),
+		Logger: log.New(logFile, "", 0),
+	}
+	h.LoadFromFile()
+	go h.handleLoggedRequests()
+	return h
 }
 
-func DefaultResponse(request Request) Response {
+func defaultResponse(request Request) Response {
 	return Response{
 		ID:   request.ID,
 		Type: "<RESPONSE>:" + request.Type,
@@ -56,37 +79,90 @@ func DefaultResponse(request Request) Response {
 	}
 }
 
-func (h Handler) requestProcessor(incomingRequests chan string, outgoingResponses chan string) {
-	for {
-		incomingRequest := <-incomingRequests
-		response, _ := h.ProcessRequest(incomingRequest)
-		outgoingResponses <- response
-	}
-}
-
-func (h Handler) Listen(port string) {
-	incomingRequests := make(chan string)
-	outgoingResponses := make(chan string)
-	go h.requestProcessor(incomingRequests, outgoingResponses)
-	tcpServer.Listen(port, incomingRequests, outgoingResponses)
-}
-
-func invalidRequest(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+func invalidResponse(request Request) (response Response, ok bool) {
+	response = defaultResponse(request)
 	response.Body["message"] = fmt.Sprintf("Invalid request type '%s'", request.Type)
 	return response, false
 }
 
-func checkKeys(m map[string]interface{}, keys []string) string {
-	for _, key := range keys {
-		if m[key] == nil {
-			return key
-		}
-	}
-	return ""
+func (h Handler) QueueRequest(requestMessage GenericMessage) error {
+	marshaledRequest, err := json.Marshal(requestMessage)
+	eh.HandleFatal(err)
+	err = h.Logger.Output(2, string(marshaledRequest))
+	f, ferr := os.Open(DefaultLogPath)
+	eh.HandleFatal(ferr)
+	ferr = f.Close()
+	eh.HandleFatal(ferr)
+	return err
 }
 
-func (h Handler) ProcessRequest(incomingRequest string) (jsonResponse string, ok bool) {
+func (h Handler) cleanUp(discardedRequestSum [16]byte) {
+	for {
+		responseMessage := <-h.OutGoingResponses
+		if responseMessage.Sum == discardedRequestSum {
+			return
+		}
+		h.OutGoingResponses <- responseMessage
+	}
+}
+
+func (h Handler) GetResponse(requestMessage GenericMessage, timeout time.Duration) (GenericMessage, error) {
+	for {
+		select {
+		case responseMessage := <-h.OutGoingResponses:
+			if responseMessage.Sum == requestMessage.Sum {
+				return responseMessage, nil
+			}
+			h.OutGoingResponses <- responseMessage
+		case <-time.After(timeout):
+			go h.cleanUp(requestMessage.Sum)
+			marshaledResponse, err := json.Marshal(Response{
+				ID:   uuid.Nil,
+				Type: "<RESPONSE>:TIMEOUT",
+				Ok:   false,
+				Body: map[string]interface{}{"message": "Request timed out."},
+			})
+			eh.HandleFatal(err)
+			return GenericMessage{
+				Message: string(marshaledResponse),
+				Sum:     requestMessage.Sum,
+			}, fmt.Errorf("request timed out")
+		}
+	}
+}
+
+func (h Handler) handleLoggedRequests() {
+	logPath := h.Manager.FileManager.BasePath + string(os.PathSeparator) + DefaultLogPath
+	logTail, err := tail.TailFile(logPath, tail.Config{
+		Location:    nil,
+		ReOpen:      false,
+		MustExist:   false,
+		Poll:        true,
+		Pipe:        false,
+		RateLimiter: nil,
+		Follow:      true,
+		MaxLineSize: 0,
+		Logger:      nil,
+	})
+	eh.HandleFatal(err)
+	for {
+		for line := range logTail.Lines {
+			log.Printf("Processing logged request: `%s`", line.Text)
+			var requestMessage GenericMessage
+			err := json.Unmarshal([]byte(line.Text), &requestMessage)
+			eh.HandleFatal(err)
+			jsonResponse, _ := h.processRequest(requestMessage.Message)
+
+			h.OutGoingResponses <- GenericMessage{
+				Message:  jsonResponse,
+				Received: requestMessage.Received,
+				Sum:      requestMessage.Sum,
+			}
+		}
+	}
+}
+
+func (h Handler) processRequest(incomingRequest string) (jsonResponse string, ok bool) {
 	var request Request
 	err := json.Unmarshal([]byte(incomingRequest), &request)
 
@@ -132,7 +208,7 @@ func (h Handler) ProcessRequest(incomingRequest string) (jsonResponse string, ok
 	case DeleteSpid:
 		handler = h.deleteSpid
 	default:
-		handler = invalidRequest
+		handler = invalidResponse
 	}
 	response, ok := handler(request)
 	if !ok {

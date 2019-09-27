@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"main/errorHandling"
 	"main/requestHandling"
+	"main/tcpServer"
 	"os"
 	"runtime"
 	"strings"
 )
-
-const BasePath = "D:/GitReps/SD-College-Course-Work/src/spidTCPServer"
 
 func main() {
 	arguments := os.Args
@@ -22,7 +22,9 @@ func main() {
 		}
 		return
 	}
-	handler := requestHandling.NewHandler(BasePath)
+	basePath, err := os.Getwd()
+	errorHandling.HandleFatal(err)
+	handler := requestHandling.NewHandler(basePath)
 	port := arguments[1]
-	handler.Listen(port)
+	tcpServer.Listen(port, handler)
 }

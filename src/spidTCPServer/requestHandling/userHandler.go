@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"main/entities"
 	"main/gps"
+	"main/utils"
 	"time"
 )
 
@@ -21,7 +22,7 @@ func (h Handler) queryUser(userID string) (entities.User, error) {
 }
 
 func (h Handler) getUserInfo(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["user_id"] == nil {
 		response.Body["message"] = "Missing user id."
 		return response, false
@@ -37,7 +38,7 @@ func (h Handler) getUserInfo(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) registerUser(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["user_name"] == nil {
 		response.Body["message"] = "Missing new user's name."
 		return response, false
@@ -54,8 +55,8 @@ func (h Handler) registerUser(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) updateUserLocation(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
-	missingKey := checkKeys(request.Body, []string{"location", "user_id"})
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"location", "user_id"})
 	if missingKey != "" {
 		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
 		return response, false
@@ -100,7 +101,7 @@ func (h Handler) updateUserLocation(request Request) (response Response, ok bool
 }
 
 func (h Handler) deleteUser(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["user_id"] == nil {
 		response.Body["message"] = "Missing user id."
 		return response, false
@@ -122,8 +123,8 @@ func (h Handler) deleteUser(request Request) (response Response, ok bool) {
 }
 
 func (h Handler) requestAssociation(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
-	missingKey := checkKeys(request.Body, []string{"user_id", "spid_id"})
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"user_id", "spid_id"})
 	if missingKey != "" {
 		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
 		return response, false
@@ -155,7 +156,7 @@ func (h Handler) requestAssociation(request Request) (response Response, ok bool
 }
 
 func (h Handler) requestDissociation(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
+	response = defaultResponse(request)
 	if request.Body["user_id"] == nil {
 		response.Body["message"] = "Missing user id."
 		return response ,false
@@ -183,8 +184,8 @@ func (h Handler) requestDissociation(request Request) (response Response, ok boo
 }
 
 func (h Handler) requestLockChange(request Request) (response Response, ok bool) {
-	response = DefaultResponse(request)
-	missingKey := checkKeys(request.Body, []string{"user_id", "spid_id", "lock_state"})
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"user_id", "spid_id", "lock_state"})
 	if missingKey != "" {
 		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
 		return response, false
