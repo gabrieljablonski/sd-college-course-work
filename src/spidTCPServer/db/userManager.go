@@ -7,73 +7,81 @@ import (
 	"main/entities"
 )
 
-// TODO: error handling for file stuff
-
-func (d Manager) GetUsersFromFile() entities.Users {
+func (m Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
-	users := entities.UnmarshalUsers(d.FM.ReadFile(UsersDefaultLocation))
-	log.Printf("Read users: %s.", users)
+	usersFromFile, err := m.FileManager.ReadFile(UsersDefaultLocation)
+	if err != nil {
+		log.Fatalf("Failed to read users from file: %s", err)
+		return entities.Users{}
+	}
+	users, err := entities.UnmarshalUsers(usersFromFile)
+	if err != nil {
+		log.Fatalf("Failed to parse users from file: %s", err)
+		return entities.Users{}
+	}
+	if users.Users == nil {
+		users.Users = map[uuid.UUID]entities.User{}
+	}
+	log.Printf("Read users: %s.", users.ToString())
 	return users
 }
 
-func (d Manager) WriteUsersToFile(users []byte) {
-	log.Printf("Writing users: %s", string(users))
-	d.FM.WriteToFile(UsersDefaultLocation, users)
+func (m Manager) WriteUsersToFile() {
+	marshaledUsers, err := entities.MarshalUsers(m.Users)
+	if err != nil {
+		log.Printf("Failed to write users to file: %s", err)
+		return
+	}
+	log.Printf("Writing users: %s", m.Users.ToString())
+	err = m.FileManager.WriteToFile(UsersDefaultLocation, marshaledUsers)
+	if err != nil {
+		log.Printf("Failed to write users to file: %s", err)
+		return
+	}
 	log.Print("Finished writing users.")
 }
 
-func (d Manager) writeUser(user entities.User) {
-	users := d.GetUsersFromFile()
-	users.Users[user.ID] = user
-	log.Printf("Writing user: %s.", user)
-	d.WriteUsersToFile(entities.MarshalUsers(users))
-	log.Print("User written.")
-}
-
-func (d Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
-	users := d.GetUsersFromFile()
+func (m Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
 	log.Printf("Querying user with ID %s.", userID)
-	_, ok := users.Users[userID]
+	_, ok := m.Users.Users[userID]
 	if !ok {
 		err := fmt.Errorf("user with ID %s not found", userID)
 		log.Print(err)
 		return entities.User{}, err
 	}
-	log.Printf("User found: %s", users.Users[userID])
-	return users.Users[userID], nil
+	log.Printf("User found: %s", m.Users.Users[userID].ToString())
+	return m.Users.Users[userID], nil
 }
 
-func (d Manager) RegisterUser(user entities.User) error {
-	_, err := d.QueryUser(user.ID)
-	if err != nil {
-		return err
+func (m *Manager) RegisterUser(user entities.User) error {
+	_, err := m.QueryUser(user.ID)
+	if err == nil {
+		return fmt.Errorf("user with id %s already exists", user.ID)
 	}
 	log.Printf("Registering user: %s.", user)
-	d.writeUser(user)
+	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
 	return nil
 }
 
-func (d Manager) UpdateUser(user entities.User) error {
-	_, err := d.QueryUser(user.ID)
+func (m *Manager) UpdateUser(user entities.User) error {
+	_, err := m.QueryUser(user.ID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Updating user: %s.", user)
-	d.writeUser(user)
+	m.Users.Users[user.ID] = user
 	log.Print("User updated.")
 	return nil
 }
 
-func (d Manager) DeleteUser(user entities.User) error {
-	_, err := d.QueryUser(user.ID)
+func (m *Manager) DeleteUser(user entities.User) error {
+	_, err := m.QueryUser(user.ID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Deleting user: %s.", user)
-	users := d.GetUsersFromFile()
-	delete(users.Users, user.ID)
-	d.WriteUsersToFile(entities.MarshalUsers(users))
+	delete(m.Users.Users, user.ID)
 	log.Print("User deleted.")
 	return nil
 }

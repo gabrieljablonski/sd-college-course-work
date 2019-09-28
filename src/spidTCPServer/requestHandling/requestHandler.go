@@ -29,6 +29,7 @@ const (
 
 	DefaultLogPath     = "requestHandling/request_logs.spd"
 	DefaultMaxBufferedRequests = 100
+	DefaultWriteToFilePeriod   = 5000*time.Millisecond
 )
 
 type GenericMessage struct {
@@ -51,9 +52,9 @@ type Response struct {
 }
 
 type Handler struct {
-	Manager db.Manager
+	Manager           db.Manager
 	OutGoingResponses chan GenericMessage
-	Logger *log.Logger
+	Logger            *log.Logger
 }
 
 func NewHandler(basePath string) Handler {
@@ -65,9 +66,20 @@ func NewHandler(basePath string) Handler {
 		OutGoingResponses: make(chan GenericMessage, DefaultMaxBufferedRequests),
 		Logger: log.New(logFile, "", 0),
 	}
-	h.LoadFromFile()
+	h.Manager.LoadFromFile()
+	go h.WriteToFilePeriodically(DefaultWriteToFilePeriod)
 	go h.handleLoggedRequests()
 	return h
+}
+
+func (h Handler) WriteToFilePeriodically(period time.Duration) {
+	for {
+		time.Sleep(period)
+		//TODO: determine which was the last processed request
+		log.Print("Writing users and spids to file.")
+		h.Manager.WriteUsersToFile()
+		h.Manager.WriteSpidsToFile()
+	}
 }
 
 func defaultResponse(request Request) Response {
@@ -96,7 +108,7 @@ func (h Handler) QueueRequest(requestMessage GenericMessage) error {
 	return err
 }
 
-func (h Handler) cleanUp(discardedRequestSum [16]byte) {
+func (h *Handler) cleanUp(discardedRequestSum [16]byte) {
 	for {
 		responseMessage := <-h.OutGoingResponses
 		if responseMessage.Sum == discardedRequestSum {
@@ -106,7 +118,7 @@ func (h Handler) cleanUp(discardedRequestSum [16]byte) {
 	}
 }
 
-func (h Handler) GetResponse(requestMessage GenericMessage, timeout time.Duration) (GenericMessage, error) {
+func (h *Handler) GetResponse(requestMessage GenericMessage, timeout time.Duration) (GenericMessage, error) {
 	for {
 		select {
 		case responseMessage := <-h.OutGoingResponses:
@@ -131,7 +143,7 @@ func (h Handler) GetResponse(requestMessage GenericMessage, timeout time.Duratio
 	}
 }
 
-func (h Handler) handleLoggedRequests() {
+func (h *Handler) handleLoggedRequests() {
 	logPath := h.Manager.FileManager.BasePath + string(os.PathSeparator) + DefaultLogPath
 	logTail, err := tail.TailFile(logPath, tail.Config{
 		Location:    nil,
