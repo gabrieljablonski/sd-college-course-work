@@ -122,6 +122,8 @@ func (h Handler) deleteUser(request Request) (response Response, ok bool) {
 	return response, true
 }
 
+//TODO: send message to spid with association/lock change
+
 func (h Handler) requestAssociation(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	missingKey := utils.CheckKeys(request.Body, []string{"user_id", "spid_id"})

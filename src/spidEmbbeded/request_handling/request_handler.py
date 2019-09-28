@@ -27,7 +27,7 @@ class RequestHandler:
             logging.critical('Failed to end connection.')
 
     def _make_request(self, request: Request):
-        self._con.send(request.as_json)
+        self._con.send(request.to_json())
 
     def _get_response(self):
         return Response.from_json(self._con.receive())
@@ -43,7 +43,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get("spid"))
-            logging.info(f"Found spid: `{s.as_json}`")
+            logging.info(f"Found spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to query spid: `{response.body.get('message')}`")
         return Spid()
@@ -58,7 +58,42 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get("spid"))
-            logging.info(f"Registered spid: `{s.as_json}`")
+            logging.info(f"Registered spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to register spid: `{response.body.get('message')}`")
+        return Spid()
+
+    def update_spid_location(self, spid: Spid):
+        request = Request(
+            id=uuid4(),
+            type=RT.UPDATE_SPID_LOCATION,
+            body={
+                "spid_id": spid.id,
+                "location": spid.location,
+            }
+        )
+        logging.info(f"Updating spid {spid.id} location to {spid.location}...")
+        self._make_request(request)
+        response = self._get_response()
+        if response.ok:
+            s = Spid.from_dict(response.body.get("spid"))
+            logging.info(f"Updated spid: `{s.to_json()}`")
+            return s
+        logging.error(f"Failed to update spid: `{response.body.get('message')}`")
+        return Spid()
+
+    def delete_spid(self, uid: UUID):
+        request = Request(
+            id=uuid4(),
+            type=RT.UPDATE_SPID_LOCATION,
+            body={"spid_id": uid}
+        )
+        logging.info(f"Deleting spid with id {uid}...")
+        self._make_request(request)
+        response = self._get_response()
+        if response.ok:
+            s = Spid.from_dict(response.body.get("spid"))
+            logging.info(f"Deleted spid: `{s.to_json()}`")
+            return s
+        logging.error(f"Failed to delete spid: `{response.body.get('message')}`")
         return Spid()

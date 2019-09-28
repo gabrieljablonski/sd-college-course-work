@@ -29,9 +29,8 @@ class Request:
     def from_json(cls, json_data):
         return cls(**json.loads(json_data))
 
-    @property
-    def as_json(self):
-        return json.dumps(self.__dict__, cls=UUIDEncoder)
+    def to_json(self, indent=None):
+        return json.dumps(self.__dict__, cls=UUIDEncoder, indent=indent)
 
 
 class Response:
