@@ -33,7 +33,7 @@ const (
 
 	DefaultLogPath     = "requestHandling/request_logs.spd"
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 5000*time.Second
+	DefaultWriteToFilePeriod   = 5000*time.Millisecond
 )
 
 type GenericMessage struct {
