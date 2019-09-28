@@ -1,5 +1,5 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from tcp_client import TCPClient
 from request_handling.request_definitions import RequestType as RT, Request, Response
@@ -25,17 +25,33 @@ class RequestHandler:
             logging.info('Connection ended.')
         else:
             logging.critical('Failed to end connection.')
-            
+
     def _make_request(self, request: Request):
         self._con.send(request.as_json)
 
     def _get_response(self):
         return Response.from_json(self._con.receive())
 
+    def get_spid_info(self, uuid: UUID) -> Spid:
+        request = Request(
+            id=uuid4(),
+            type=RT.GET_SPID_INFO,
+            body={"spid_id": uuid}
+        )
+        logging.info(f"Querying spid with id {uuid.hex}...")
+        self._make_request(request)
+        response = self._get_response()
+        if response.ok:
+            s = Spid.from_dict(response.body.get("spid"))
+            logging.info(f"Found spid: `{s.as_json}`")
+            return s
+        logging.error(f"Failed to query spid: `{response.body.get('message')}`")
+        return Spid()
+
     def register_spid(self) -> Spid:
         request = Request(
-            request_id=uuid4(),
-            request_type=RT.REGISTER_SPID,
+            id=uuid4(),
+            type=RT.REGISTER_SPID,
         )
         logging.info('Registering new spid...')
         self._make_request(request)
@@ -44,3 +60,5 @@ class RequestHandler:
             s = Spid.from_dict(response.body.get("spid"))
             logging.info(f"Registered spid: `{s.as_json}`")
             return s
+        logging.error(f"Failed to register spid: `{response.body.get('message')}`")
+        return Spid()

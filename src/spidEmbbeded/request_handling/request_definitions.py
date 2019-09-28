@@ -18,12 +18,12 @@ class RequestType:
 class Request:
     def __init__(
             self,
-            request_id: UUID = None,
-            request_type: str = None,
-            request_body: dict = None):
-        self.id = request_id
-        self.type = request_type
-        self.body = request_body
+            id: UUID = None,
+            type: str = None,
+            body: dict = None):
+        self.id = id
+        self.type = type
+        self.body = body
 
     @classmethod
     def from_json(cls, json_data):

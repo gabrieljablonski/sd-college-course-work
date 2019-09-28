@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from request_handling.request_handler import RequestHandler
 
@@ -16,5 +17,7 @@ if __name__ == '__main__':
 
     handler = RequestHandler(args.host, args.port)
     handler.connect()
-    print(handler.register_spid())
+    s = handler.get_spid_info(UUID("13e711ab-8021-4d2f-94e3-d20017fd3951"))
+
+
     handler.close_connection()
