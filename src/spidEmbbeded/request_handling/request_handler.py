@@ -42,7 +42,7 @@ class RequestHandler:
         self._make_request(request)
         response = self._get_response()
         if response.ok:
-            s = Spid.from_dict(response.body.get("spid"))
+            s = Spid.from_dict(response.body.get('spid'))
             logging.info(f"Found spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to query spid: `{response.body.get('message')}`")
@@ -57,13 +57,13 @@ class RequestHandler:
         self._make_request(request)
         response = self._get_response()
         if response.ok:
-            s = Spid.from_dict(response.body.get("spid"))
+            s = Spid.from_dict(response.body.get('spid'))
             logging.info(f"Registered spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to register spid: `{response.body.get('message')}`")
         return Spid()
 
-    def update_spid_location(self, spid: Spid):
+    def update_spid_location(self, spid: Spid) -> Spid:
         request = Request(
             id=uuid4(),
             type=RT.UPDATE_SPID_LOCATION,
@@ -76,23 +76,23 @@ class RequestHandler:
         self._make_request(request)
         response = self._get_response()
         if response.ok:
-            s = Spid.from_dict(response.body.get("spid"))
+            s = Spid.from_dict(response.body.get('spid'))
             logging.info(f"Updated spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to update spid: `{response.body.get('message')}`")
         return Spid()
 
-    def delete_spid(self, uid: UUID):
+    def delete_spid(self, uid: UUID) -> Spid:
         request = Request(
             id=uuid4(),
-            type=RT.UPDATE_SPID_LOCATION,
+            type=RT.DELETE_SPID,
             body={"spid_id": uid}
         )
         logging.info(f"Deleting spid with id {uid}...")
         self._make_request(request)
         response = self._get_response()
         if response.ok:
-            s = Spid.from_dict(response.body.get("spid"))
+            s = Spid.from_dict(response.body.get('spid'))
             logging.info(f"Deleted spid: `{s.to_json()}`")
             return s
         logging.error(f"Failed to delete spid: `{response.body.get('message')}`")
