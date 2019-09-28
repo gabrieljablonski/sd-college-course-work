@@ -31,7 +31,7 @@ def main(host, port):
             valid = True
             print('-- registered')
         if cmd == 'query':
-            uuid = input('<< id: ')
+            uuid = input('<< id (uuid hex): ')
             spid = handler.get_spid_info(UUID(uuid))
             if spid.id.int == 0:
                 print('-- spid not found')
@@ -42,8 +42,8 @@ def main(host, port):
             if not valid:
                 print('-- register or query first')
                 continue
-            lat = input('<< latitude: ')
-            lon = input('<< longitude: ')
+            lat = input('<< latitude (-90,90): ')
+            lon = input('<< longitude (-180,180): ')
             try:
                 lat = float(lat)
                 lon = float(lon)
