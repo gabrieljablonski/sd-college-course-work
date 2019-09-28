@@ -1,3 +1,19 @@
 {
-    "spids": {}
+    "spids": {
+        "81f0c50a-a366-4c8b-a6ca-097e712ee638": {
+            "id": "81f0c50a-a366-4c8b-a6ca-097e712ee638",
+            "battery_level": 100,
+            "lock": {
+                "override": false,
+                "pending": false,
+                "state": "locked"
+            },
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "last_updated": "1969-12-31T21:00:00-03:00",
+            "current_user_id": "00000000-0000-0000-0000-000000000000"
+        }
+    }
 }

@@ -40,7 +40,7 @@ func (h Handler) getUserInfo(request Request) (response Response, ok bool) {
 func (h Handler) registerUser(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	if request.Body["user_name"] == nil {
-		response.Body["message"] = "Missing new user's name."
+		response.Body["message"] = "Missing key `user_name`."
 		return response, false
 	}
 	user := entities.NewUser(request.Body["user_name"].(string))

@@ -3,7 +3,7 @@ package entities
 import (
 	"encoding/json"
 	"github.com/google/uuid"
-	eh "main/errorHandling"
+	"log"
 	"main/gps"
 	"time"
 )
@@ -16,8 +16,26 @@ type User struct {
 	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
 }
 
+func (u User) ToString() string {
+	s, err := json.Marshal(u)
+	if err != nil {
+		log.Printf("Failed to convert user to string: %s", err)
+		return ""
+	}
+	return string(s)
+}
+
 type Users struct {
 	Users map[uuid.UUID]User `json:"users"`
+}
+
+func (u Users) ToString() string {
+	s, err := json.Marshal(u)
+	if err != nil {
+		log.Printf("Failed to convert users to string: %s", err)
+		return ""
+	}
+	return string(s)
 }
 
 func NewUser(name string) User {
@@ -30,26 +48,21 @@ func NewUser(name string) User {
 	}
 }
 
-func (u User) Marshal() []byte {
-	marshaledUser, err := json.Marshal(u)
-	eh.HandleFatal(err)
-	return marshaledUser
+func (u User) Marshal() ([]byte, error) {
+	return json.Marshal(u)
 }
 
-func MarshalUsers(users Users) []byte {
-	marshaledUsers, err := json.MarshalIndent(users, "", "    ")
-	eh.HandleFatal(err)
-	return marshaledUsers
+func MarshalUsers(users Users) ([]byte, error) {
+	return json.MarshalIndent(users, "", "    ")
 }
 
-func UnmarshalUsers(marshaledUsers []byte) Users {
+func UnmarshalUsers(marshaledUsers []byte) (Users, error) {
 	var users Users
 	err := json.Unmarshal(marshaledUsers, &users)
-	eh.HandleFatal(err)
-	return users
+	return users, err
 }
 
-func (u User) UpdateLocation(position gps.GlobalPosition) {
+func (u *User) UpdateLocation(position gps.GlobalPosition) {
 	u.Location = position
 	u.LastUpdated = time.Now()
 }

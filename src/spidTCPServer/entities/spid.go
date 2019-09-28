@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
-	eh "main/errorHandling"
+	"log"
 	"main/gps"
 	"time"
 )
@@ -24,8 +24,26 @@ type Spid struct {
 	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
 
+func (s Spid) ToString() string {
+	ss, err := json.Marshal(s)
+	if err != nil {
+		log.Printf("Failed to convert spid to string: %s", err)
+		return ""
+	}
+	return string(ss)
+}
+
 type Spids struct {
 	Spids map[uuid.UUID]Spid `json:"spids"`
+}
+
+func (s Spids) ToString() string {
+	ss, err := json.Marshal(s)
+	if err != nil {
+		log.Printf("Failed to convert spids to string: %s", err)
+		return ""
+	}
+	return string(ss)
 }
 
 func NewSpid() Spid {
@@ -49,31 +67,26 @@ func IsValidLockState(lockState string) bool {
 	return false
 }
 
-func (s Spid) Marshal() []byte {
-	marshaledSpid, err := json.Marshal(s)
-	eh.HandleFatal(err)
-	return marshaledSpid
+func (s Spid) Marshal() ([]byte, error) {
+	return json.Marshal(s)
 }
 
-func MarshalSpids(spids Spids) []byte {
-	marshaledSpids, err := json.MarshalIndent(spids, "", "    ")
-	eh.HandleFatal(err)
-	return marshaledSpids
+func MarshalSpids(spids Spids) ([]byte, error) {
+	return json.MarshalIndent(spids, "", "    ")
 }
 
-func UnmarshalSpids(marshaledSpids []byte) Spids {
+func UnmarshalSpids(marshaledSpids []byte) (Spids, error) {
 	var spids Spids
 	err := json.Unmarshal(marshaledSpids, &spids)
-	eh.HandleFatal(err)
-	return spids
+	return spids, err
 }
 
-func (s Spid) UpdateLocation(position gps.GlobalPosition) {
+func (s *Spid) UpdateLocation(position gps.GlobalPosition) {
 	s.Location = position
 	s.LastUpdated = time.Now()
 }
 
-func (s Spid) UpdateLockState(lockState string, userID uuid.UUID) error {
+func (s *Spid) UpdateLockState(lockState string, userID uuid.UUID) error {
 	if userID != s.CurrentUserID {
 		return fmt.Errorf("user with id %s not associated with spid", userID)
 	}

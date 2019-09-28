@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
+	"log"
 	"main/errorHandling"
 	"os"
 )
@@ -10,25 +12,35 @@ type FileManager struct {
 	BasePath string
 }
 
-func (f FileManager) ReadFile(path string) []byte {
+func (f FileManager) ReadFile(path string) ([]byte, error) {
 	path = f.BasePath + path
 	file, err := os.Open(path)
-	errorHandling.HandleFatal(err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file %s: %s", path, err)
+	}
 	defer errorHandling.HandleCloseFile(file, path)
 
 	content, err := ioutil.ReadAll(file)
-	errorHandling.HandleFatal(err)
-	return content
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file %s: %s", path, err)
+	}
+	return content, nil
 }
 
-func (f FileManager) WriteToFile(path string, content []byte) {
+func (f FileManager) WriteToFile(path string, content []byte) error {
 	path = f.BasePath + path
-	file, err := os.OpenFile(path, os.O_WRONLY, 0644)
-	errorHandling.HandleFatal(err)
+	file, err := os.OpenFile(path, os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to open file %s: %s", path, err)
+	}
 	defer errorHandling.HandleCloseFile(file, path)
 
 	_, err = file.Write(content)
-	errorHandling.HandleFatal(err)
+	if err != nil {
+		return fmt.Errorf("failed to write to file %s: %s", path, err)
+	}
+	log.Printf("Wrote to file: `%s`", content)
+	return nil
 }
 
 
