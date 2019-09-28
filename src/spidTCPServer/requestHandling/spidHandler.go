@@ -68,6 +68,11 @@ func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool)
 		return response, false
 	}
 	spid.BatteryLevel = uint8(batteryLevel)
+	err = h.Manager.UpdateSpid(spid)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to update spid: `%s`", err)
+		return response, false
+	}
 	response.Body["message"] = "Battery level updated."
 	response.Body["spid"] = spid
 	response.Ok = true

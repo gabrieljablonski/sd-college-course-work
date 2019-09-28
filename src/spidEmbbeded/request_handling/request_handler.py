@@ -13,8 +13,8 @@ class RequestHandler:
     def __init__(self, host, port):
         self._con = TCPClient(host, port)
 
-    def connect(self):
-        self._con.connect()
+    def connect(self, try_forever=False):
+        self._con.connect(try_forever=try_forever)
 
     def close_connection(self):
         logging.info('Ending connection...')
@@ -27,10 +27,24 @@ class RequestHandler:
             logging.critical('Failed to end connection.')
 
     def _make_request(self, request: Request):
-        self._con.send(request.to_json())
+        while True:
+            try:
+                self._con.send(request.to_json())
+                return
+            except ConnectionResetError as e:
+                logging.error(e)
+                logging.error('Lost connection to host, retrying...')
+                self._con.connected = False
+                self.connect(try_forever=True)
 
     def _get_response(self):
-        return Response.from_json(self._con.receive())
+        while True:
+            try:
+                return Response.from_json(self._con.receive())
+            except ConnectionResetError as e:
+                logging.error('Lost connection to host, retrying...')
+                self._con.connected = False
+                self.connect(try_forever=True)
 
     def get_spid_info(self, uuid: UUID) -> Spid:
         request = Request(
@@ -43,7 +57,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get('spid'))
-            logging.info(f"Found spid: `{s.to_json()}`")
+            logging.info(f"Found spid.")
             return s
         logging.error(f"Failed to query spid: `{response.body.get('message')}`")
         return Spid()
@@ -58,7 +72,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get('spid'))
-            logging.info(f"Registered spid: `{s.to_json()}`")
+            logging.info(f"Registered spid.")
             return s
         logging.error(f"Failed to register spid: `{response.body.get('message')}`")
         return Spid()
@@ -77,7 +91,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get('spid'))
-            logging.info(f"Updated spid: `{s.to_json()}`")
+            logging.info(f"Updated spid.")
             return s
         logging.error(f"Failed to update spid: `{response.body.get('message')}`")
         return Spid()
@@ -93,7 +107,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get('spid'))
-            logging.info(f"Deleted spid: `{s.to_json()}`")
+            logging.info(f"Deleted spid.")
             return s
         logging.error(f"Failed to delete spid: `{response.body.get('message')}`")
         return Spid()

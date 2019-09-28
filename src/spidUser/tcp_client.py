@@ -1,5 +1,6 @@
 import logging
 import socket
+from time import sleep
 
 
 def _enforce_connection(f):
@@ -14,6 +15,7 @@ def _enforce_connection(f):
 
 class TCPClient:
     DEFAULT_BUFFER_SIZE = 4096
+    DEFAULT_WAIT_RETRY = 3  # in seconds
 
     def __init__(self, host, port):
         self.host = host
@@ -22,17 +24,26 @@ class TCPClient:
 
         self._s = socket.socket()
 
-    def connect(self):
+    def connect(self, try_forever=False):
         self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            self._s.connect((self.host, self.port))
-        except socket.timeout as e:
-            logging.critical(f"Failed to connect to {self.host}:{self.port}: `{e}`")
-        except ConnectionRefusedError as e:
-            logging.critical(f"Connection refused ({self.host}:{self.port}): `{e}`")
-        else:
-            logging.info(f"Connected to host {self.host}:{self.port}.")
-            self.connected = True
+        while True:
+            try:
+                self._s.connect((self.host, self.port))
+                logging.info(f"Connected to host {self.host}:{self.port}.")
+                self.connected = True
+                return
+            except socket.timeout as e:
+                logging.critical(f"Connection to {self.host}:{self.port} timed out: `{e}`")
+                if not try_forever:
+                    raise e
+            except ConnectionRefusedError as e:
+                logging.critical(f"Connection refused ({self.host}:{self.port}): `{e}`")
+                if not try_forever:
+                    raise e
+            if not try_forever:
+                break
+            logging.info('Retrying connection...')
+            sleep(self.DEFAULT_WAIT_RETRY)
 
     @_enforce_connection
     def close(self):

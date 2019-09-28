@@ -1,8 +1,28 @@
 {
     "users": {
+        "250aedf3-5eec-4f26-ba31-0f8f6dc8923d": {
+            "id": "250aedf3-5eec-4f26-ba31-0f8f6dc8923d",
+            "name": "joao da silva",
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "last_updated": "1969-12-31T21:00:00-03:00",
+            "current_spid_id": "ebd0d51f-f719-44b8-82f3-309836f282ba"
+        },
         "881cd0a1-e1f6-4843-b4e5-2cee318bce13": {
             "id": "881cd0a1-e1f6-4843-b4e5-2cee318bce13",
             "name": "joao",
+            "location": {
+                "latitude": 0,
+                "longitude": 0
+            },
+            "last_updated": "1969-12-31T21:00:00-03:00",
+            "current_spid_id": "00000000-0000-0000-0000-000000000000"
+        },
+        "8a9da91c-cb11-4d9c-ac95-1e5e8bf5b434": {
+            "id": "8a9da91c-cb11-4d9c-ac95-1e5e8bf5b434",
+            "name": "joao da silva",
             "location": {
                 "latitude": 0,
                 "longitude": 0

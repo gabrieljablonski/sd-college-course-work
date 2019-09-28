@@ -14,8 +14,10 @@ def main(host, port):
         cmd = input('>> ')
         if not cmd:
             continue
+
         if cmd == 'exit':
             break
+
         if cmd == 'view':
             if not valid:
                 print('-- register or query first')
@@ -26,19 +28,52 @@ def main(host, port):
                 print(f"-- spid is associated to user {spid.current_user_id.hex}")
             else:
                 print('-- no user associated')
-        if cmd == 'register':
+
+        elif cmd == 'load':
+            fn = input('<< filename: ')
+            with open(fn) as f:
+                uid = f.readline()
+            try:
+                uid = UUID(hex=uid)
+            except ValueError as e:
+                print(f"-- invalid id: `{e}`")
+            else:
+                spid.id = uid
+                valid = True
+                print(f"-- loaded id `{spid.id.hex}`")
+
+        elif cmd == 'register':
             spid = handler.register_spid()
             valid = True
             print('-- registered')
-        if cmd == 'query':
-            uuid = input('<< id (uuid hex): ')
-            spid = handler.get_spid_info(UUID(uuid))
+
+        elif cmd == 'query':
+            if not valid:
+                uuid = input('<< id (uuid hex): ')
+                try:
+                    uuid = UUID(uuid)
+                except ValueError as e:
+                    print(f"-- invalid uuid: `{e}`")
+                    continue
+            else:
+                uuid = spid.id
+            spid = handler.get_spid_info(uuid)
             if spid.id.int == 0:
                 print('-- spid not found')
                 continue
             valid = True
             print('-- spid found')
-        if cmd == 'update':
+
+        elif cmd == 'save':
+            if not valid:
+                print('-- register or query first')
+                continue
+            fn = input('<< filename: ')
+            with open(fn, 'w') as f:
+                f.write(spid.id.hex)
+            print(f"-- wrote spid id to file {fn}")
+
+        elif cmd == 'update location':
             if not valid:
                 print('-- register or query first')
                 continue
@@ -57,6 +92,27 @@ def main(host, port):
             spid.location["longitude"] = lon
             spid = handler.update_spid_location(spid)
             print('-- location updated')
+
+        elif cmd == 'delete':
+            if not valid:
+                print('-- register or query first')
+                continue
+            spid = handler.delete_spid(spid.id)
+            print('-- spid deleted')
+
+        else:
+            available_commands = '\n\t-'.join((
+                'view',
+                'load',
+                'register',
+                'query',
+                'save',
+                'update location',
+                'delete',
+                'exit',
+            ))
+            print(f"-- Available commands:\n\t-"
+                  f"{available_commands}")
     handler.close_connection()
 
 

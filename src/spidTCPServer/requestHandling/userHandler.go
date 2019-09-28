@@ -152,6 +152,16 @@ func (h Handler) requestAssociation(request Request) (response Response, ok bool
 	}
 	spid.CurrentUserID = user.ID
 	user.CurrentSpidID = spid.ID
+	err = h.Manager.UpdateUser(user)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to update user info: `%s`", err)
+		return response, false
+	}
+	err = h.Manager.UpdateSpid(spid)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to update spid info: `%s`", err)
+		return response, false
+	}
 	response.Body["message"] = fmt.Sprintf("User %s associated to spid %s.", user.ID, spid.ID)
 	response.Body["user"] = user
 	response.Ok = true
@@ -213,6 +223,7 @@ func (h Handler) requestSpidInfo(request Request) (response Response, ok bool) {
 	}
 	response.Body["spid"] = map[string]interface{}{
 		"id": spid.ID,
+		"location": spid.Location,
 		"battery_level": spid.BatteryLevel,
 		"lock_state": spid.Lock}
 	response.Ok = true
@@ -253,9 +264,18 @@ func (h Handler) requestLockChange(request Request) (response Response, ok bool)
 		response.Body["message"] = fmt.Sprintf("Failed to update spid lock state: %s", err)
 		return response, false
 	}
+	err = h.Manager.UpdateSpid(spid)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to update spid: %s", err)
+		return response, false
+	}
 	// TODO: call back when spid checks the pending update
 	response.Body["message"] = fmt.Sprintf("Lock state for spid %s updated to `%s`.", spid.ID, lockState)
-	response.Body["user"] = user
+	response.Body["spid"] = map[string]interface{}{
+		"id": spid.ID,
+		"location": spid.Location,
+		"battery_level": spid.BatteryLevel,
+		"lock_state": spid.Lock}
 	response.Ok = true
 	return response, true
 }

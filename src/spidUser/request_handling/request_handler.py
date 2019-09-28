@@ -1,5 +1,6 @@
 import logging
 from uuid import uuid4, UUID
+from time import sleep
 
 from tcp_client import TCPClient
 from request_handling.request_definitions import RequestType as RT, Request, Response
@@ -14,8 +15,8 @@ class RequestHandler:
     def __init__(self, host, port):
         self._con = TCPClient(host, port)
 
-    def connect(self):
-        self._con.connect()
+    def connect(self, try_forever=False):
+        self._con.connect(try_forever=try_forever)
 
     def close_connection(self):
         logging.info('Ending connection...')
@@ -28,10 +29,24 @@ class RequestHandler:
             logging.critical('Failed to end connection.')
 
     def _make_request(self, request: Request):
-        self._con.send(request.to_json())
+        while True:
+            try:
+                self._con.send(request.to_json())
+                return
+            except ConnectionResetError as e:
+                logging.error(e)
+                logging.error('Lost connection to host, retrying...')
+                self._con.connected = False
+                self.connect(try_forever=True)
 
     def _get_response(self):
-        return Response.from_json(self._con.receive())
+        while True:
+            try:
+                return Response.from_json(self._con.receive())
+            except ConnectionResetError as e:
+                logging.error('Lost connection to host, retrying...')
+                self._con.connected = False
+                self.connect(try_forever=True)
 
     def get_user_info(self, uuid: UUID) -> User:
         request = Request(
@@ -44,7 +59,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             u = User.from_dict(response.body.get('user'))
-            logging.info(f"Found user: `{u.to_json()}`")
+            logging.info(f"User found.")
             return u
         logging.error(f"Failed to query user: `{response.body.get('message')}`")
         return User()
@@ -60,7 +75,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             u = User.from_dict(response.body.get('user'))
-            logging.info(f"Registered user: `{u.to_json()}`")
+            logging.info(f"Registered user.")
             return u
         logging.error(f"Failed to register user: `{response.body.get('message')}`")
         return User()
@@ -79,7 +94,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             u = User.from_dict(response.body.get('user'))
-            logging.info(f"Updated user: `{u.to_json()}`")
+            logging.info(f"Updated user.")
             return u
         logging.error(f"Failed to update user: `{response.body.get('message')}`")
         return User()
@@ -95,7 +110,7 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             u = User.from_dict(response.body.get('user'))
-            logging.info(f"Deleted user: `{u.to_json()}`")
+            logging.info(f"Deleted user.")
             return u
         logging.error(f"Failed to delete user: `{response.body.get('message')}`")
         return User()
@@ -143,12 +158,12 @@ class RequestHandler:
         response = self._get_response()
         if response.ok:
             s = Spid.from_dict(response.body.get('spid'))
-            logging.info(f"Spid info: `{s.to_json()}`")
+            logging.info(f"Spid info acquired.")
             return s
         logging.error(f"Failed to get info for spid: `{response.body.get('message')}`")
         return Spid()
 
-    def change_lock_state(self, u_uuid: UUID, s_uuid: UUID, lock_state: str) -> User:
+    def change_lock_state(self, u_uuid: UUID, s_uuid: UUID, lock_state: str) -> Spid:
         request = Request(
             id=uuid4(),
             type=RT.REQUEST_LOCK_CHANGE,
@@ -158,8 +173,9 @@ class RequestHandler:
         self._make_request(request)
         response = self._get_response()
         if response.ok:
-            u = User.from_dict(response.body.get('user'))
+            s = Spid.from_dict(response.body.get('spid'))
             logging.info('Lock state changed.')
-            return u
-        logging.error(f"Failed to change lock state: `{response.body.get('message')}`")
-        return User()
+            return s
+        msg = f"Failed to change lock state: `{response.body.get('message')}`"
+        logging.error(msg)
+        raise Exception(msg)
