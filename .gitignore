@@ -1,3 +1,5 @@
 .idea/
 uuid/
 *.exe
+venv/
+pkg/

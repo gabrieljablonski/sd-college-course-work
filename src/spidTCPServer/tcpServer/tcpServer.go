@@ -29,7 +29,8 @@ func handleConnection(c net.Conn, handler requestHandling.Handler) {
 
 		incomingMessage := strings.TrimSpace(string(incomingData))
 		if incomingMessage == DefaultEndConnection {
-			log.Printf("Ending connection with %s.", remoteAddr)
+			log.Printf("Ending connection requested by %s.", remoteAddr)
+			_, _ = c.Write([]byte("ENDING CONNECTION"))
 			break
 		}
 		requestMessage := requestHandling.GenericMessage{
@@ -49,7 +50,7 @@ func handleConnection(c net.Conn, handler requestHandling.Handler) {
 		if err != nil {
 			log.Printf("Error getting response: `%s`", err)
 		}
-		log.Printf("%s: Sending response: `%s`", remoteAddr, responseMessage.Message)
+		log.Printf("%s: Sending response.", remoteAddr)
 		_, err = c.Write([]byte(responseMessage.Message + "\n"))
 		if err != nil {
 			log.Printf("Connection with %s lost.", remoteAddr)
