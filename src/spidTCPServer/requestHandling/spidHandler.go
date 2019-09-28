@@ -69,7 +69,7 @@ func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool)
 	}
 	spid.BatteryLevel = uint8(batteryLevel)
 	response.Body["message"] = "Battery level updated."
-	response.Body["battery_level"] = spid.BatteryLevel
+	response.Body["spid"] = spid
 	response.Ok = true
 	return response, true
 }
@@ -115,7 +115,7 @@ func (h Handler) updateSpidLocation(request Request) (response Response, ok bool
 		return response, false
 	}
 	response.Body["message"] = "Location updated."
-	response.Body["location"] = spid.Location
+	response.Body["spid"] = spid
 	response.Ok = true
 	return response, true
 }

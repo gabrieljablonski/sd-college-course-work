@@ -27,9 +27,12 @@ const (
 	UpdateSpidLocation = "UPDATE SPID LOCATION"
 	DeleteSpid         = "DELETE SPID"
 
+	TimedOut = "TIMEOUT"
+	Invalid = "INVALID"
+
 	DefaultLogPath     = "requestHandling/request_logs.spd"
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 5000*time.Millisecond
+	DefaultWriteToFilePeriod   = 5000*time.Second
 )
 
 type GenericMessage struct {
@@ -92,6 +95,7 @@ func defaultResponse(request Request) Response {
 }
 
 func invalidResponse(request Request) (response Response, ok bool) {
+	request.Type = Invalid
 	response = defaultResponse(request)
 	response.Body["message"] = fmt.Sprintf("Invalid request type '%s'", request.Type)
 	return response, false
@@ -130,7 +134,7 @@ func (h *Handler) GetResponse(requestMessage GenericMessage, timeout time.Durati
 			go h.cleanUp(requestMessage.Sum)
 			marshaledResponse, err := json.Marshal(Response{
 				ID:   uuid.Nil,
-				Type: "<RESPONSE>:TIMEOUT",
+				Type: "<RESPONSE>:" + TimedOut,
 				Ok:   false,
 				Body: map[string]interface{}{"message": "Request timed out."},
 			})
@@ -183,7 +187,7 @@ func (h Handler) processRequest(incomingRequest string) (jsonResponse string, ok
 		log.Print(errorMessage)
 		marshaledResponse, err := json.Marshal(Response{
 			ID:   uuid.Nil,
-			Type: "<RESPONSE>:INVALID",
+			Type: "<RESPONSE>:" + Invalid,
 			Ok:   false,
 			Body: map[string]interface{}{"message": errorMessage},
 		})

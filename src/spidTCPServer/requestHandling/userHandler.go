@@ -95,7 +95,7 @@ func (h Handler) updateUserLocation(request Request) (response Response, ok bool
 		return response, false
 	}
 	response.Body["message"] = "Location updated."
-	response.Body["location"] = user.Location
+	response.Body["user"] = user
 	response.Ok = true
 	return response, true
 }
@@ -151,6 +151,7 @@ func (h Handler) requestAssociation(request Request) (response Response, ok bool
 	spid.CurrentUserID = user.ID
 	user.CurrentSpidID = spid.ID
 	response.Body["message"] = fmt.Sprintf("User %s associated to spid %s.", user.ID, spid.ID)
+	response.Body["user"] = user
 	response.Ok = true
 	return response, true
 }
@@ -179,6 +180,7 @@ func (h Handler) requestDissociation(request Request) (response Response, ok boo
 		return response, false
 	}
 	response.Body["message"] = fmt.Sprintf("User dissociated from spid %s.", spidID)
+	response.Body["user"] = user
 	response.Ok = true
 	return response, true
 }
@@ -219,6 +221,7 @@ func (h Handler) requestLockChange(request Request) (response Response, ok bool)
 	}
 	// TODO: call back when spid checks the pending update
 	response.Body["message"] = fmt.Sprintf("Lock state for spid %s updated to `%s`.", spid.ID, lockState)
+	response.Body["user"] = user
 	response.Ok = true
 	return response, true
 }
