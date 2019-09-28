@@ -187,6 +187,38 @@ func (h Handler) requestDissociation(request Request) (response Response, ok boo
 	return response, true
 }
 
+func (h Handler) requestSpidInfo(request Request) (response Response, ok bool) {
+	response = defaultResponse(request)
+	missingKey := utils.CheckKeys(request.Body, []string{"user_id", "spid_id"})
+	if missingKey != "" {
+		response.Body["message"] = fmt.Sprintf("Missing key: `%s`.", missingKey)
+		return response, false
+	}
+	userID := request.Body["user_id"].(string)
+	spidID := request.Body["spid_id"].(string)
+	user, err := h.queryUser(userID)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate user id: %s", err)
+		return response, false
+	}
+	spid, err := h.querySpid(spidID)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate spid id: %s", err)
+		return response, false
+	}
+	if user.CurrentSpidID != spid.ID || spid.CurrentUserID != user.ID {
+		response.Body["message"] = fmt.Sprintf(
+			"User with id %s not associated to spid with id %s.", user.ID, spid.ID)
+		return response, false
+	}
+	response.Body["spid"] = map[string]interface{}{
+		"id": spid.ID,
+		"battery_level": spid.BatteryLevel,
+		"lock_state": spid.Lock}
+	response.Ok = true
+	return response, true
+}
+
 func (h Handler) requestLockChange(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	missingKey := utils.CheckKeys(request.Body, []string{"user_id", "spid_id", "lock_state"})

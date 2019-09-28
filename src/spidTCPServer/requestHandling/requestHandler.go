@@ -19,6 +19,7 @@ const (
 	DeleteUser         = "DELETE USER"
 	RequestAssociation = "REQUEST ASSOCIATION"
 	RequestDissociation = "REQUEST DISSOCIATION"
+	RequestSpidInfo    = "REQUEST SPID INFO"
 	RequestLockChange  = "REQUEST LOCK CHANGE"
 
 	GetSpidInfo        = "GET SPID INFO"
@@ -211,6 +212,8 @@ func (h Handler) processRequest(incomingRequest string) (jsonResponse string, ok
 		handler = h.requestAssociation
 	case RequestDissociation:
 		handler = h.requestDissociation
+	case RequestSpidInfo:
+		handler = h.requestSpidInfo
 	case RequestLockChange:
 		handler = h.requestLockChange
 	case GetSpidInfo:
