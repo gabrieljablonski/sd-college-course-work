@@ -1,3 +1,6 @@
 .idea/
 uuid/
 *.exe
+pkg/
+venv/
+*.pyc
