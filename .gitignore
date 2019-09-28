@@ -3,3 +3,4 @@ uuid/
 *.exe
 venv/
 pkg/
+*.pyc
