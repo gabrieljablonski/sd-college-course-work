@@ -22,7 +22,7 @@ Allows the user to request access to the server and unlock a vehicle.
 
 ## Running on Docker
 
-For simplicity sake, the docker images `jablonski/spid-server`, `jablonski/spid-embedded`, and `jablonski/spid-user` can be used to run the whole system.
+For simplicity's sake, the docker images `jablonski/spid-server`, `jablonski/spid-embedded`, and `jablonski/spid-user` can be used to run the whole system.
 With docker installed, follow the instruction below.
 
 ### Setup SPID Server
