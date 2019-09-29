@@ -36,7 +36,9 @@ The `SERVER_PORT` environment variable can be set to change to a different port 
 ### Setup SPID Clients
 
 To setup the clients, you must obtain the server container IP address using 
+
 `docker inspect spid_server` 
+
 and looking for the `IPAddress` key. Alternatively, you can run the following command to output only the address. Make sure the `spid_server`
 
 `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' spid_server`
