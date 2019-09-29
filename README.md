@@ -60,14 +60,14 @@ The available commands for the SPID user client are:
 
 | Command | Use |
 |:-------:|:---:|
-| `view user` | view loaded user info |
+| `view user` | view local user info |
 | `load user` | load user id from file |
 | `register user` | register new user |
 | `query user` | query user info from the server.<br>if no user is loaded, must type id manually |
 | `save user` | save user id to file, which can be loaded after |
 | `update location` | update current user location |
 | `delete user` | delete current user from the server |
-| `associate spid` | request association to spid.<br>it can be loaded from file or typed manually |
+| `associate spid` | request association to spid.<br>it can be loaded from file or typed manually.<br>to get the spid id, run `view` from the desired spid client |
 | `save spid` | save current associated spid id to file |
 | `dissociate` | dissociate from current spid |
 | `query spid` | query info for current associated spid |
@@ -78,7 +78,7 @@ For the SPID embedded client, the commands are:
 
 | Command | Use |
 |:-------:|:---:|
-| `view` | view loaded spid info |
+| `view` | view local spid info |
 | `load` | load spid id to be used from file |
 | `register` | register new spid |
 | `query` | query spid info from the server.<br>if no spid is loaded, must type id manually |
