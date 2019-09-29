@@ -63,7 +63,8 @@ type Handler struct {
 
 func NewHandler(basePath string) Handler {
 	//TODO: if file is not empty, process requests
-	logFile, err := os.OpenFile(DefaultLogPath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	path := basePath + string(os.PathSeparator) + DefaultLogPath
+	logFile, err := os.OpenFile(path, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	eh.HandleFatal(err)
 	h := Handler{
 		Manager: db.NewManager(basePath),

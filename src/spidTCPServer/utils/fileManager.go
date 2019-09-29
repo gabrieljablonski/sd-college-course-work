@@ -13,7 +13,7 @@ type FileManager struct {
 }
 
 func (f FileManager) ReadFile(path string) ([]byte, error) {
-	path = f.BasePath + path
+	path = f.BasePath + string(os.PathSeparator) + path
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file %s: %s", path, err)
@@ -28,7 +28,7 @@ func (f FileManager) ReadFile(path string) ([]byte, error) {
 }
 
 func (f FileManager) WriteToFile(path string, content []byte) error {
-	path = f.BasePath + path
+	path = f.BasePath + string(os.PathSeparator) + path
 	file, err := os.OpenFile(path, os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open file %s: %s", path, err)
