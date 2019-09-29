@@ -31,7 +31,7 @@ Run the following command to pull and start running the server container:
 
 `docker run -t -e SERVER_PORT="8001" --name spid_server jablonski/spid-server`
 
-The `SERVER_PORT` environment variable can be set to change to a different port from the default (8001). The `-t` flag is used to set output to the terminal.
+The `SERVER_PORT` environment variable can be set to change to a different port from the default one (8001). The `-t` flag is used to set output to the terminal.
 
 ### Setup SPID Clients
 
@@ -39,7 +39,7 @@ To setup the clients, you must obtain the server container IP address using
 
 `docker inspect spid_server` 
 
-and looking for the `IPAddress` key. Alternatively, you can run the following command to output only the address. Make sure the `spid_server` container is up before running the command.
+and looking for the `IPAddress` key. Alternatively, you can run the following command to output the address directly. Make sure the `spid_server` container is up before running the command.
 
 `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' spid_server`
 
@@ -49,10 +49,10 @@ With the address in hands, you can start instantiating the other two images with
 
 `docker run -it -e SERVER_HOST="<spid_server ip>" -e SERVER_PORT="8001" --name spid_user jablonski/spid-user`
 
-The `SERVER_HOST` must be set to the IP address obtained previously, and `SERVER_PORT` if you changed the port from the default one when instantiating the server. The additional flag `-i` is used to direct input from the terminal to the container.
+The `SERVER_HOST` must be set to the IP address obtained previously, as well as `SERVER_PORT`, if you changed the port from the default one when instantiating the server. The additional flag `-i` is used to direct input from the terminal to the container.
 At this point, any number of client instances can be created.
 
-The following command can be used to restart the containers after stopping:
+The following command can be used to restart both server and client containers after stopping:
 
 `docker start -ia <container name>`
 
@@ -61,13 +61,13 @@ The available commands for the SPID user client are:
 | Command | Use |
 |:-------:|:---:|
 | `view user` | view loaded user info |
-| `load user` | load user id to be used from file |
-| `register user` | registers new user |
+| `load user` | load user id from file |
+| `register user` | register new user |
 | `query user` | query user info from the server.<br>if no user is loaded, must type id manually |
 | `save user` | save user id to file, which can be loaded after |
 | `update location` | update current user location |
 | `delete user` | delete current user from the server |
-| `associate spid` | request association to spid.<br>if no spid is loaded, must type id manually |
+| `associate spid` | request association to spid.<br>it can be loaded from file or typed manually |
 | `save spid` | save current associated spid id to file |
 | `dissociate` | dissociate from current spid |
 | `query spid` | query info for current associated spid |
@@ -80,7 +80,7 @@ For the SPID embedded client, the commands are:
 |:-------:|:---:|
 | `view` | view loaded spid info |
 | `load` | load spid id to be used from file |
-| `register` | registers new spid |
+| `register` | register new spid |
 | `query` | query spid info from the server.<br>if no spid is loaded, must type id manually |
 | `save` | save spid id to file, which can be loaded after |
 | `update location` | update current spid location |
