@@ -7,7 +7,7 @@ import (
 	"main/entities"
 )
 
-func (m Manager) GetUsersFromFile() entities.Users {
+func (m *Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
 	usersFromFile, err := m.FileManager.ReadFile(UsersDefaultLocation)
 	if err != nil {
@@ -26,7 +26,7 @@ func (m Manager) GetUsersFromFile() entities.Users {
 	return users
 }
 
-func (m Manager) WriteUsersToFile() {
+func (m *Manager) WriteUsersToFile() {
 	marshaledUsers, err := entities.MarshalUsers(m.Users)
 	if err != nil {
 		log.Printf("Failed to write users to file: %s", err)
@@ -41,7 +41,7 @@ func (m Manager) WriteUsersToFile() {
 	log.Print("Finished writing users.")
 }
 
-func (m Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
+func (m *Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
 	log.Printf("Querying user with ID %s.", userID)
 	_, ok := m.Users.Users[userID]
 	if !ok {

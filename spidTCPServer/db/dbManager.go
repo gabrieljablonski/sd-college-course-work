@@ -3,10 +3,11 @@ package db
 import (
 	"main/entities"
 	"main/utils"
+	"os"
 )
 
-const UsersDefaultLocation = "/db/users.spd"
-const SpidsDefaultLocation = "/db/spids.spd"
+const UsersDefaultLocation = "db" + string(os.PathSeparator) + "users.spd"
+const SpidsDefaultLocation = "db" + string(os.PathSeparator) + "spids.spd"
 
 type Manager struct {
 	FileManager utils.FileManager

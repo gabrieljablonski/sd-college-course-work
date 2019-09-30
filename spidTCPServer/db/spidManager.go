@@ -7,7 +7,7 @@ import (
 	"main/entities"
 )
 
-func (m Manager) GetSpidsFromFile() entities.Spids {
+func (m *Manager) GetSpidsFromFile() entities.Spids {
 	log.Print("Reading spids.")
 	spidsFromFile, err := m.FileManager.ReadFile(SpidsDefaultLocation)
 	if err != nil {
@@ -26,7 +26,7 @@ func (m Manager) GetSpidsFromFile() entities.Spids {
 	return spids
 }
 
-func (m Manager) WriteSpidsToFile() {
+func (m *Manager) WriteSpidsToFile() {
 	marshaledSpids, err := entities.MarshalSpids(m.Spids)
 	if err != nil {
 		log.Printf("Failed to write spids to file: %s", err)

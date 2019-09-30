@@ -11,7 +11,7 @@ def main(host, port):
     user = User()
     valid = False
     while True:
-        cmd = input('>> ')
+        cmd = input('>> ').strip()
 
         if cmd == 'exit':
             break
@@ -207,8 +207,8 @@ if __name__ == '__main__':
 
     import argparse
     parser = argparse.ArgumentParser(description='Setup SPID client')
-    parser.add_argument('--host', type=str, help='Server to connect to')
-    parser.add_argument('-p', '--port', type=int, help='Server port')
+    parser.add_argument('--host', type=str, required=True, help='Server to connect to')
+    parser.add_argument('-p', '--port', type=int, required=True, help='Server port')
 
     args = parser.parse_args()
 

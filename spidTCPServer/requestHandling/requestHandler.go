@@ -1,10 +1,11 @@
 package requestHandling
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/ActiveState/tail"
+	"github.com/google/uuid"
 	"log"
 	"main/db"
 	eh "main/errorHandling"
@@ -31,7 +32,8 @@ const (
 	TimedOut = "TIMEOUT"
 	Invalid = "INVALID"
 
-	DefaultLogPath     = "requestHandling/request_logs.spd"
+	DefaultLogPath     = "requestHandling" + string(os.PathSeparator) + "request_logs.spd"
+	DefaultDirtyRequestsPath = "requestHandling" + string(os.PathSeparator) + "dirty_requests.spd"
 	DefaultMaxBufferedRequests = 100
 	DefaultWriteToFilePeriod   = 5000*time.Millisecond
 )
@@ -58,32 +60,72 @@ type Response struct {
 type Handler struct {
 	Manager           db.Manager
 	OutGoingResponses chan GenericMessage
-	Logger            *log.Logger
+	LoggerPending     *log.Logger
+	LoggerDirty       *log.Logger
+	WritingToFile     bool
+	WritingToMemory   bool
 }
 
 func NewHandler(basePath string) Handler {
-	//TODO: if file is not empty, process requests
-	path := basePath + string(os.PathSeparator) + DefaultLogPath
-	logFile, err := os.OpenFile(path, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	pathPending := basePath + string(os.PathSeparator) + DefaultLogPath
+	pathDirty := basePath + string(os.PathSeparator) + DefaultDirtyRequestsPath
+
+	pendingLogFile, err := os.OpenFile(pathPending, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	eh.HandleFatal(err)
+	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
 	h := Handler{
-		Manager: db.NewManager(basePath),
+		Manager:           db.NewManager(basePath),
 		OutGoingResponses: make(chan GenericMessage, DefaultMaxBufferedRequests),
-		Logger: log.New(logFile, "", 0),
+		LoggerPending:     log.New(pendingLogFile, "", 0),
 	}
 	h.Manager.LoadFromFile()
+	h.processDirtyRequests(dirtyLogFile)
+	h.LoggerDirty = log.New(dirtyLogFile, "", 0)
 	go h.WriteToFilePeriodically(DefaultWriteToFilePeriod)
 	go h.handleLoggedRequests()
 	return h
 }
 
-func (h Handler) WriteToFilePeriodically(period time.Duration) {
+func (h *Handler) processDirtyRequests(dirtyLogFile *os.File) {
+	scanner := bufio.NewScanner(dirtyLogFile)
+	log.Print("Processing requests from last session...")
+	var requestMessage GenericMessage
+	for scanner.Scan() {
+		err := json.Unmarshal([]byte(scanner.Text()), &requestMessage)
+		eh.HandleFatal(err)
+		log.Printf("Processing request: `%s`", requestMessage.Message)
+		h.processRequest(requestMessage.Message)
+	}
+	err := scanner.Err()
+	eh.HandleFatal(err)
+
+	h.Manager.WriteUsersToFile()
+	h.Manager.WriteSpidsToFile()
+	err = dirtyLogFile.Truncate(0)
+	eh.HandleFatal(err)
+	_, err = dirtyLogFile.Seek(0, 0)
+	eh.HandleFatal(err)
+	log.Printf("Memory and file should be up to date to last session.")
+}
+
+func (h *Handler) WriteToFilePeriodically(period time.Duration) {
 	for {
 		time.Sleep(period)
-		//TODO: determine which was the last processed request
+		for ; h.WritingToMemory; {}
+		h.WritingToFile = true
 		log.Print("Writing users and spids to file.")
 		h.Manager.WriteUsersToFile()
 		h.Manager.WriteSpidsToFile()
+
+		log.Print("Truncating dirty log file...")
+		pathDirty := h.Manager.FileManager.BasePath + string(os.PathSeparator) + DefaultDirtyRequestsPath
+		dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+		// Old *File for LoggerDirty will be garbage collected
+		h.LoggerDirty = log.New(dirtyLogFile, "", 0)
+
+		eh.HandleFatal(err)
+		h.WritingToFile = false
 	}
 }
 
@@ -103,10 +145,10 @@ func invalidResponse(request Request) (response Response, ok bool) {
 	return response, false
 }
 
-func (h Handler) QueueRequest(requestMessage GenericMessage) error {
-	marshaledRequest, err := json.Marshal(requestMessage)
+func (h *Handler) QueueRequest(requestMessage GenericMessage) error {
+	marshaledMessage, err := json.Marshal(requestMessage)
 	eh.HandleFatal(err)
-	err = h.Logger.Output(2, string(marshaledRequest))
+	err = h.LoggerPending.Output(2, string(marshaledMessage))
 	f, ferr := os.Open(DefaultLogPath)
 	eh.HandleFatal(ferr)
 	ferr = f.Close()
@@ -115,6 +157,7 @@ func (h Handler) QueueRequest(requestMessage GenericMessage) error {
 }
 
 func (h *Handler) cleanUp(discardedRequestSum [16]byte) {
+	// Discard responses to requests that timed out
 	for {
 		responseMessage := <-h.OutGoingResponses
 		if responseMessage.Sum == discardedRequestSum {
@@ -169,7 +212,12 @@ func (h *Handler) handleLoggedRequests() {
 			var requestMessage GenericMessage
 			err := json.Unmarshal([]byte(line.Text), &requestMessage)
 			eh.HandleFatal(err)
+			for ; h.WritingToFile; {}
+			h.WritingToMemory = true
 			jsonResponse, _ := h.processRequest(requestMessage.Message)
+			err = h.LoggerDirty.Output(2, line.Text)
+			eh.HandleFatal(err)
+			h.WritingToMemory = false
 
 			h.OutGoingResponses <- GenericMessage{
 				Message:  jsonResponse,
@@ -180,7 +228,7 @@ func (h *Handler) handleLoggedRequests() {
 	}
 }
 
-func (h Handler) processRequest(incomingRequest string) (jsonResponse string, ok bool) {
+func (h *Handler) processRequest(incomingRequest string) (jsonResponse string, ok bool) {
 	var request Request
 	err := json.Unmarshal([]byte(incomingRequest), &request)
 
@@ -230,7 +278,9 @@ func (h Handler) processRequest(incomingRequest string) (jsonResponse string, ok
 	default:
 		handler = invalidResponse
 	}
+
 	response, ok := handler(request)
+
 	if !ok {
 		log.Print("Request failed.\n")
 	} else {

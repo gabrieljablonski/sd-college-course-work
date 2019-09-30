@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (h Handler) querySpid(spidID string) (entities.Spid, error) {
+func (h *Handler) querySpid(spidID string) (entities.Spid, error) {
 	id, err := uuid.Parse(spidID)
 	if err != nil {
 		return entities.Spid{}, fmt.Errorf("invalid spid id: %s", err)
@@ -21,7 +21,7 @@ func (h Handler) querySpid(spidID string) (entities.Spid, error) {
 	return spid, nil
 }
 
-func (h Handler) getSpidInfo(request Request) (response Response, ok bool) {
+func (h *Handler) getSpidInfo(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	if request.Body["spid_id"] == nil {
 		response.Body["message"] = "Missing spid id."
@@ -37,7 +37,7 @@ func (h Handler) getSpidInfo(request Request) (response Response, ok bool) {
 	return response, true
 }
 
-func (h Handler) registerSpid(request Request) (response Response, ok bool) {
+func (h *Handler) registerSpid(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	spid := entities.NewSpid()
 	err := h.Manager.RegisterSpid(spid)
@@ -50,7 +50,7 @@ func (h Handler) registerSpid(request Request) (response Response, ok bool) {
 	return response, true
 }
 
-func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool) {
+func (h *Handler) updateBatteryInfo(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	missingKey := utils.CheckKeys(request.Body, []string{"spid_id", "battery_level"})
 	if missingKey != "" {
@@ -79,7 +79,7 @@ func (h Handler) updateBatteryInfo(request Request) (response Response, ok bool)
 	return response, true
 }
 
-func (h Handler) updateSpidLocation(request Request) (response Response, ok bool) {
+func (h *Handler) updateSpidLocation(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	missingKey := utils.CheckKeys(request.Body, []string{"location", "spid_id"})
 	if missingKey != "" {
@@ -125,7 +125,7 @@ func (h Handler) updateSpidLocation(request Request) (response Response, ok bool
 	return response, true
 }
 
-func (h Handler) deleteSpid(request Request) (response Response, ok bool) {
+func (h *Handler) deleteSpid(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	if request.Body["spid_id"] == nil {
 		response.Body["message"] = "Missing spid id."
