@@ -29,9 +29,9 @@ With docker installed, follow the instruction below.
 
 Run the following command to pull and start running the server container:
 
-`docker run -t -e SERVER_PORT="8001" --name spid_server jablonski/spid-server`
+`docker run -t -e SPID_PORT="8001" --name spid_server jablonski/spid-server`
 
-The `SERVER_PORT` environment variable can be set to change to a different port from the default one (8001). The `-t` flag is used to set output to the terminal.
+The `SPID_PORT` environment variable can be set to change to a different port from the default one (8001). The `-t` flag is used to set output to the terminal.
 
 ### Setup SPID Clients
 
@@ -45,11 +45,11 @@ and looking for the `IPAddress` key. Alternatively, you can run the following co
 
 With the address in hands, you can start instantiating the other two images with the following commands.
 
-`docker run -it -e SERVER_HOST="<spid_server ip>" -e SERVER_PORT="8001" --name spid_embedded jablonski/spid-embedded`
+`docker run -it -e SPID_HOST="<spid_server ip>" -e SPID_PORT="8001" --name spid_embedded jablonski/spid-embedded`
 
-`docker run -it -e SERVER_HOST="<spid_server ip>" -e SERVER_PORT="8001" --name spid_user jablonski/spid-user`
+`docker run -it -e SPID_HOST="<spid_server ip>" -e SPID_PORT="8001" --name spid_user jablonski/spid-user`
 
-The `SERVER_HOST` must be set to the IP address obtained previously, as well as `SERVER_PORT`, if you changed the port from the default one when instantiating the server. The additional flag `-i` is used to direct input from the terminal to the container.
+The `SPID_HOST` must be set to the IP address obtained previously, as well as `SPID_PORT`, if you changed the port from the default one when instantiating the server. The additional flag `-i` is used to direct input from the terminal to the container.
 At this point, any number of client instances can be created.
 
 The following command can be used to restart both server and client containers after stopping:
