@@ -66,7 +66,7 @@ def main(host, port):
             else:
                 uuid = spid.id
             s = handler.get_spid_info(uuid)
-            if spid.id.int == 0:
+            if s.id.int == 0:
                 print('-- spid not found')
                 continue
             spid = s
