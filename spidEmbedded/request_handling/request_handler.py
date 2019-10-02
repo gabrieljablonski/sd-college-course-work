@@ -45,7 +45,7 @@ class RequestHandler:
             logging.error('Lost connection to host, retrying...')
             self._con.connected = False
             self.connect(try_forever=True)
-            return Response()
+            return Response(body={})
 
     def get_spid_info(self, uuid: UUID) -> Spid:
         request = Request(
