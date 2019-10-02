@@ -42,7 +42,7 @@ class Response:
             self,
             id: UUID = None,
             type: str = None,
-            ok: bool = None,
+            ok: bool = False,
             body: dict = None):
         self.id = id
         self.type = type

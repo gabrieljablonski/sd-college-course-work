@@ -46,6 +46,7 @@ class RequestHandler:
             logging.error('Lost connection to host, retrying...')
             self._con.connected = False
             self.connect(try_forever=True)
+            return Response()
 
     def get_user_info(self, uuid: UUID) -> User:
         request = Request(
