@@ -65,10 +65,11 @@ def main(host, port):
                     continue
             else:
                 uuid = spid.id
-            spid = handler.get_spid_info(uuid)
+            s = handler.get_spid_info(uuid)
             if spid.id.int == 0:
                 print('-- spid not found')
                 continue
+            spid = s
             valid = True
             print('-- spid found')
 
@@ -100,6 +101,8 @@ def main(host, port):
                 if any((lat>90, lat<-90, lon>180, lon<-180)):
                     print('-- invalid latitude or longitude values')
                     continue
+            old_lat = spid.location["latitude"]
+            old_lon = spid.location["longitude"]
             spid.location["latitude"] = lat
             spid.location["longitude"] = lon
             s = handler.update_spid_location(spid)
@@ -107,6 +110,8 @@ def main(host, port):
                 spid = s
                 print('-- location updated')
                 continue
+            spid.location["latitude"] = old_lat
+            spid.location["longitude"] = old_lon
             print(f"-- failed to update location")
 
         elif cmd == 'delete':
