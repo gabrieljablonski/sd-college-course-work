@@ -131,7 +131,7 @@ def main(host, port):
                 print(f"-- invalid id: `{e}`")
                 continue
             print(f"-- loaded id `{uid.hex}`. ready to query")
-            u = handler.request_association(user.id, user.current_spid_id)
+            u = handler.request_association(user.id, uid)
             if u.id.int != 0:
                 user = u
                 print(f"-- user associated to spid `{user.current_spid_id}`")
