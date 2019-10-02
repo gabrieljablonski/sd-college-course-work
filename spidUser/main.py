@@ -221,6 +221,8 @@ def main(host, port):
                 'save spid',
                 'dissociate',
                 'query spid',
+                'lock spid',
+                'unlock spid',
                 'exit',
             ))
             print(f"-- Available commands:\n\t-"
