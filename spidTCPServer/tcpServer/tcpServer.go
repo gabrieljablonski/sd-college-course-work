@@ -68,7 +68,7 @@ func Listen(port string, handler requestHandling.Handler) {
 	eh.HandleFatal(err)
 	defer eh.HandleCloseListener(listener)
 
-	log.Printf("Listing for connections on port %s...\n", port[1:])
+	log.Printf("Listening for connections on port %s...\n", port[1:])
 	for {
 		conn, err := listener.Accept()
 		eh.HandleFatal(err)
