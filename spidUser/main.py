@@ -28,8 +28,12 @@ def main(host, port):
 
         elif cmd == 'load user':
             fn = input('<< filename: ')
-            with open(fn) as f:
-                uid = f.readline()
+            try:
+                with open(fn) as f:
+                    uid = f.readline()
+            except FileNotFoundError:
+                print(f"-- file {fn} does not exist")
+                continue
             try:
                 uid = UUID(hex=uid)
             except ValueError as e:
@@ -71,8 +75,12 @@ def main(host, port):
                 print('-- register or query first')
                 continue
             fn = input('<< filename: ')
-            with open(fn, 'w') as f:
-                f.write(user.id.hex)
+            try:
+                with open(fn, 'w') as f:
+                    f.write(user.id.hex)
+            except FileNotFoundError:
+                print(f"-- file {fn} does not exist")
+                continue
             print(f"-- wrote user id to file {fn}")
 
         elif cmd == 'update location':
