@@ -131,7 +131,6 @@ def main(host, port):
                 print(f"-- invalid id: `{e}`")
                 continue
             print(f"-- loaded id `{uid.hex}`. ready to query")
-            user.current_spid_id = uid
             u = handler.request_association(user.id, user.current_spid_id)
             if u.id.int != 0:
                 user = u
