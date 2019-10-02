@@ -36,7 +36,7 @@ class TCPClient:
                 logging.critical(f"Connection to {self.host}:{self.port} timed out: `{e}`")
                 if not try_forever:
                     raise e
-            except ConnectionRefusedError as e:
+            except (ConnectionRefusedError, OSError) as e:
                 logging.critical(f"Connection refused ({self.host}:{self.port}): `{e}`")
                 if not try_forever:
                     raise e
