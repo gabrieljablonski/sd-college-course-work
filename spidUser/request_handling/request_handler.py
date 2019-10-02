@@ -40,13 +40,12 @@ class RequestHandler:
                 self.connect(try_forever=True)
 
     def _get_response(self):
-        while True:
-            try:
-                return Response.from_json(self._con.receive())
-            except (ConnectionResetError, JSONDecodeError) as e:
-                logging.error('Lost connection to host, retrying...')
-                self._con.connected = False
-                self.connect(try_forever=True)
+        try:
+            return Response.from_json(self._con.receive())
+        except (ConnectionResetError, JSONDecodeError) as e:
+            logging.error('Lost connection to host, retrying...')
+            self._con.connected = False
+            self.connect(try_forever=True)
 
     def get_user_info(self, uuid: UUID) -> User:
         request = Request(
