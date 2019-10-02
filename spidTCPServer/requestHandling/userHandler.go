@@ -100,7 +100,7 @@ func (h *Handler) updateUserLocation(request Request) (response Response, ok boo
 	return response, true
 }
 
-func (h Handler) deleteUser(request Request) (response Response, ok bool) {
+func (h *Handler) deleteUser(request Request) (response Response, ok bool) {
 	response = defaultResponse(request)
 	if request.Body["user_id"] == nil {
 		response.Body["message"] = "Missing user id."
@@ -185,8 +185,23 @@ func (h *Handler) requestDissociation(request Request) (response Response, ok bo
 		return response, false
 	}
 	spidID := user.CurrentSpidID
+	spid, err := h.querySpid(spidID.String())
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to validate user id: %s", err)
+		return response, false
+	}
+	if spid.CurrentUserID == uuid.Nil {
+		response.Body["message"] = "Spid not currently associated to any users."
+		return response, false
+	}
 	user.CurrentSpidID = uuid.Nil
+	spid.CurrentUserID = uuid.Nil
 	err = h.Manager.UpdateUser(user)
+	if err != nil {
+		response.Body["message"] = fmt.Sprintf("Failed to dissociate user: %s", err)
+		return response, false
+	}
+	err = h.Manager.UpdateSpid(spid)
 	if err != nil {
 		response.Body["message"] = fmt.Sprintf("Failed to dissociate user: %s", err)
 		return response, false

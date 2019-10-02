@@ -43,9 +43,13 @@ def main(host, port):
                 print(f"-- loaded id `{spid.id.hex}`")
 
         elif cmd == 'register':
-            spid = handler.register_spid()
-            valid = True
-            print('-- registered')
+            s = handler.register_spid()
+            if s.id.int != 0:
+                spid = s
+                print(f"-- registered")
+                valid = True
+                continue
+            print('-- failed to register')
 
         elif cmd == 'query':
             if not valid:
@@ -90,15 +94,23 @@ def main(host, port):
                     continue
             spid.location["latitude"] = lat
             spid.location["longitude"] = lon
-            spid = handler.update_spid_location(spid)
-            print('-- location updated')
+            s = handler.update_spid_location(spid)
+            if s.id.int != 0:
+                spid = s
+                print('-- location updated')
+                continue
+            print(f"-- failed to update location")
 
         elif cmd == 'delete':
             if not valid:
                 print('-- register or query first')
                 continue
-            spid = handler.delete_spid(spid.id)
-            print('-- spid deleted')
+            s = handler.delete_spid(spid.id)
+            if s.id.int != 0:
+                spid = s
+                print('-- spid deleted')
+                continue
+            print(f"-- failed to delete spid")
 
         else:
             available_commands = '\n\t-'.join((

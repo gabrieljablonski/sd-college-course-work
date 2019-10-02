@@ -41,9 +41,13 @@ def main(host, port):
 
         elif cmd == 'register user':
             user_name = input('<< user name (ascii): ')
-            user = handler.register_user(user_name)
-            valid = True
-            print(f"-- registered user `{user_name}`")
+            u = handler.register_user(user_name)
+            if u.id.int != 0:
+                user = u
+                valid = True
+                print(f"-- registered user `{user_name}`")
+                continue
+            print(f"-- failed to register user")
 
         elif cmd == 'query user':
             if not valid:
@@ -88,15 +92,23 @@ def main(host, port):
                     continue
             user.location["latitude"] = lat
             user.location["longitude"] = lon
-            user = handler.update_user_location(user)
-            print('-- location updated')
+            u = handler.update_user_location(user)
+            if u.id.int != 0:
+                user = u
+                print('-- location updated')
+                continue
+            print('-- failed to update location')
 
         elif cmd == 'delete user':
             if not valid:
                 print('-- register or query first')
                 continue
-            user = handler.delete_user(user.id)
-            print('-- user deleted')
+            u = handler.delete_user(user.id)
+            if u.id.int != 0:
+                user = u
+                print('-- user deleted')
+                continue
+            print('-- failed to delete user')
 
         elif cmd == 'associate spid':
             if user.current_spid_id.int != 0:
@@ -120,8 +132,12 @@ def main(host, port):
                 continue
             print(f"-- loaded id `{uid.hex}`. ready to query")
             user.current_spid_id = uid
-            user = handler.request_association(user.id, user.current_spid_id)
-            print(f"-- user associated to spid `{user.current_spid_id}`")
+            u = handler.request_association(user.id, user.current_spid_id)
+            if u.id.int != 0:
+                user = u
+                print(f"-- user associated to spid `{user.current_spid_id}`")
+                continue
+            print(f"-- failed to associate user")
 
         elif cmd == 'save spid':
             if user.current_spid_id.int == 0:
@@ -136,8 +152,12 @@ def main(host, port):
             if user.current_spid_id.int == 0:
                 print('-- user not associated to any spids')
                 continue
-            user = handler.request_dissociation(user.id, user.current_spid_id)
-            print(f"-- user dissociated from spid `{user.current_spid_id}`")
+            u = handler.request_dissociation(user.id, user.current_spid_id)
+            if u.id.int != 0:
+                print(f"-- user dissociated from spid `{user.current_spid_id}`")
+                user = u
+                continue
+            print(f"-- failed to dissociate user")
 
         elif cmd == 'query spid':
             if not valid:
@@ -146,8 +166,12 @@ def main(host, port):
             if user.current_spid_id.int == 0:
                 print('-- user not associated to any spids')
                 continue
-            user.current_spid = handler.get_spid_info(user.id, user.current_spid_id)
-            print(f"-- spid info:\n`{user.current_spid.to_json(4)}`")
+            s = handler.get_spid_info(user.id, user.current_spid_id)
+            if s.id.int != 0:
+                user.current_spid = s
+                print(f"-- spid info:\n`{user.current_spid.to_json(4)}`")
+                continue
+            print(f"-- failed to query spid")
 
         elif cmd == 'lock spid':
             if not valid:
@@ -157,12 +181,15 @@ def main(host, port):
                 print('-- user not associated to any spids')
                 continue
             try:
-                spid = handler.change_lock_state(user.id, user.current_spid_id, "locked")
+                s = handler.change_lock_state(user.id, user.current_spid_id, "locked")
             except Exception as e:
                 print(f"-- failed to change lock state: `{e}`")
             else:
-                user.current_spid = spid
-                print('-- changed lock state to locked')
+                if s.id.int != 0:
+                    user.current_spid = s
+                    print('-- changed lock state to locked')
+                    continue
+                print(f"-- failed to lock spid")
 
         elif cmd == 'unlock spid':
             if not valid:
@@ -172,12 +199,15 @@ def main(host, port):
                 print('-- user not associated to any spids')
                 continue
             try:
-                spid = handler.change_lock_state(user.id, user.current_spid_id, "unlocked")
+                s = handler.change_lock_state(user.id, user.current_spid_id, "unlocked")
             except Exception as e:
                 print(f"-- failed to change lock state: `{e}`")
             else:
-                user.current_spid = spid
-                print('-- changed lock state to unlocked')
+                if s.id.int != 0:
+                    user.current_spid = s
+                    print('-- changed lock state to unlocked')
+                    continue
+                print(f"-- failed to unlock spid")
 
         else:
             available_commands = '\n\t-'.join((
