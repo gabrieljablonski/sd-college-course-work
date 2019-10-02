@@ -1,5 +1,6 @@
 import logging
 from uuid import uuid4, UUID
+from json import JSONDecodeError
 
 from tcp_client import TCPClient
 from request_handling.request_definitions import RequestType as RT, Request, Response
@@ -31,7 +32,7 @@ class RequestHandler:
             try:
                 self._con.send(request.to_json())
                 return
-            except ConnectionResetError as e:
+            except (ConnectionResetError, JSONDecodeError) as e:
                 logging.error(e)
                 logging.error('Lost connection to host, retrying...')
                 self._con.connected = False
