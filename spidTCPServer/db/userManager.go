@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"main/entities"
+	eh "main/errorHandling"
 )
 
 func (m *Manager) GetUsersFromFile() entities.Users {
@@ -32,6 +33,24 @@ func (m *Manager) WriteUsersToFile() {
 		log.Printf("Failed to write users to file: %s", err)
 		return
 	}
+
+	log.Printf("Making copy of users file...")
+	src := m.FileManager.BasePath + string(os.PathSeparator) + UsersDefaultLocation
+	dst := src + ".bk"
+	source, err := os.Open(src)
+	if err != nil {
+		eh.HandleFatal(err)
+	}
+	defer source.Close()
+	_ = os.Remove(dst)
+	destination, err := os.Create(dst)
+	if err != nil {
+		eh.HandleFatal(err)
+	}
+	defer destination.Close()
+	_, err := io.Copy(destination, source)
+	eh.HandleFatal(err)
+
 	log.Printf("Writing users: %s", m.Users.ToString())
 	err = m.FileManager.WriteToFile(UsersDefaultLocation, marshaledUsers)
 	if err != nil {

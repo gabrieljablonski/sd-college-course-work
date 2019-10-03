@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"main/entities"
+	eh "main/errorHandling"
 )
 
 func (m *Manager) GetSpidsFromFile() entities.Spids {
@@ -32,6 +33,24 @@ func (m *Manager) WriteSpidsToFile() {
 		log.Printf("Failed to write spids to file: %s", err)
 		return
 	}
+
+	log.Printf("Making copy of spids file...")
+	src := m.FileManager.BasePath + string(os.PathSeparator) + SpidsDefaultLocation
+	dst := src + ".bk"
+	source, err := os.Open(src)
+	if err != nil {
+		eh.HandleFatal(err)
+	}
+	defer source.Close()
+	_ = os.Remove(dst)
+	destination, err := os.Create(dst)
+	if err != nil {
+		eh.HandleFatal(err)
+	}
+	defer destination.Close()
+	_, err := io.Copy(destination, source)
+	eh.HandleFatal(err)
+	
 	log.Printf("Writing spids: %s", m.Spids.ToString())
 	err = m.FileManager.WriteToFile(SpidsDefaultLocation, marshaledSpids)
 	if err != nil {
