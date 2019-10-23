@@ -4,3 +4,4 @@ uuid/
 pkg/
 venv/
 *.pyc
+grpc_example/
