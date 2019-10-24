@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+service SpidHandler {
+    rpc GetSpidInfo (ClientRequest) returns (ServerResponse) {}
+    rpc RegisterSpid (ClientRequest) returns (ServerResponse) {}
+    rpc UpdateBatteryInfo (ClientRequest) returns (ServerResponse) {}
+    rpc UpdateSpidLocation (ClientRequest) returns (ServerResponse) {}
+    rpc DeleteSpid (ClientRequest) returns (ServerResponse) {}
+}
+
+message ClientRequest {
+    string id = 1;
+    string type = 2;
+    string body = 3;
+}
+
+message ServerResponse {
+    string id = 1;
+    string type = 2;
+    bool ok = 3;
+    string body = 4;
+}
+
+message GlobalPosition {
+    double latitude = 1;
+    double longitude = 2;
+}
+
+message LockInfo {
+    bool override = 1;
+    bool pending = 2;
+    string state = 3;
+}
+
+message Spid {
+    string id = 1;
+    uint32 batteryLevel = 2;
+    LockInfo lockInfo = 3;
+    GlobalPosition location = 4;
+    string lastUpdated = 5;
+    string currentUserID = 6;
+}
