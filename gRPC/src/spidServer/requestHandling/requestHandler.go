@@ -39,7 +39,7 @@ type Handler struct {
 	LoggerDirty       *log.Logger
 	WritingToFile     bool
 	WritingToMemory   bool
-	GRPCWrapper       grpc.Wrapper
+	GRPCWrapper       grpcWrapper.Wrapper
 }
 
 type GenericMessage struct {
