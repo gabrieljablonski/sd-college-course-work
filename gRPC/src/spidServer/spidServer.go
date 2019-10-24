@@ -4,8 +4,8 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	"spidServer/requestHandling"
-	"spidServer/requestHandling/grpc/spid"
+	"spidServer/requestHandling/grpcWrapper"
+	"spidServer/requestHandling/grpcWrapper/spidPB"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("failed", err)
 	}
 	s := grpc.NewServer()
-	spid.RegisterSpidHandlerServer(s, &requestHandling.Handler{})
+	spidPB.RegisterSpidHandlerServer(s, &grpcWrapper.Wrapper{})
 	log.Print("serving...")
 	err = s.Serve(listener)
 	if err != nil {
