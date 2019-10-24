@@ -1,0 +1,7 @@
+syntax = "proto3";
+package spidProtoBuffers;
+
+message GlobalPosition {
+    double latitude = 1;
+    double longitude = 2;
+}

@@ -1,0 +1,76 @@
+syntax = "proto3";
+package spidProtoBuffers;
+
+import "genericDefinitions.proto";
+
+service SpidHandler {
+    rpc GetSpidInfo (GetSpidRequest) returns (GetSpidResponse) {}
+    rpc RegisterSpid (RegisterSpidRequest) returns (RegisterSpidResponse) {}
+    rpc UpdateBatteryInfo (UpdateBatteryRequest) returns (UpdateBatteryResponse) {}
+    rpc UpdateSpidLocation (UpdateSpidLocationRequest) returns (UpdateSpidLocationResponse) {}
+    rpc DeleteSpid (DeleteSpidRequest) returns (DeleteSpidResponse) {}
+}
+
+message Spid {
+    string id = 1;
+    uint32 batteryLevel = 2;
+    string lockInfo = 3;
+    GlobalPosition location = 4;
+    string lastUpdated = 5;
+    string currentUserID = 6;
+}
+
+message SpidMinimal {
+    string id = 1;
+    uint32 batteryLevel = 2;
+    GlobalPosition location = 3;
+    string lockState = 4;
+}
+
+message GetSpidRequest {
+    string spidID = 1;
+}
+
+message GetSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message RegisterSpidRequest {
+    uint32 batteryLevel = 2;
+    GlobalPosition location = 1;
+}
+
+message RegisterSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message UpdateBatteryRequest {
+    string spidID = 1;
+    uint32 batteryLevel = 2;
+}
+
+message UpdateBatteryResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message UpdateSpidLocationRequest {
+    string spidID = 1;
+    GlobalPosition location = 2;
+}
+
+message UpdateSpidLocationResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message DeleteSpidRequest {
+    string spidID = 1;
+}
+
+message DeleteSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
