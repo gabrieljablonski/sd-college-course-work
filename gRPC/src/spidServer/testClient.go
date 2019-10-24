@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"spidServer/requestHandling"
+	"spidServer/requestHandling/grpc/spid"
 	"time"
 )
 
@@ -14,10 +15,10 @@ func main() {
 		log.Fatal("failed connecting", err)
 	}
 	defer conn.Close()
-	c := requestHandling.NewSpidHandlerClient(conn)
+	c := spid.NewSpidHandlerClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	r, err := c.RegisterSpid(ctx, &requestHandling.ClientRequest{
+	r, err := c.RegisterSpid(ctx, &spid.ClientRequest{
 		Id:   "1111",
 		Type: requestHandling.RegisterSpid,
 		Body: "{\"message\": \"gimme a new spid!\"}",
