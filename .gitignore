@@ -5,3 +5,5 @@ pkg/
 venv/
 *.pyc
 grpc_example/
+github.com/
+*golang.org/
