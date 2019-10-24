@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 service UserHandler {
-    rpc QueryUser (ClientRequest) returns (ServerResponse) {}
     rpc GetUserInfo (ClientRequest) returns (ServerResponse) {}
     rpc RegisterUser (ClientRequest) returns (ServerResponse) {}
     rpc UpdateUserLocation (ClientRequest) returns (ServerResponse) {}
