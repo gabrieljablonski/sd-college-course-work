@@ -1,0 +1,102 @@
+syntax = "proto3";
+package spidProtoBuffers;
+
+import "genericDefinitions.proto";
+import "spidHandler.proto";
+
+service UserHandler {
+    rpc GetUserInfo (GetUserRequest) returns (GetUserResponse) {}
+    rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse) {}
+    rpc UpdateUserLocation (UpdateUserLocationRequest) returns (UpdateUserLocationResponse) {}
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
+    rpc RequestAssociation (RequestAssociationRequest) returns (RequestAssociationResponse) {}
+    rpc RequestDissociation (RequestDissociationRequest) returns (RequestDissociationResponse) {}
+    rpc RequestSpidInfo (RequestSpidInfoRequest) returns (RequestSpidInfoResponse) {}
+    rpc RequestLockChange (RequestLockChangeRequest) returns (RequestLockChangeResponse) {}
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    GlobalPosition location = 3;
+    string lastUpdated = 4;
+    string currentSpidID = 5;
+}
+
+message GetUserRequest {
+    string userID = 1;
+}
+
+message GetUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RegisterUserRequest {
+    string userName = 1;
+}
+
+message RegisterUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message UpdateUserLocationRequest {
+    string userID = 1;
+    GlobalPosition location = 2;
+}
+
+message UpdateUserLocationResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message DeleteUserRequest {
+    string userID = 1;
+}
+
+message DeleteUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestAssociationRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestAssociationResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestDissociationRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestDissociationResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestSpidInfoRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestSpidInfoResponse {
+    string message = 1;
+    SpidMinimal spid = 2;
+}
+
+message RequestLockChangeRequest {
+    string userID = 1;
+    string spidID = 2;
+    string lockState = 3;
+}
+
+message RequestLockChangeResponse {
+    string message = 1;
+    SpidMinimal spid = 2;
+}
