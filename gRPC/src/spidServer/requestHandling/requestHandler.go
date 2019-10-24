@@ -3,6 +3,7 @@ package requestHandling
 import (
 	"log"
 	"os"
+	"spidServer/requestHandling/grpc"
 	"time"
 )
 
@@ -38,6 +39,7 @@ type Handler struct {
 	LoggerDirty       *log.Logger
 	WritingToFile     bool
 	WritingToMemory   bool
+	GRPCWrapper       grpc.Wrapper
 }
 
 type GenericMessage struct {
