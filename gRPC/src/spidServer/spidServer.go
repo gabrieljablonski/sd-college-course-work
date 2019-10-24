@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"spidServer/requestHandling"
+	"spidServer/requestHandling/grpc/spid"
 )
 
 func main() {
@@ -13,7 +14,7 @@ func main() {
 		log.Fatal("failed", err)
 	}
 	s := grpc.NewServer()
-	requestHandling.RegisterSpidHandlerServer(s, &requestHandling.Handler{})
+	spid.RegisterSpidHandlerServer(s, &requestHandling.Handler{})
 	log.Print("serving...")
 	err = s.Serve(listener)
 	if err != nil {
