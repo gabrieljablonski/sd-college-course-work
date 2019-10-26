@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"log"
-	"main/entities"
-	eh "main/errorHandling"
+	"spidServer/entities"
+	eh "spidServer/errorHandling"
 )
 
 func (m *Manager) GetSpidsFromFile() entities.Spids {
