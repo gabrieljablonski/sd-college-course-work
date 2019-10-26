@@ -4,9 +4,23 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"log"
-	"main/gps"
+	"spidServer/gps"
+	"spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
 	"time"
 )
+
+type Users struct {
+	Users map[uuid.UUID]User `json:"users"`
+}
+
+func (u Users) ToString() string {
+	s, err := json.Marshal(u)
+	if err != nil {
+		log.Printf("Failed to convert users to string: %s", err)
+		return ""
+	}
+	return string(s)
+}
 
 type User struct {
 	ID            uuid.UUID          `json:"id"`
@@ -25,17 +39,14 @@ func (u User) ToString() string {
 	return string(s)
 }
 
-type Users struct {
-	Users map[uuid.UUID]User `json:"users"`
-}
-
-func (u Users) ToString() string {
-	s, err := json.Marshal(u)
-	if err != nil {
-		log.Printf("Failed to convert users to string: %s", err)
-		return ""
+func (u User) ToProtoBufferEntity() *spidProtoBuffers.User {
+	return &spidProtoBuffers.User{
+		Id:            u.ID.String(),
+		Name:          u.Name,
+		Location:      u.Location.ToProtoBufferEntity(),
+		LastUpdated:   u.LastUpdated.String(),
+		CurrentSpidID: u.CurrentSpidID.String(),
 	}
-	return string(s)
 }
 
 func NewUser(name string) User {

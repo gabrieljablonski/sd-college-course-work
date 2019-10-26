@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"log"
-	"main/gps"
+	"spidServer/gps"
+	"spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
 	"time"
 )
 
@@ -15,9 +16,22 @@ type LockInfo struct {
 	State string `json:"state"`
 }
 
+type Spids struct {
+	Spids map[uuid.UUID]Spid `json:"spids"`
+}
+
+func (s Spids) ToString() string {
+	ss, err := json.Marshal(s)
+	if err != nil {
+		log.Printf("Failed to convert spids to string: %s", err)
+		return ""
+	}
+	return string(ss)
+}
+
 type Spid struct {
 	ID            uuid.UUID          `json:"id"`
-	BatteryLevel  uint8              `json:"battery_level"`
+	BatteryLevel  uint32              `json:"battery_level"`
 	Lock          LockInfo           `json:"lock"`
 	Location      gps.GlobalPosition `json:"location"`
 	LastUpdated   time.Time          `json:"last_updated"`
@@ -33,17 +47,13 @@ func (s Spid) ToString() string {
 	return string(ss)
 }
 
-type Spids struct {
-	Spids map[uuid.UUID]Spid `json:"spids"`
-}
-
-func (s Spids) ToString() string {
-	ss, err := json.Marshal(s)
-	if err != nil {
-		log.Printf("Failed to convert spids to string: %s", err)
-		return ""
+func (s Spid) ToProtoBufferEntity() *spidProtoBuffers.SpidMinimal {
+	return &spidProtoBuffers.SpidMinimal{
+		Id:           s.ID.String(),
+		BatteryLevel: s.BatteryLevel,
+		Location:     s.Location.ToProtoBufferEntity(),
+		LockState:    s.Lock.State,
 	}
-	return string(ss)
 }
 
 func NewSpid() Spid {
