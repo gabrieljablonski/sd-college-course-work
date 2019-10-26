@@ -1,9 +1,9 @@
 package db
 
 import (
-	"main/entities"
-	"main/utils"
 	"os"
+	"spidServer/entities"
+	"spidServer/utils"
 )
 
 const UsersDefaultLocation = "db" + string(os.PathSeparator) + "users.spd"
