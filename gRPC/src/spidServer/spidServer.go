@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"spidServer/requestHandling/grpcWrapper"
-	"spidServer/requestHandling/grpcWrapper/spidPB"
+	pb "spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
 )
 
 func main() {
@@ -14,11 +14,10 @@ func main() {
 		log.Fatal("failed", err)
 	}
 	s := grpc.NewServer()
-	spidPB.RegisterSpidHandlerServer(s, &grpcWrapper.Wrapper{})
+	pb.RegisterSpidHandlerServer(s, &grpcWrapper.Wrapper{})
 	log.Print("serving...")
 	err = s.Serve(listener)
 	if err != nil {
 		log.Fatal("failed", err)
 	}
-	log.Print("served...")
 }
