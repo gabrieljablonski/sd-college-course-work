@@ -1,6 +1,6 @@
 package gps
 
-import "spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
+import "spidServer/requestHandling/spidProtoBuffers"
 
 type GlobalPosition struct {
 	Latitude float64 `json:"latitude"`

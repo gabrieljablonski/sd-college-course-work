@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"spidServer/gps"
-	"spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
+	"spidServer/requestHandling/spidProtoBuffers"
 	"time"
 )
 
