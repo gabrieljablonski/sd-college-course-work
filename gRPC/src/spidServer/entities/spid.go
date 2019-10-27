@@ -96,10 +96,7 @@ func (s *Spid) UpdateLocation(position gps.GlobalPosition) {
 	s.LastUpdated = time.Now()
 }
 
-func (s *Spid) UpdateLockState(lockState string, userID uuid.UUID) error {
-	if userID != s.CurrentUserID {
-		return fmt.Errorf("user with id %s not associated with spid", userID)
-	}
+func (s *Spid) UpdateLockState(lockState string) error {
 	if !IsValidLockState(lockState) {
 		return fmt.Errorf("invalid lock state")
 	}
