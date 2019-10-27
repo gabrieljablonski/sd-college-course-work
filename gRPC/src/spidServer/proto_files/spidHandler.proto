@@ -33,7 +33,7 @@ message GetSpidRequest {
 
 message GetSpidResponse {
     string message = 1;
-    Spid spid = 2;
+    SpidMinimal spid = 2;
 }
 
 message RegisterSpidRequest {
@@ -43,7 +43,7 @@ message RegisterSpidRequest {
 
 message RegisterSpidResponse {
     string message = 1;
-    Spid spid = 2;
+    SpidMinimal spid = 2;
 }
 
 message UpdateBatteryRequest {
@@ -53,7 +53,7 @@ message UpdateBatteryRequest {
 
 message UpdateBatteryResponse {
     string message = 1;
-    Spid spid = 2;
+    SpidMinimal spid = 2;
 }
 
 message UpdateSpidLocationRequest {
@@ -63,7 +63,7 @@ message UpdateSpidLocationRequest {
 
 message UpdateSpidLocationResponse {
     string message = 1;
-    Spid spid = 2;
+    SpidMinimal spid = 2;
 }
 
 message DeleteSpidRequest {
@@ -72,5 +72,5 @@ message DeleteSpidRequest {
 
 message DeleteSpidResponse {
     string message = 1;
-    Spid spid = 2;
+    SpidMinimal spid = 2;
 }
