@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"spidServer/requestHandling"
-	pb "spidServer/requestHandling/spidProtoBuffers"
+	pb "spidServer/requestHandling/protoBuffers"
 )
 
 func main() {
