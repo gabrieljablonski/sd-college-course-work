@@ -51,11 +51,11 @@ func (u User) ToProtoBufferEntity() *spidProtoBuffers.User {
 
 func NewUser(name string) User {
 	return User{
-		uuid.New(),
-		name,
-		gps.NullPosition(),
-		time.Unix(0,0),
-		uuid.Nil,
+		ID: uuid.New(),
+		Name: name,
+		Location: gps.NullPosition(),
+		LastUpdated: time.Unix(0,0),
+		CurrentSpidID: uuid.Nil,
 	}
 }
 
