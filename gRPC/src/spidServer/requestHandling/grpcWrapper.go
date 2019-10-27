@@ -2,7 +2,7 @@ package requestHandling
 
 import (
 	"spidServer/db"
-	pb "spidServer/requestHandling/spidProtoBuffers"
+	pb "spidServer/requestHandling/protoBuffers"
 )
 
 type Wrapper struct {
