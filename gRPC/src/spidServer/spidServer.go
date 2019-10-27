@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("failed", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterSpidHandlerServer(s, &requestHandling.Wrapper{})
+	pb.RegisterSpidHandlerServer(s, &requestHandling.Handler{})
 	log.Print("serving...")
 	err = s.Serve(listener)
 	if err != nil {

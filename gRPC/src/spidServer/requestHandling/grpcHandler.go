@@ -5,7 +5,7 @@ import (
 	pb "spidServer/requestHandling/protoBuffers"
 )
 
-type Wrapper struct {
+type Handler struct {
 	DBManager db.Manager
 	pb.SpidHandlerServer
 	pb.UserHandlerServer
