@@ -12,15 +12,15 @@ func NullPosition() GlobalPosition {
 	return GlobalPosition{0, 0}
 }
 
-func FromProtoBufferEntity(position *spidProtoBuffers.GlobalPosition) GlobalPosition {
+func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) GlobalPosition {
 	return GlobalPosition{
 		Latitude:  position.Latitude,
 		Longitude: position.Longitude,
 	}
 }
 
-func (p GlobalPosition) ToProtoBufferEntity() *spidProtoBuffers.GlobalPosition {
-	return &spidProtoBuffers.GlobalPosition{
+func (p GlobalPosition) ToProtoBufferEntity() *protoBuffers.GlobalPosition {
+	return &protoBuffers.GlobalPosition{
 		Latitude:  p.Latitude,
 		Longitude: p.Longitude,
 	}
