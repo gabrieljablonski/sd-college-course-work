@@ -56,12 +56,12 @@ func (s Spid) ToProtoBufferEntity() *protoBuffers.SpidMinimal {
 	}
 }
 
-func NewSpid() Spid {
+func NewSpid(batteryLevel uint32, location gps.GlobalPosition) Spid {
 	return Spid{
 		ID: uuid.New(),
-		BatteryLevel: 100,
+		BatteryLevel: batteryLevel,
 		Lock: LockInfo{false, false, "locked"},
-		Location: gps.NullPosition(),
+		Location: location,
 		LastUpdated: time.Unix(0,0),
 		CurrentUserID: uuid.Nil,
 	}
