@@ -73,8 +73,8 @@ func (m *Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	return m.Spids.Spids[spidID], nil
 }
 
-func (m *Manager) RegisterSpid() (spid entities.Spid, err error) {
-	spid = entities.NewSpid()
+func (m *Manager) RegisterSpid(batteryLevel uint32, location gps.GlobalPosition) (spid entities.Spid, err error) {
+	spid = entities.NewSpid(batteryLevel, location)
 	log.Printf("Registering spid: %s.", spid.ToString())
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
