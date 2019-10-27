@@ -10,3 +10,11 @@ type Handler struct {
 	pb.SpidHandlerServer
 	pb.UserHandlerServer
 }
+
+func NewHandler(basePath string) Handler {
+	h := Handler{
+		DBManager: db.NewManager(basePath),
+	}
+	h.DBManager.LoadFromFile()
+	return h
+}
