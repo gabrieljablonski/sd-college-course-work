@@ -9,16 +9,16 @@ import (
 	pb "spidServer/requestHandling/protoBuffers"
 )
 
-func (w *Wrapper) querySpid(spidID string) (spid entities.Spid, err error) {
+func (h *Handler) querySpid(spidID string) (spid entities.Spid, err error) {
 	id, err := uuid.Parse(spidID)
 	if err != nil {
 		return spid, fmt.Errorf("invalid user id: %s", err)
 	}
-	return w.DBManager.QuerySpid(id)
+	return h.DBManager.QuerySpid(id)
 }
 
-func (w *Wrapper) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (*pb.GetSpidResponse, error) {
-	spid, err :=  w.querySpid(request.SpidID)
+func (h *Handler) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (*pb.GetSpidResponse, error) {
+	spid, err :=  h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get spid info: %s", err)
 	}
@@ -28,8 +28,8 @@ func (w *Wrapper) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 	}, nil
 }
 
-func (w *Wrapper) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
-	spid, err :=  w.DBManager.RegisterSpid()
+func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
+	spid, err :=  h.DBManager.RegisterSpid()
 	if err != nil {
 		return nil, fmt.Errorf("failed to register spid")
 	}
@@ -39,13 +39,13 @@ func (w *Wrapper) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequ
 	}, nil
 }
 
-func (w *Wrapper) UpdateBatteryInfo(ctx context.Context, request *pb.UpdateBatteryRequest) (*pb.UpdateBatteryResponse, error) {
-	spid, err := w.querySpid(request.SpidID)
+func (h *Handler) UpdateBatteryInfo(ctx context.Context, request *pb.UpdateBatteryRequest) (*pb.UpdateBatteryResponse, error) {
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid battery info: %s", err)
 	}
 	spid.BatteryLevel = request.BatteryLevel
-	err = w.DBManager.UpdateSpid(spid)
+	err = h.DBManager.UpdateSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid battery info: %s", err)
 	}
@@ -55,13 +55,13 @@ func (w *Wrapper) UpdateBatteryInfo(ctx context.Context, request *pb.UpdateBatte
 	}, nil
 }
 
-func (w *Wrapper) UpdateSpidLocation(ctx context.Context, request *pb.UpdateSpidLocationRequest) (*pb.UpdateSpidLocationResponse, error) {
-	spid, err := w.querySpid(request.SpidID)
+func (h *Handler) UpdateSpidLocation(ctx context.Context, request *pb.UpdateSpidLocationRequest) (*pb.UpdateSpidLocationResponse, error) {
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid location: %s", err)
 	}
 	spid.Location = gps.FromProtoBufferEntity(request.Location)
-	err = w.DBManager.UpdateSpid(spid)
+	err = h.DBManager.UpdateSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid location: %s", err)
 	}
@@ -71,12 +71,12 @@ func (w *Wrapper) UpdateSpidLocation(ctx context.Context, request *pb.UpdateSpid
 	}, nil
 }
 
-func (w *Wrapper) DeleteSpid(ctx context.Context, request *pb.DeleteSpidRequest) (*pb.DeleteSpidResponse, error) {
-	spid, err := w.querySpid(request.SpidID)
+func (h *Handler) DeleteSpid(ctx context.Context, request *pb.DeleteSpidRequest) (*pb.DeleteSpidResponse, error) {
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete spid: %s", err)
 	}
-	err = w.DBManager.DeleteSpid(spid)
+	err = h.DBManager.DeleteSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete spid: %s", err)
 	}

@@ -9,16 +9,16 @@ import (
 	pb "spidServer/requestHandling/protoBuffers"
 )
 
-func (w *Wrapper) queryUser(userID string) (user entities.User, err error) {
+func (h *Handler) queryUser(userID string) (user entities.User, err error) {
 	id, err := uuid.Parse(userID)
 	if err != nil {
 		return user, fmt.Errorf("invalid user id: %s", err)
 	}
-	return w.DBManager.QueryUser(id)
+	return h.DBManager.QueryUser(id)
 }
 
-func (w *Wrapper) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	user, err :=  w.queryUser(request.UserID)
+func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	user, err :=  h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %s", err)
 	}
@@ -28,8 +28,8 @@ func (w *Wrapper) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 	}, nil
 }
 
-func (w *Wrapper) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
-	user, err :=  w.DBManager.RegisterUser(request.UserName)
+func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
+	user, err :=  h.DBManager.RegisterUser(request.UserName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register user")
 	}
@@ -39,11 +39,11 @@ func (w *Wrapper) RegisterUser(ctx context.Context, request *pb.RegisterUserRequ
 	}, nil
 }
 
-func (w *Wrapper) UpdateUserLocation(ctx context.Context, request *pb.UpdateUserLocationRequest) (*pb.UpdateUserLocationResponse, error) {
+func (h *Handler) UpdateUserLocation(ctx context.Context, request *pb.UpdateUserLocationRequest) (*pb.UpdateUserLocationResponse, error) {
 	if request.Location == nil {
 		return nil, fmt.Errorf("missing user location")
 	}
-	user, err :=  w.queryUser(request.UserID)
+	user, err :=  h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user location: %s", err)
 	}
@@ -51,7 +51,7 @@ func (w *Wrapper) UpdateUserLocation(ctx context.Context, request *pb.UpdateUser
 		Latitude:  request.Location.Latitude,
 		Longitude: request.Location.Longitude,
 	}
-	err = w.DBManager.UpdateUser(user)
+	err = h.DBManager.UpdateUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user location: %s", err)
 	}
@@ -61,12 +61,12 @@ func (w *Wrapper) UpdateUserLocation(ctx context.Context, request *pb.UpdateUser
 	}, nil
 }
 
-func (w *Wrapper) DeleteUser(ctx context.Context, request *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
-	user, err := w.queryUser(request.UserID)
+func (h *Handler) DeleteUser(ctx context.Context, request *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+	user, err := h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete user: %s", err)
 	}
-	err = w.DBManager.DeleteUser(user)
+	err = h.DBManager.DeleteUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete user: %s", err)
 	}
@@ -76,8 +76,8 @@ func (w *Wrapper) DeleteUser(ctx context.Context, request *pb.DeleteUserRequest)
 	}, nil
 }
 
-func (w *Wrapper) RequestAssociation(ctx context.Context, request *pb.RequestAssociationRequest) (*pb.RequestAssociationResponse, error) {
-	user, err := w.queryUser(request.UserID)
+func (h *Handler) RequestAssociation(ctx context.Context, request *pb.RequestAssociationRequest) (*pb.RequestAssociationResponse, error) {
+	user, err := h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request association: %s", err)
 	}
@@ -85,7 +85,7 @@ func (w *Wrapper) RequestAssociation(ctx context.Context, request *pb.RequestAss
 		return nil, fmt.Errorf("failed to request association: user is already associated to spid with id `%s`",
 			                    user.CurrentSpidID.String())
 	}
-	spid, err := w.querySpid(request.SpidID)
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request association: %s", err)
 	}
@@ -95,15 +95,15 @@ func (w *Wrapper) RequestAssociation(ctx context.Context, request *pb.RequestAss
 	}
 	user.CurrentSpidID = spid.ID
 	spid.CurrentUserID = user.ID
-	err = w.DBManager.UpdateUser(user)
+	err = h.DBManager.UpdateUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request association: %s", err)
 	}
-	err = w.DBManager.UpdateSpid(spid)
+	err = h.DBManager.UpdateSpid(spid)
 	if err != nil {
 		// if update spid failed, rollback update user
 		user.CurrentSpidID = uuid.Nil
-		err2 := w.DBManager.UpdateUser(user)
+		err2 := h.DBManager.UpdateUser(user)
 		if err2 != nil {
 			// if this ever happens, server will hold inconsistent data
 			return nil, fmt.Errorf("failed to request association: failed to rollback `%s`, `%s`", err, err2)
@@ -116,15 +116,15 @@ func (w *Wrapper) RequestAssociation(ctx context.Context, request *pb.RequestAss
 	}, nil
 }
 
-func (w *Wrapper) RequestDissociation(ctx context.Context, request *pb.RequestDissociationRequest) (*pb.RequestDissociationResponse, error) {
-	user, err := w.queryUser(request.UserID)
+func (h *Handler) RequestDissociation(ctx context.Context, request *pb.RequestDissociationRequest) (*pb.RequestDissociationResponse, error) {
+	user, err := h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request association: %s", err)
 	}
 	if user.CurrentSpidID == uuid.Nil {
 		return nil, fmt.Errorf("failed to request association: user is not associated to any spids")
 	}
-	spid, err := w.DBManager.QuerySpid(user.CurrentSpidID)
+	spid, err := h.DBManager.QuerySpid(user.CurrentSpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request dissociation: %s", err)
 	}
@@ -133,15 +133,15 @@ func (w *Wrapper) RequestDissociation(ctx context.Context, request *pb.RequestDi
 	}
 	user.CurrentSpidID = uuid.Nil
 	spid.CurrentUserID = uuid.Nil
-	err = w.DBManager.UpdateUser(user)
+	err = h.DBManager.UpdateUser(user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request dissociation: %s", err)
 	}
-	err = w.DBManager.UpdateSpid(spid)
+	err = h.DBManager.UpdateSpid(spid)
 	if err != nil {
 		// if update spid failed, rollback update user
 		user.CurrentSpidID = uuid.Nil
-		err2 := w.DBManager.UpdateUser(user)
+		err2 := h.DBManager.UpdateUser(user)
 		if err2 != nil {
 			// if this ever happens, server will hold inconsistent data
 			return nil, fmt.Errorf("failed to request dissociation: failed to rollback `%s`, `%s`", err, err2)
@@ -154,12 +154,12 @@ func (w *Wrapper) RequestDissociation(ctx context.Context, request *pb.RequestDi
 	}, nil
 }
 
-func (w *Wrapper) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidInfoRequest) (*pb.RequestSpidInfoResponse, error) {
-	user, err := w.queryUser(request.UserID)
+func (h *Handler) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidInfoRequest) (*pb.RequestSpidInfoResponse, error) {
+	user, err := h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request spid info: %s", err)
 	}
-	spid, err := w.querySpid(request.SpidID)
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request spid info: %s", err)
 	}
@@ -173,12 +173,12 @@ func (w *Wrapper) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidIn
 	}, nil
 }
 
-func (w *Wrapper) RequestLockChange(ctx context.Context, request *pb.RequestLockChangeRequest) (*pb.RequestLockChangeResponse, error) {
-	user, err := w.queryUser(request.UserID)
+func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLockChangeRequest) (*pb.RequestLockChangeResponse, error) {
+	user, err := h.queryUser(request.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request locak change: %s", err)
 	}
-	spid, err := w.querySpid(request.SpidID)
+	spid, err := h.querySpid(request.SpidID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request lock change: %s", err)
 	}
@@ -190,7 +190,7 @@ func (w *Wrapper) RequestLockChange(ctx context.Context, request *pb.RequestLock
 	if err != nil {
 		return nil, fmt.Errorf("failed to request lock change: %s", err)
 	}
-	err = w.DBManager.UpdateSpid(spid)
+	err = h.DBManager.UpdateSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to request lock change: %s", err)
 	}
