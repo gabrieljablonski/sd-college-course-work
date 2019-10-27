@@ -3,7 +3,9 @@ package db
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"io"
 	"log"
+	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
 )
@@ -60,27 +62,24 @@ func (m *Manager) WriteUsersToFile() {
 	log.Print("Finished writing users.")
 }
 
-func (m *Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
+func (m *Manager) QueryUser(userID uuid.UUID) (user entities.User, err error) {
 	log.Printf("Querying user with ID %s.", userID)
 	_, ok := m.Users.Users[userID]
 	if !ok {
-		err := fmt.Errorf("user with ID %s not found", userID)
+		err = fmt.Errorf("user with ID %s not found", userID)
 		log.Print(err)
-		return entities.User{}, err
+		return user, err
 	}
 	log.Printf("User found: %s", m.Users.Users[userID].ToString())
 	return m.Users.Users[userID], nil
 }
 
-func (m *Manager) RegisterUser(user entities.User) error {
-	_, err := m.QueryUser(user.ID)
-	if err == nil {
-		return fmt.Errorf("user with id %s already exists", user.ID)
-	}
-	log.Printf("Registering user: %s.", user)
+func (m *Manager) RegisterUser(userName string) (user entities.User, err error) {
+	user = entities.NewUser(userName)
+	log.Printf("Registering user: %s.", user.ToString())
 	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
-	return nil
+	return user, nil
 }
 
 func (m *Manager) UpdateUser(user entities.User) error {
@@ -88,7 +87,7 @@ func (m *Manager) UpdateUser(user entities.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating user: %s.", user)
+	log.Printf("Updating user: %s.", user.ToString())
 	m.Users.Users[user.ID] = user
 	log.Print("User updated.")
 	return nil
@@ -99,7 +98,7 @@ func (m *Manager) DeleteUser(user entities.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Deleting user: %s.", user)
+	log.Printf("Deleting user: %s.", user.ToString())
 	delete(m.Users.Users, user.ID)
 	log.Print("User deleted.")
 	return nil

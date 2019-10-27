@@ -3,7 +3,9 @@ package db
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"io"
 	"log"
+	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
 )
@@ -48,7 +50,7 @@ func (m *Manager) WriteSpidsToFile() {
 		eh.HandleFatal(err)
 	}
 	defer destination.Close()
-	_, err := io.Copy(destination, source)
+	_, err = io.Copy(destination, source)
 	eh.HandleFatal(err)
 	
 	log.Printf("Writing spids: %s", m.Spids.ToString())
@@ -60,7 +62,7 @@ func (m *Manager) WriteSpidsToFile() {
 	log.Print("Finished writing spids.")
 }
 
-func (m Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
+func (m *Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	log.Printf("Querying spid with ID %s.", spidID)
 	_, ok := m.Spids.Spids[spidID]
 	if !ok {
@@ -71,15 +73,12 @@ func (m Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	return m.Spids.Spids[spidID], nil
 }
 
-func (m *Manager) RegisterSpid(spid entities.Spid) error {
-	_, err := m.QuerySpid(spid.ID)
-	if err == nil {
-		return fmt.Errorf("spid with id %s already exists", spid.ID)
-	}
+func (m *Manager) RegisterSpid() (spid entities.Spid, err error) {
+	spid = entities.NewSpid()
 	log.Printf("Registering spid: %s.", spid.ToString())
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
-	return nil
+	return spid, nil
 }
 
 func (m *Manager) UpdateSpid(spid entities.Spid) error {
@@ -87,7 +86,7 @@ func (m *Manager) UpdateSpid(spid entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating spid: %s.", spid)
+	log.Printf("Updating spid: %s.", spid.ToString())
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid updated.")
 	return nil
@@ -98,7 +97,7 @@ func (m *Manager) DeleteSpid(spid entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Deleting spid: %s.", spid)
+	log.Printf("Deleting spid: %s.", spid.ToString())
 	delete(m.Spids.Spids, spid.ID)
 	log.Print("Spid updated.")
 	return nil
