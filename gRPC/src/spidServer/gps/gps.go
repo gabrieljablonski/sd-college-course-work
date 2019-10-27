@@ -1,6 +1,8 @@
 package gps
 
-import "spidServer/requestHandling/protoBuffers"
+import (
+	"spidServer/requestHandling/protoBuffers"
+)
 
 type GlobalPosition struct {
 	Latitude float64 `json:"latitude"`
@@ -13,6 +15,9 @@ func NullPosition() GlobalPosition {
 }
 
 func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) GlobalPosition {
+	if position == nil {
+		return NullPosition()
+	}
 	return GlobalPosition{
 		Latitude:  position.Latitude,
 		Longitude: position.Longitude,
