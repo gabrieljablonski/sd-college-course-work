@@ -39,8 +39,8 @@ func (u User) ToString() string {
 	return string(s)
 }
 
-func (u User) ToProtoBufferEntity() *spidProtoBuffers.User {
-	return &spidProtoBuffers.User{
+func (u User) ToProtoBufferEntity() *protoBuffers.User {
+	return &protoBuffers.User{
 		Id:            u.ID.String(),
 		Name:          u.Name,
 		Location:      u.Location.ToProtoBufferEntity(),

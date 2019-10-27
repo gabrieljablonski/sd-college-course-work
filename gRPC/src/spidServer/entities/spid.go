@@ -47,8 +47,8 @@ func (s Spid) ToString() string {
 	return string(ss)
 }
 
-func (s Spid) ToProtoBufferEntity() *spidProtoBuffers.SpidMinimal {
-	return &spidProtoBuffers.SpidMinimal{
+func (s Spid) ToProtoBufferEntity() *protoBuffers.SpidMinimal {
+	return &protoBuffers.SpidMinimal{
 		Id:           s.ID.String(),
 		BatteryLevel: s.BatteryLevel,
 		Location:     s.Location.ToProtoBufferEntity(),
