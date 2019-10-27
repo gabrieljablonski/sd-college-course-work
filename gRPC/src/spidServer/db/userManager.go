@@ -12,7 +12,7 @@ import (
 
 func (m *Manager) GetUsersFromFile() entities.Users {
 	log.Print("Reading users.")
-	usersFromFile, err := m.FileManager.ReadFile(UsersDefaultLocation)
+	usersFromFile, err := m.FileManager.ReadFile(DefaultUsersLocation)
 	if err != nil {
 		log.Fatalf("Failed to read users from file: %s", err)
 		return entities.Users{}
@@ -37,7 +37,7 @@ func (m *Manager) WriteUsersToFile() {
 	}
 
 	log.Printf("Making copy of users file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + UsersDefaultLocation
+	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultUsersLocation
 	dst := src + ".bk"
 	source, err := os.Open(src)
 	if err != nil {
@@ -54,7 +54,7 @@ func (m *Manager) WriteUsersToFile() {
 	eh.HandleFatal(err)
 
 	log.Printf("Writing users: %s", m.Users.ToString())
-	err = m.FileManager.WriteToFile(UsersDefaultLocation, marshaledUsers)
+	err = m.FileManager.WriteToFile(DefaultUsersLocation, marshaledUsers)
 	if err != nil {
 		log.Printf("Failed to write users to file: %s", err)
 		return

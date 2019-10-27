@@ -8,11 +8,12 @@ import (
 	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
+	"spidServer/gps"
 )
 
 func (m *Manager) GetSpidsFromFile() entities.Spids {
 	log.Print("Reading spids.")
-	spidsFromFile, err := m.FileManager.ReadFile(SpidsDefaultLocation)
+	spidsFromFile, err := m.FileManager.ReadFile(DefaultSpidsLocation)
 	if err != nil {
 		log.Printf("Failed to read spids from file: %s", err)
 		return entities.Spids{}
@@ -37,7 +38,7 @@ func (m *Manager) WriteSpidsToFile() {
 	}
 
 	log.Printf("Making copy of spids file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + SpidsDefaultLocation
+	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultSpidsLocation
 	dst := src + ".bk"
 	source, err := os.Open(src)
 	if err != nil {
@@ -54,7 +55,7 @@ func (m *Manager) WriteSpidsToFile() {
 	eh.HandleFatal(err)
 	
 	log.Printf("Writing spids: %s", m.Spids.ToString())
-	err = m.FileManager.WriteToFile(SpidsDefaultLocation, marshaledSpids)
+	err = m.FileManager.WriteToFile(DefaultSpidsLocation, marshaledSpids)
 	if err != nil {
 		log.Printf("Failed to write spids to file: %s", err)
 		return
