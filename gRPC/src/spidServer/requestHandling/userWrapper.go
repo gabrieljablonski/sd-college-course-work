@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"spidServer/entities"
 	"spidServer/gps"
-	pb "spidServer/requestHandling/spidProtoBuffers"
+	pb "spidServer/requestHandling/protoBuffers"
 )
 
 func (w *Wrapper) queryUser(userID string) (user entities.User, err error) {
