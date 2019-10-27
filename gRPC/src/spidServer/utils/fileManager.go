@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"main/errorHandling"
 	"os"
+	"spidServer/errorHandling"
 )
 
 type FileManager struct {
