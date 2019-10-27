@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"log"
-	pb "spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
+	pb "spidServer/requestHandling/spidProtoBuffers"
 	"time"
 )
 

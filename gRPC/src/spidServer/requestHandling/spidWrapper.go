@@ -1,4 +1,4 @@
-package grpcWrapper
+package requestHandling
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"spidServer/entities"
 	"spidServer/gps"
-	pb "spidServer/requestHandling/grpcWrapper/spidProtoBuffers"
+	pb "spidServer/requestHandling/spidProtoBuffers"
 )
 
 func (w *Wrapper) querySpid(spidID string) (spid entities.Spid, err error) {
@@ -14,7 +14,7 @@ func (w *Wrapper) querySpid(spidID string) (spid entities.Spid, err error) {
 	if err != nil {
 		return spid, fmt.Errorf("invalid user id: %s", err)
 	}
-	return w.Handler.Manager.QuerySpid(id)
+	return w.DBManager.QuerySpid(id)
 }
 
 func (w *Wrapper) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (*pb.GetSpidResponse, error) {
@@ -29,7 +29,7 @@ func (w *Wrapper) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 }
 
 func (w *Wrapper) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
-	spid, err :=  w.Handler.Manager.RegisterSpid()
+	spid, err :=  w.DBManager.RegisterSpid()
 	if err != nil {
 		return nil, fmt.Errorf("failed to register spid")
 	}
@@ -45,7 +45,7 @@ func (w *Wrapper) UpdateBatteryInfo(ctx context.Context, request *pb.UpdateBatte
 		return nil, fmt.Errorf("failed to update spid battery info: %s", err)
 	}
 	spid.BatteryLevel = request.BatteryLevel
-	err = w.Handler.Manager.UpdateSpid(spid)
+	err = w.DBManager.UpdateSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid battery info: %s", err)
 	}
@@ -61,7 +61,7 @@ func (w *Wrapper) UpdateSpidLocation(ctx context.Context, request *pb.UpdateSpid
 		return nil, fmt.Errorf("failed to update spid location: %s", err)
 	}
 	spid.Location = gps.FromProtoBufferEntity(request.Location)
-	err = w.Handler.Manager.UpdateSpid(spid)
+	err = w.DBManager.UpdateSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update spid location: %s", err)
 	}
@@ -76,7 +76,7 @@ func (w *Wrapper) DeleteSpid(ctx context.Context, request *pb.DeleteSpidRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete spid: %s", err)
 	}
-	err = w.Handler.Manager.DeleteSpid(spid)
+	err = w.DBManager.DeleteSpid(spid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete spid: %s", err)
 	}
