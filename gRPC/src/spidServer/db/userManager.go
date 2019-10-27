@@ -50,7 +50,7 @@ func (m *Manager) WriteUsersToFile() {
 		eh.HandleFatal(err)
 	}
 	defer destination.Close()
-	_, err := io.Copy(destination, source)
+	_, err = io.Copy(destination, source)
 	eh.HandleFatal(err)
 
 	log.Printf("Writing users: %s", m.Users.ToString())
