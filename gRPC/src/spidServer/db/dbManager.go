@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/google/uuid"
 	"log"
 	"os"
 	"spidServer/entities"
@@ -10,13 +11,15 @@ import (
 )
 
 const (
-	DefaultLogPath     = "requestHandling" + string(os.PathSeparator) + "request_logs.spd"
-	DefaultDirtyRequestsPath = "requestHandling" + string(os.PathSeparator) + "dirty_requests.spd"
+	Sep = string(os.PathSeparator)
+	DefaultLogPath     = "requestHandling" + Sep + "request_logs.spd"
+	DefaultDirtyRequestsPath = "requestHandling" + Sep + "dirty_requests.spd"
 	DefaultMaxBufferedRequests = 100
 	DefaultWriteToFilePeriod   = 5000*time.Millisecond
 
-	DefaultUsersLocation = "db" + string(os.PathSeparator) + "users.spd"
-	DefaultSpidsLocation = "db" + string(os.PathSeparator) + "spids.spd"
+	DefaultUsersLocation = "db" + Sep + "users.spd"
+	DefaultSpidsLocation = "db" + Sep + "spids.spd"
+	DefaultServerIDLocation = "db" + Sep + "server_id.spd"
 )
 
 type Manager struct {
@@ -29,7 +32,7 @@ type Manager struct {
 }
 
 func NewManager(basePath string) Manager {
-	pathDirty := basePath + string(os.PathSeparator) + DefaultDirtyRequestsPath
+	pathDirty := basePath + Sep + DefaultDirtyRequestsPath
 	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
 	m := Manager{FileManager: utils.FileManager{BasePath: basePath}}
@@ -44,6 +47,24 @@ func (m *Manager) LoadFromFile() {
 	m.Spids = m.GetSpidsFromFile()
 }
 
+func (m *Manager) GetServerID() uuid.UUID {
+	serverIDPath := m.FileManager.BasePath + Sep + DefaultServerIDLocation
+	id, err := m.FileManager.ReadFile(serverIDPath)
+	if err != nil {
+		return uuid.Nil
+	}
+	uid, err := uuid.Parse(string(id))
+	if err != nil {
+		return uuid.Nil
+	}
+	return uid
+}
+
+func (m *Manager) WriteServerID(uid uuid.UUID) error {
+	serverIDPath := m.FileManager.BasePath + Sep + DefaultServerIDLocation
+	return m.FileManager.WriteToFile(serverIDPath, []byte(uid.String()))
+}
+
 func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 	for {
 		time.Sleep(period)
@@ -54,7 +75,7 @@ func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 		m.WriteSpidsToFile()
 
 		log.Print("Truncating dirty log file...")
-		pathDirty := m.FileManager.BasePath + string(os.PathSeparator) + DefaultDirtyRequestsPath
+		pathDirty := m.FileManager.BasePath + Sep + DefaultDirtyRequestsPath
 		dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 		// Old *File for LoggerDirty will be garbage collected
 		m.LoggerDirty = log.New(dirtyLogFile, "", 0)
