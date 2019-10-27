@@ -29,7 +29,7 @@ func (h *Handler) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 }
 
 func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
-	spid, err :=  h.DBManager.RegisterSpid()
+	spid, err :=  h.DBManager.RegisterSpid(request.BatteryLevel, gps.FromProtoBufferEntity(request.Location))
 	if err != nil {
 		return nil, fmt.Errorf("failed to register spid")
 	}
