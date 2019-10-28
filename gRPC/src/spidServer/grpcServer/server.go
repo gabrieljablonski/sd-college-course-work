@@ -31,9 +31,6 @@ type Server struct {
 	// number from 1 to `n` indicating position in global IP table
 	Number				int
 	RegistrarConnection net.Conn
-
-	// number of divisions in both longitude and latitude = √n
-	GlobalDivisions     int
 	Boundaries          []gps.GlobalPosition
 }
 
@@ -65,28 +62,30 @@ func NewServer(port string) Server {
 	}
 }
 
-func (s *Server) ComputeBoundaries() {
+func (s *Server) CalculateBoundaries() {
 	// visual representation of this algorithm applied for 9 divisions
 	// can be seen in `global_boundaries_9_regions.png`.
 	// the boundaries are represented by the red dots
-	if s.GlobalDivisions == 0 {
+	if len(s.Handler.IPTable) == 0 {
 		log.Fatal("ip table is empty")
 	}
+	s.Boundaries = make([]gps.GlobalPosition, 0)
 	// the result should be an integer
 	// rounding to avoid situations like 1.99999... being truncated to 1
-	s.Boundaries = make([]gps.GlobalPosition, 0)
-	baseDelta := int(math.Round(math.Sqrt(float64(s.GlobalDivisions))))
-	longitudeDelta := math.Round(360.0/float64(baseDelta))
-	latitudeDelta := math.Round(180.0/float64(baseDelta))
+	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Handler.IPTable)))))
+	// using ceiling just to avoid rounding issues
+	longitudeDelta := math.Ceil(360.0/float64(baseDelta))
+	latitudeDelta := math.Ceil(180.0/float64(baseDelta))
 	for i := 1; i <= baseDelta; i++ {
-		for j := 1; j <= baseDelta; i++ {
+		for j := 1; j <= baseDelta; j++ {
 			lat := -90.0 + float64(i)*latitudeDelta
 			lon := -180.0 + float64(j)*longitudeDelta
+			// fixing upper limits manually to avoid rounding issues
 			if i == baseDelta {
-				lat = 90.1
+				lat = 90.0
 			}
 			if j == baseDelta {
-				lon = 180.1
+				lon = 180.0
 			}
 			s.Boundaries = append(s.Boundaries, gps.GlobalPosition{
 				Latitude:  lat,
@@ -96,31 +95,17 @@ func (s *Server) ComputeBoundaries() {
 	}
 }
 
-func (s *Server) WhereIsPosition(position gps.GlobalPosition) IP {
+func (s *Server) WhereIsPosition(position gps.GlobalPosition) utils.IP {
 	if len(s.Boundaries) == 0 {
-		log.Fatal("boundaries not computed")
+		log.Fatal("boundaries not calculated")
 	}
-	baseDelta := int(math.Round(math.Sqrt(float64(s.GlobalDivisions))))
-	bX, bY := -1, -1
-	for i := 0; i < baseDelta; i++ {
-		for j := 0; j < baseDelta; j++ {
-			boundary := s.Boundaries[baseDelta*i + j]
-			if bX != -1 {
-				if position.Longitude < boundary.Longitude {
-					bX = j
-				}
-			}
-			if bY != -1 {
-				if position.Latitude < boundary.Latitude {
-					bY = i
-				}
-			}
-			if bX != -1 && bY != -1 {
-				break
-			}
-		}
-	}
-	serverNumber := baseDelta*bY + bX
+	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Boundaries)))))
+	longitudeDelta := math.Ceil(360.0/float64(baseDelta))
+	latitudeDelta := math.Ceil(180.0/float64(baseDelta))
+
+	bLongitude := int(math.Floor(position.Longitude/longitudeDelta))
+	bLatitude := int(math.Floor(position.Latitude/latitudeDelta))
+	serverNumber := baseDelta*bLatitude + bLongitude
 	return s.Handler.IPTable[serverNumber]
 }
 
@@ -129,10 +114,11 @@ func (s *Server) WhereIsEntity(id uuid.UUID) utils.IP {
 	//   -- all entities have a home server mapped by this rule
 	//   -- all spids are also replicated to server
 	//      mapped geographically so they can be easily found by users close by
-	if s.GlobalDivisions == 0 {
+	if len(s.Handler.IPTable) == 0 {
 		log.Fatal("ip table is empty")
 	}
-	serverNumber := id.ID() % uint32(s.GlobalDivisions)
+	// uuid has uniform distribution
+	serverNumber := id.ID() % uint32(len(s.Handler.IPTable))
 	return s.Handler.IPTable[serverNumber]
 }
 
