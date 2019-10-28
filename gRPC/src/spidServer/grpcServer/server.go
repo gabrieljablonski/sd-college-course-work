@@ -14,6 +14,7 @@ import (
 	"spidServer/gps"
 	"spidServer/requestHandling"
 	pb "spidServer/requestHandling/protoBuffers"
+	"spidServer/utils"
 	"strconv"
 	"strings"
 )
@@ -23,15 +24,10 @@ const (
 	DefaultPort = "5000"
 )
 
-type IP struct {
-	Address string
-	Port    string
-}
-
 type Server struct {
 	ID 				    uuid.UUID
 	Handler             requestHandling.Handler
-	IP                  IP
+	IP                  utils.IP
 	// number from 1 to `n` indicating position in global IP table
 	Number				int
 	RegistrarConnection net.Conn
@@ -62,7 +58,7 @@ func NewServer(port string) Server {
 	return Server{
 		ID: handler.DBManager.GetServerID(),
 		Handler: handler,
-		IP: IP{
+		IP: utils.IP{
 			Address: GetOutboundIP(),
 			Port:    port,
 		},
@@ -128,7 +124,7 @@ func (s *Server) WhereIsPosition(position gps.GlobalPosition) IP {
 	return s.Handler.IPTable[serverNumber]
 }
 
-func (s *Server) WhereIsEntity(id uuid.UUID) IP {
+func (s *Server) WhereIsEntity(id uuid.UUID) utils.IP {
 	// static rule for user and spid mapping
 	//   -- all entities have a home server mapped by this rule
 	//   -- all spids are also replicated to server
@@ -192,7 +188,7 @@ func (s *Server) UpdateIPTable() {
 		split := strings.Split(ip, ":")
 		s.Handler.IPTable = append(
 			s.Handler.IPTable,
-			IP{
+			utils.IP{
 				Address: split[0],
 				Port:    split[1],
 			},
