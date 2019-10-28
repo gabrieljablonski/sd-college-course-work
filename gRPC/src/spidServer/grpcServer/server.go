@@ -21,7 +21,7 @@ import (
 
 const (
 	DefaultProtocol = "tcp"
-	DefaultPort = "5000"
+	DefaultPort = "43210"
 )
 
 type Server struct {
@@ -128,7 +128,7 @@ func (s *Server) Register(registrarAddress, registrarPort string) {
 	addr := fmt.Sprintf("%s:%s", registrarAddress, registrarPort)
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
-		log.Fatalf("failed to register server at %s", addr)
+		log.Fatalf("failed to register server at %s: %s", addr, err)
 	}
 	s.RegistrarConnection = conn
 	if s.ID == uuid.Nil {
@@ -180,8 +180,7 @@ func (s *Server) UpdateIPTable() {
 			},
 		)
 	}
-	s.GlobalDivisions = len(s.Handler.IPTable)
-	s.ComputeBoundaries()
+	s.CalculateBoundaries()
 }
 
 func (s *Server) Listen() {

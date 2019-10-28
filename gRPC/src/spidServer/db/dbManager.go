@@ -48,7 +48,7 @@ func (m *Manager) LoadFromFile() {
 }
 
 func (m *Manager) GetServerID() uuid.UUID {
-	serverIDPath := m.FileManager.BasePath + Sep + DefaultServerIDLocation
+	serverIDPath := DefaultServerIDLocation
 	id, err := m.FileManager.ReadFile(serverIDPath)
 	if err != nil {
 		return uuid.Nil
@@ -61,8 +61,7 @@ func (m *Manager) GetServerID() uuid.UUID {
 }
 
 func (m *Manager) WriteServerID(uid uuid.UUID) error {
-	serverIDPath := m.FileManager.BasePath + Sep + DefaultServerIDLocation
-	return m.FileManager.WriteToFile(serverIDPath, []byte(uid.String()))
+	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
 }
 
 func (m *Manager) WriteToFilePeriodically(period time.Duration) {

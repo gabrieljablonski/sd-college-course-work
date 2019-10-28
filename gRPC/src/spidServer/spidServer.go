@@ -25,5 +25,6 @@ func main() {
 	registrarPort := arguments[3]
 	server := grpcServer.NewServer(port)
 	server.Register(registrarAddress, registrarPort)
+	server.UpdateIPTable()
 	server.Listen()
 }
