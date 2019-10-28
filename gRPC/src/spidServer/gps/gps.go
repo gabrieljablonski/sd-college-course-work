@@ -1,6 +1,7 @@
 package gps
 
 import (
+	"fmt"
 	"spidServer/requestHandling/protoBuffers"
 )
 
@@ -22,6 +23,10 @@ func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) GlobalPosition
 		Latitude:  position.Latitude,
 		Longitude: position.Longitude,
 	}
+}
+
+func (p GlobalPosition) ToString() string {
+	return fmt.Sprintf("{\n\tLatitude: %f,\n\tLongitude: %f\n}", p.Latitude, p.Longitude)
 }
 
 func (p GlobalPosition) ToProtoBufferEntity() *protoBuffers.GlobalPosition {
