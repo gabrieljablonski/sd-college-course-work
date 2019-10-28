@@ -79,7 +79,7 @@ func (s *Server) ComputeBoundaries() {
 	// the result should be an integer
 	// rounding to avoid situations like 1.99999... being truncated to 1
 	s.Boundaries = make([]gps.GlobalPosition, 0)
-	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Handler.IPTable)))))
+	baseDelta := int(math.Round(math.Sqrt(float64(s.GlobalDivisions))))
 	longitudeDelta := math.Round(360.0/float64(baseDelta))
 	latitudeDelta := math.Round(180.0/float64(baseDelta))
 	for i := 1; i <= baseDelta; i++ {
@@ -87,10 +87,10 @@ func (s *Server) ComputeBoundaries() {
 			lat := -90.0 + float64(i)*latitudeDelta
 			lon := -180.0 + float64(j)*longitudeDelta
 			if i == baseDelta {
-				lat = 90.0
+				lat = 90.1
 			}
 			if j == baseDelta {
-				lon = 180.0
+				lon = 180.1
 			}
 			s.Boundaries = append(s.Boundaries, gps.GlobalPosition{
 				Latitude:  lat,
@@ -100,7 +100,35 @@ func (s *Server) ComputeBoundaries() {
 	}
 }
 
-func (s *Server) WhereIs(id uuid.UUID) IP {
+func (s *Server) WhereIsPosition(position gps.GlobalPosition) IP {
+	if len(s.Boundaries) == 0 {
+		log.Fatal("boundaries not computed")
+	}
+	baseDelta := int(math.Round(math.Sqrt(float64(s.GlobalDivisions))))
+	bX, bY := -1, -1
+	for i := 0; i < baseDelta; i++ {
+		for j := 0; j < baseDelta; j++ {
+			boundary := s.Boundaries[baseDelta*i + j]
+			if bX != -1 {
+				if position.Longitude < boundary.Longitude {
+					bX = j
+				}
+			}
+			if bY != -1 {
+				if position.Latitude < boundary.Latitude {
+					bY = i
+				}
+			}
+			if bX != -1 && bY != -1 {
+				break
+			}
+		}
+	}
+	serverNumber := baseDelta*bY + bX
+	return s.Handler.IPTable[serverNumber]
+}
+
+func (s *Server) WhereIsEntity(id uuid.UUID) IP {
 	// static rule for user and spid mapping
 	//   -- all entities have a home server mapped by this rule
 	//   -- all spids are also replicated to server
@@ -129,7 +157,7 @@ func (s *Server) Register(registrarAddress, registrarPort string) {
 			log.Fatalf("failed to save new server id: %s", err)
 		}
 	}
-	request := fmt.Sprintf("REGISTER SERVER %s\n", s.ID.String())
+	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.IP.Port, s.ID.String())
 	_, err = s.RegistrarConnection.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send register request: %s", err)
