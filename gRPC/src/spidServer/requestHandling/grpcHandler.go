@@ -2,13 +2,13 @@ package requestHandling
 
 import (
 	"spidServer/db"
-	"spidServer/grpcServer"
 	pb "spidServer/requestHandling/protoBuffers"
+	"spidServer/utils"
 )
 
 type Handler struct {
 	DBManager db.Manager
-	IPTable	              []grpcServer.IP
+	IPTable	  []utils.IP
 
 	pb.SpidHandlerServer
 	pb.UserHandlerServer
