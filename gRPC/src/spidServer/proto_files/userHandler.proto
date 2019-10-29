@@ -7,7 +7,7 @@ import "spidHandler.proto";
 service UserHandler {
     rpc GetUserInfo (GetUserRequest) returns (GetUserResponse) {}
     rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse) {}
-    rpc UpdateUserLocation (UpdateUserLocationRequest) returns (UpdateUserLocationResponse) {}
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {}
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
     rpc RequestAssociation (RequestAssociationRequest) returns (RequestAssociationResponse) {}
     rpc RequestDissociation (RequestDissociationRequest) returns (RequestDissociationResponse) {}
@@ -41,12 +41,11 @@ message RegisterUserResponse {
     User user = 2;
 }
 
-message UpdateUserLocationRequest {
-    string userID = 1;
-    GlobalPosition location = 2;
+message UpdateUserRequest {
+    User user = 1;
 }
 
-message UpdateUserLocationResponse {
+message UpdateUserResponse {
     string message = 1;
     User user = 2;
 }
@@ -87,7 +86,7 @@ message RequestSpidInfoRequest {
 
 message RequestSpidInfoResponse {
     string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
 
 message RequestLockChangeRequest {
@@ -98,5 +97,5 @@ message RequestLockChangeRequest {
 
 message RequestLockChangeResponse {
     string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
