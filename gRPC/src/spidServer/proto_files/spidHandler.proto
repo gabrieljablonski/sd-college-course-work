@@ -6,25 +6,23 @@ import "genericDefinitions.proto";
 service SpidHandler {
     rpc GetSpidInfo (GetSpidRequest) returns (GetSpidResponse) {}
     rpc RegisterSpid (RegisterSpidRequest) returns (RegisterSpidResponse) {}
-    rpc UpdateBatteryInfo (UpdateBatteryRequest) returns (UpdateBatteryResponse) {}
-    rpc UpdateSpidLocation (UpdateSpidLocationRequest) returns (UpdateSpidLocationResponse) {}
+    rpc UpdateSpid (UpdateSpidRequest) returns (UpdateSpidResponse) {}
     rpc DeleteSpid (DeleteSpidRequest) returns (DeleteSpidResponse) {}
+}
+
+message LockInfo {
+    bool override = 1;
+    bool pending = 2;
+    string state = 3;
 }
 
 message Spid {
     string id = 1;
     uint32 batteryLevel = 2;
-    string lockInfo = 3;
+    LockInfo lockInfo = 3;
     GlobalPosition location = 4;
     string lastUpdated = 5;
     string currentUserID = 6;
-}
-
-message SpidMinimal {
-    string id = 1;
-    uint32 batteryLevel = 2;
-    GlobalPosition location = 3;
-    string lockState = 4;
 }
 
 message GetSpidRequest {
@@ -33,7 +31,7 @@ message GetSpidRequest {
 
 message GetSpidResponse {
     string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
 
 message RegisterSpidRequest {
@@ -43,27 +41,16 @@ message RegisterSpidRequest {
 
 message RegisterSpidResponse {
     string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
 
-message UpdateBatteryRequest {
-    string spidID = 1;
-    uint32 batteryLevel = 2;
+message UpdateSpidRequest {
+    Spid spid = 1;
 }
 
-message UpdateBatteryResponse {
+message UpdateSpidResponse {
     string message = 1;
-    SpidMinimal spid = 2;
-}
-
-message UpdateSpidLocationRequest {
-    string spidID = 1;
-    GlobalPosition location = 2;
-}
-
-message UpdateSpidLocationResponse {
-    string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
 
 message DeleteSpidRequest {
@@ -72,5 +59,5 @@ message DeleteSpidRequest {
 
 message DeleteSpidResponse {
     string message = 1;
-    SpidMinimal spid = 2;
+    Spid spid = 2;
 }
