@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"io"
 	"log"
 	"os"
 	"spidServer/entities"
@@ -36,23 +35,12 @@ func (m *Manager) WriteSpidsToFile() {
 		return
 	}
 
-	log.Printf("Making copy of spids file...")
+	log.Printf("Making backup of spids file...")
 	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultSpidsLocation
 	dst := src + ".bk"
-	source, err := os.Open(src)
-	if err != nil {
-		eh.HandleFatal(err)
-	}
-	defer source.Close()
-	_ = os.Remove(dst)
-	destination, err := os.Create(dst)
-	if err != nil {
-		eh.HandleFatal(err)
-	}
-	defer destination.Close()
-	_, err = io.Copy(destination, source)
+	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
-	
+
 	log.Printf("Writing spids: %s", m.Spids.ToString())
 	err = m.FileManager.WriteToFile(DefaultSpidsLocation, marshaledSpids)
 	if err != nil {
@@ -64,13 +52,13 @@ func (m *Manager) WriteSpidsToFile() {
 
 func (m *Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	log.Printf("Querying spid with ID %s.", spidID)
-	_, ok := m.Spids.Spids[spidID]
+	s, ok := m.Spids.Spids[spidID]
 	if !ok {
 		err := fmt.Errorf("spid with ID %s not found", spidID)
 		return entities.Spid{}, err
 	}
-	log.Printf("Spid found: %s", m.Spids.Spids[spidID])
-	return m.Spids.Spids[spidID], nil
+	log.Printf("Spid found: %s", s.ToString())
+	return s, nil
 }
 
 func (m *Manager) RegisterSpid(spid entities.Spid) error {
