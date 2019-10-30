@@ -7,11 +7,9 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"log"
-	"math"
 	"net"
 	"os"
 	"spidServer/errorHandling"
-	"spidServer/gps"
 	"spidServer/requestHandling"
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
@@ -25,13 +23,11 @@ const (
 )
 
 type Server struct {
-	ID 				    uuid.UUID
-	Handler             requestHandling.Handler
-	IP                  utils.IP
-	// number from 1 to `n` indicating position in global IP table
-	Number				int
-	RegistrarConnection net.Conn
-	Boundaries          []gps.GlobalPosition
+	ID 	        uuid.UUID
+	Handler     requestHandling.Handler
+	IP          utils.IP
+	RegistrarIP utils.IP
+	Registered  bool
 }
 
 // Get preferred outbound ip of this machine
@@ -42,7 +38,7 @@ func GetOutboundIP() string {
 	}
 	defer conn.Close()
 	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return string(localAddr.IP)
+	return localAddr.IP.String()
 }
 
 func NewServer(port string) Server {
@@ -62,75 +58,16 @@ func NewServer(port string) Server {
 	}
 }
 
-func (s *Server) CalculateBoundaries() {
-	// visual representation of this algorithm applied for 9 divisions
-	// can be seen in `global_boundaries_9_regions.png`.
-	// the boundaries are represented by the red dots
-	if len(s.Handler.IPTable) == 0 {
-		log.Fatal("ip table is empty")
-	}
-	s.Boundaries = make([]gps.GlobalPosition, 0)
-	// the result should be an integer
-	// rounding to avoid situations like 1.99999... being truncated to 1
-	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Handler.IPTable)))))
-	// using ceiling just to avoid rounding issues
-	longitudeDelta := math.Ceil(360.0/float64(baseDelta))
-	latitudeDelta := math.Ceil(180.0/float64(baseDelta))
-	for i := 1; i <= baseDelta; i++ {
-		for j := 1; j <= baseDelta; j++ {
-			lat := -90.0 + float64(i)*latitudeDelta
-			lon := -180.0 + float64(j)*longitudeDelta
-			// fixing upper limits manually to avoid rounding issues
-			if i == baseDelta {
-				lat = 90.0
-			}
-			if j == baseDelta {
-				lon = 180.0
-			}
-			s.Boundaries = append(s.Boundaries, gps.GlobalPosition{
-				Latitude:  lat,
-				Longitude: lon,
-			})
-		}
-	}
-}
-
-func (s *Server) WhereIsPosition(position gps.GlobalPosition) utils.IP {
-	if len(s.Boundaries) == 0 {
-		log.Fatal("boundaries not calculated")
-	}
-	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Boundaries)))))
-	longitudeDelta := math.Ceil(360.0/float64(baseDelta))
-	latitudeDelta := math.Ceil(180.0/float64(baseDelta))
-
-	bLongitude := int(math.Floor(position.Longitude/longitudeDelta))
-	bLatitude := int(math.Floor(position.Latitude/latitudeDelta))
-	serverNumber := baseDelta*bLatitude + bLongitude
-	return s.Handler.IPTable[serverNumber]
-}
-
-func (s *Server) WhereIsEntity(id uuid.UUID) utils.IP {
-	// static rule for user and spid mapping
-	//   -- all entities have a home server mapped by this rule
-	//   -- all spids are also replicated to server
-	//      mapped geographically so they can be easily found by users close by
-	if len(s.Handler.IPTable) == 0 {
-		log.Fatal("ip table is empty")
-	}
-	// uuid has uniform distribution
-	serverNumber := id.ID() % uint32(len(s.Handler.IPTable))
-	return s.Handler.IPTable[serverNumber]
-}
-
-func (s *Server) Register(registrarAddress, registrarPort string) {
+func (s *Server) Register(registrarIP utils.IP) {
 	// placeholder solution
 	// connect to server map registrar to get a server number (from 0 to `n`-1)
-	addr := fmt.Sprintf("%s:%s", registrarAddress, registrarPort)
+	addr := registrarIP.ToString()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
 		log.Fatalf("failed to register server at %s: %s", addr, err)
 	}
-	s.RegistrarConnection = conn
+	s.RegistrarIP = registrarIP
+	s.Registered = true
 	if s.ID == uuid.Nil {
 		// this should happen only when the whole system is being setup
 		s.ID = uuid.New()
@@ -139,29 +76,38 @@ func (s *Server) Register(registrarAddress, registrarPort string) {
 			log.Fatalf("failed to save new server id: %s", err)
 		}
 	}
-	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.IP.Port, s.ID.String())
-	_, err = s.RegistrarConnection.Write([]byte(request))
+	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.ID.String(), s.IP.Port)
+	_, err = conn.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send register request: %s", err)
 	}
-	response, err := bufio.NewReader(s.RegistrarConnection).ReadString('\n')
-	serverNumber, err := strconv.Atoi(response)
+	response, err := bufio.NewReader(conn).ReadString('\n')
+	if response == "full\n" {
+		log.Fatalf("all server slots are filled")
+	}
+	serverNumber, err := strconv.Atoi(strings.Trim(response, "\n"))
 	if err != nil {
 		log.Fatalf("failed to parse register response: %s", err)
 	}
-	s.Number = serverNumber
+	log.Printf("Server registered as number %d", serverNumber)
+	s.Handler.Number = serverNumber
 }
 
-func (s *Server) UpdateIPTable() {
-	if s.RegistrarConnection == nil {
+func (s *Server) UpdateIPTable() error {
+	if !s.Registered {
 		log.Fatal("server not registered")
 	}
+	addr := s.RegistrarIP.ToString()
+	conn, err := net.Dial(DefaultProtocol, addr)
+	if err != nil {
+		log.Fatalf("failed to connect to %s: %s", addr, err)
+	}
 	request := fmt.Sprintf("REQUEST IP TABLE\n")
-	_, err := s.RegistrarConnection.Write([]byte(request))
+	_, err = conn.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send ip table request: %s", err)
 	}
-	response, err := bufio.NewReader(s.RegistrarConnection).ReadString('\n')
+	response, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
 		log.Fatalf("failed to get ip table response: %s", err)
 	}
@@ -170,7 +116,20 @@ func (s *Server) UpdateIPTable() {
 	if err != nil {
 		log.Fatalf("failed to parse ip table: %s", err)
 	}
-	for _, ip := range ipTableList {
+	if len(ipTableList) == 0 {
+		msg := "ip table not ready"
+		log.Print(msg)
+		return fmt.Errorf(msg)
+	}
+	s.Handler.IPTable = make([]utils.IP, 0)
+	for i, ip := range ipTableList {
+		if i == s.Handler.Number {
+			s.Handler.IPTable = append(
+				s.Handler.IPTable,
+				s.IP,
+			)
+			continue
+		}
 		split := strings.Split(ip, ":")
 		s.Handler.IPTable = append(
 			s.Handler.IPTable,
@@ -180,7 +139,9 @@ func (s *Server) UpdateIPTable() {
 			},
 		)
 	}
-	s.CalculateBoundaries()
+	log.Printf("Updated IP table: %s", s.Handler.IPTable)
+	s.Handler.CalculateBoundaries()
+	return nil
 }
 
 func (s *Server) Listen() {
@@ -190,7 +151,7 @@ func (s *Server) Listen() {
 	}
 	gs := grpc.NewServer()
 	pb.RegisterSpidHandlerServer(gs, &s.Handler)
-	log.Printf("serving on %s%s...", GetOutboundIP(), s.IP.Port)
+	log.Printf("serving on %s:%s...", GetOutboundIP(), s.IP.Port)
 	// blocking call
 	err = gs.Serve(listener)
 	if err != nil {
