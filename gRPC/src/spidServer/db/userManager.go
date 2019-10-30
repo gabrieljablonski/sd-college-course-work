@@ -3,7 +3,6 @@ package db
 import (
 	"fmt"
 	"github.com/google/uuid"
-	"io"
 	"log"
 	"os"
 	"spidServer/entities"
@@ -39,18 +38,7 @@ func (m *Manager) WriteUsersToFile() {
 	log.Printf("Making copy of users file...")
 	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultUsersLocation
 	dst := src + ".bk"
-	source, err := os.Open(src)
-	if err != nil {
-		eh.HandleFatal(err)
-	}
-	defer source.Close()
-	_ = os.Remove(dst)
-	destination, err := os.Create(dst)
-	if err != nil {
-		eh.HandleFatal(err)
-	}
-	defer destination.Close()
-	_, err = io.Copy(destination, source)
+	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
 	log.Printf("Writing users: %s", m.Users.ToString())
@@ -62,16 +50,16 @@ func (m *Manager) WriteUsersToFile() {
 	log.Print("Finished writing users.")
 }
 
-func (m *Manager) QueryUser(userID uuid.UUID) (user entities.User, err error) {
+func (m *Manager) QueryUser(userID uuid.UUID) (entities.User, error) {
 	log.Printf("Querying user with ID %s.", userID)
-	_, ok := m.Users.Users[userID]
+	u, ok := m.Users.Users[userID]
 	if !ok {
-		err = fmt.Errorf("user with ID %s not found", userID)
+		err := fmt.Errorf("user with ID %s not found", userID)
 		log.Print(err)
-		return user, err
+		return entities.User{}, err
 	}
-	log.Printf("User found: %s", m.Users.Users[userID].ToString())
-	return m.Users.Users[userID], nil
+	log.Printf("User found: %s", u.ToString())
+	return u, nil
 }
 
 func (m *Manager) RegisterUser(user entities.User) error {
