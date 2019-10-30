@@ -215,3 +215,33 @@ func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLock
 		Spid:    spid.ToProtoBufferEntity(),
 	}, nil
 }
+
+func (h *Handler) AddRemoteUser(ctx context.Context, request *pb.AddRemoteUserRequest) (*pb.AddRemoteUserResponse, error) {
+	err := h.addRemoteUser(request.User)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AddRemoteUserResponse{
+		Message: "User added remotely successfully.",
+	}, nil
+}
+
+func (h *Handler) UpdateRemoteUser(ctx context.Context, request *pb.UpdateRemoteUserRequest) (*pb.UpdateRemoteUserResponse, error) {
+	err := h.updateRemoteUser(request.User)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateRemoteUserResponse{
+		Message: "User updated remotely successfully.",
+	}, nil
+}
+
+func (h *Handler) RemoveRemoteUser(ctx context.Context, request *pb.RemoveRemoteUserRequest) (*pb.RemoveRemoteUserResponse, error) {
+	err := h.removeRemoteUser(request.User)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RemoveRemoteUserResponse{
+		Message: "User removed remotely successfully.",
+	}, nil
+}
