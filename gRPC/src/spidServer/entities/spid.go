@@ -38,6 +38,33 @@ type Spid struct {
 	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
 
+func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error) {
+	idS, err := uuid.Parse(pbSpid.Id)
+	if err != nil {
+		return spid, err
+	}
+	idU, err := uuid.Parse(pbSpid.CurrentUserID)
+	if err != nil {
+		return spid, err
+	}
+	t, err := time.Parse(time.Now().String(), pbSpid.LastUpdated)
+	if err != nil {
+		return spid, err
+	}
+	return Spid{
+		ID:            idS,
+		BatteryLevel:  pbSpid.BatteryLevel,
+		Lock:          LockInfo{
+			Override: pbSpid.LockInfo.Override,
+			Pending:  pbSpid.LockInfo.Pending,
+			State:    pbSpid.LockInfo.State,
+		},
+		Location:      gps.FromProtoBufferEntity(pbSpid.Location),
+		LastUpdated:   t,
+		CurrentUserID: idU,
+	}, nil
+}
+
 func (s Spid) ToString() string {
 	ss, err := json.Marshal(s)
 	if err != nil {
@@ -47,12 +74,18 @@ func (s Spid) ToString() string {
 	return string(ss)
 }
 
-func (s Spid) ToProtoBufferEntity() *protoBuffers.SpidMinimal {
-	return &protoBuffers.SpidMinimal{
-		Id:           s.ID.String(),
-		BatteryLevel: s.BatteryLevel,
-		Location:     s.Location.ToProtoBufferEntity(),
-		LockState:    s.Lock.State,
+func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
+	return &protoBuffers.Spid{
+		Id:                   s.ID.String(),
+		BatteryLevel:         s.BatteryLevel,
+		LockInfo:             &protoBuffers.LockInfo{
+			Override:             s.Lock.Override,
+			Pending:              s.Lock.Pending,
+			State:                s.Lock.State,
+		},
+		Location:             s.Location.ToProtoBufferEntity(),
+		LastUpdated:          s.LastUpdated.String(),
+		CurrentUserID:        s.CurrentUserID.String(),
 	}
 }
 

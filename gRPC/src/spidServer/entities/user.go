@@ -30,6 +30,28 @@ type User struct {
 	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
 }
 
+func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user User, err error) {
+	idU, err := uuid.Parse(pbUser.Id)
+	if err != nil {
+		return user, err
+	}
+	idS, err := uuid.Parse(pbUser.CurrentSpidID)
+	if err != nil {
+		return user, err
+	}
+	t, err := time.Parse(time.Now().String(), pbUser.LastUpdated)
+	if err != nil {
+		return user, err
+	}
+	return User{
+		ID:            idU,
+		Name:          pbUser.Name,
+		Location:      gps.FromProtoBufferEntity(pbUser.Location),
+		LastUpdated:   t,
+		CurrentSpidID: idS,
+	}, nil
+}
+
 func (u User) ToString() string {
 	s, err := json.Marshal(u)
 	if err != nil {
