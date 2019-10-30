@@ -8,7 +8,6 @@ import (
 	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
-	"spidServer/gps"
 )
 
 func (m *Manager) GetSpidsFromFile() entities.Spids {
@@ -74,12 +73,11 @@ func (m *Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
 	return m.Spids.Spids[spidID], nil
 }
 
-func (m *Manager) RegisterSpid(batteryLevel uint32, location gps.GlobalPosition) (spid entities.Spid, err error) {
-	spid = entities.NewSpid(batteryLevel, location)
+func (m *Manager) RegisterSpid(spid entities.Spid) error {
 	log.Printf("Registering spid: %s.", spid.ToString())
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
-	return spid, nil
+	return nil
 }
 
 func (m *Manager) UpdateSpid(spid entities.Spid) error {
