@@ -25,7 +25,7 @@ func (u Users) ToString() string {
 type User struct {
 	ID            uuid.UUID          `json:"id"`
 	Name          string             `json:"name"`
-	Location      gps.GlobalPosition `json:"location"`
+	Position      gps.GlobalPosition `json:"position"`
 	LastUpdated   time.Time          `json:"last_updated"`
 	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
 }
@@ -46,7 +46,7 @@ func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user User, err error)
 	return User{
 		ID:            idU,
 		Name:          pbUser.Name,
-		Location:      gps.FromProtoBufferEntity(pbUser.Location),
+		Position:      gps.FromProtoBufferEntity(pbUser.Position),
 		LastUpdated:   t,
 		CurrentSpidID: idS,
 	}, nil
@@ -65,18 +65,18 @@ func (u User) ToProtoBufferEntity() *protoBuffers.User {
 	return &protoBuffers.User{
 		Id:            u.ID.String(),
 		Name:          u.Name,
-		Location:      u.Location.ToProtoBufferEntity(),
+		Position:      u.Position.ToProtoBufferEntity(),
 		LastUpdated:   u.LastUpdated.String(),
 		CurrentSpidID: u.CurrentSpidID.String(),
 	}
 }
 
-func NewUser(name string) User {
+func NewUser(name string, position gps.GlobalPosition) User {
 	return User{
-		ID: uuid.New(),
-		Name: name,
-		Location: gps.NullPosition(),
-		LastUpdated: time.Unix(0,0),
+		ID:            uuid.New(),
+		Name:          name,
+		Position:      position,
+		LastUpdated:   time.Unix(0,0),
 		CurrentSpidID: uuid.Nil,
 	}
 }
@@ -95,7 +95,7 @@ func UnmarshalUsers(marshaledUsers []byte) (Users, error) {
 	return users, err
 }
 
-func (u *User) UpdateLocation(position gps.GlobalPosition) {
-	u.Location = position
+func (u *User) UpdatePosition(position gps.GlobalPosition) {
+	u.Position = position
 	u.LastUpdated = time.Now()
 }

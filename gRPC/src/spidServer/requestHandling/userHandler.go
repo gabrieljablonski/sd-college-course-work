@@ -37,10 +37,10 @@ func (h *Handler) UpdateUser(ctx context.Context, request *pb.UpdateUserRequest)
 	}
 	err = h.updateUser(user)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update user location: %s", err)
+		return nil, fmt.Errorf("failed to update user position: %s", err)
 	}
 	return &pb.UpdateUserResponse{
-		Message: "User location updated successfully.",
+		Message: "User position updated successfully.",
 		User:    user,
 	}, nil
 }

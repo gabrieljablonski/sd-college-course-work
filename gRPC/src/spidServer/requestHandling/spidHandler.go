@@ -19,7 +19,7 @@ func (h *Handler) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 }
 
 func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
-	spid, err :=  h.registerSpid(request.BatteryLevel, gps.FromProtoBufferEntity(request.Location))
+	spid, err :=  h.registerSpid(request.BatteryLevel, gps.FromProtoBufferEntity(request.Position))
 	if err != nil {
 		return nil, fmt.Errorf("failed to register spid")
 	}
@@ -32,14 +32,14 @@ func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequ
 func (h *Handler) UpdateSpid(ctx context.Context, request *pb.UpdateSpidRequest) (*pb.UpdateSpidResponse, error) {
 	spid, err := h.querySpid(request.Spid.Id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update spid location: %s", err)
+		return nil, fmt.Errorf("failed to update spid position: %s", err)
 	}
 	err = h.updateSpid(spid)
 	if err != nil {
-		return nil, fmt.Errorf("failed to update spid location: %s", err)
+		return nil, fmt.Errorf("failed to update spid position: %s", err)
 	}
 	return &pb.UpdateSpidResponse{
-		Message: "Spid location updated successfully.",
+		Message: "Spid position updated successfully.",
 		Spid:    spid,
 	}, nil
 }

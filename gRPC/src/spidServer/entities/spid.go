@@ -31,9 +31,9 @@ func (s Spids) ToString() string {
 
 type Spid struct {
 	ID            uuid.UUID          `json:"id"`
-	BatteryLevel  uint32              `json:"battery_level"`
+	BatteryLevel  uint32             `json:"battery_level"`
 	Lock          LockInfo           `json:"lock"`
-	Location      gps.GlobalPosition `json:"location"`
+	Position      gps.GlobalPosition `json:"position"`
 	LastUpdated   time.Time          `json:"last_updated"`
 	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
@@ -59,7 +59,7 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error)
 			Pending:  pbSpid.LockInfo.Pending,
 			State:    pbSpid.LockInfo.State,
 		},
-		Location:      gps.FromProtoBufferEntity(pbSpid.Location),
+		Position:      gps.FromProtoBufferEntity(pbSpid.Position),
 		LastUpdated:   t,
 		CurrentUserID: idU,
 	}, nil
@@ -83,19 +83,19 @@ func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
 			Pending:              s.Lock.Pending,
 			State:                s.Lock.State,
 		},
-		Location:             s.Location.ToProtoBufferEntity(),
+		Position:             s.Position.ToProtoBufferEntity(),
 		LastUpdated:          s.LastUpdated.String(),
 		CurrentUserID:        s.CurrentUserID.String(),
 	}
 }
 
-func NewSpid(batteryLevel uint32, location gps.GlobalPosition) Spid {
+func NewSpid(batteryLevel uint32, position gps.GlobalPosition) Spid {
 	return Spid{
-		ID: uuid.New(),
-		BatteryLevel: batteryLevel,
-		Lock: LockInfo{false, false, "locked"},
-		Location: location,
-		LastUpdated: time.Unix(0,0),
+		ID:            uuid.New(),
+		BatteryLevel:  batteryLevel,
+		Lock:          LockInfo{false, false, "locked"},
+		Position:      position,
+		LastUpdated:   time.Unix(0,0),
 		CurrentUserID: uuid.Nil,
 	}
 }
@@ -124,8 +124,8 @@ func UnmarshalSpids(marshaledSpids []byte) (Spids, error) {
 	return spids, err
 }
 
-func (s *Spid) UpdateLocation(position gps.GlobalPosition) {
-	s.Location = position
+func (s *Spid) UpdatePosition(position gps.GlobalPosition) {
+	s.Position = position
 	s.LastUpdated = time.Now()
 }
 
