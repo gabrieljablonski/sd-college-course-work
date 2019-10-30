@@ -11,15 +11,20 @@ import (
 )
 
 const (
-	Sep = string(os.PathSeparator)
-	DefaultLogPath     = "requestHandling" + Sep + "request_logs.spd"
-	DefaultDirtyRequestsPath = "requestHandling" + Sep + "dirty_requests.spd"
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 5000*time.Millisecond
+	DefaultWriteToFilePeriod   = 5000000*time.Millisecond
 
-	DefaultUsersLocation = "db" + Sep + "users.spd"
-	DefaultSpidsLocation = "db" + Sep + "spids.spd"
-	DefaultServerIDLocation = "db" + Sep + "server_id.spd"
+	Sep                        = string(os.PathSeparator)
+	BaseDataPath               = "db" + Sep + "data" + Sep
+	BaseLogsPath               = BaseDataPath + "logs" + Sep
+	BaseStatePath              = BaseDataPath + "state" + Sep
+	DefaultLogPath             = BaseLogsPath + "request_logs.spd"
+	DefaultDirtyRequestsPath   = BaseLogsPath + "dirty_requests.spd"
+	DefaultUsersLocation 	   = BaseStatePath + "users.spd"
+	DefaultRemoteUsersLocation = BaseStatePath + "users_remote.spd"
+	DefaultSpidsLocation       = BaseStatePath + "spids.spd"
+	DefaultRemoteSpidsLocation = BaseStatePath + "spids_remote.spd"
+	DefaultServerIDLocation    = BaseDataPath + "server_id.spd"
 )
 
 type Manager struct {
