@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 	"spidServer/grpcServer"
+	"spidServer/utils"
 	"strings"
 )
 
@@ -24,7 +25,10 @@ func main() {
 	registrarAddress := arguments[2]
 	registrarPort := arguments[3]
 	server := grpcServer.NewServer(port)
-	server.Register(registrarAddress, registrarPort)
-	server.UpdateIPTable()
+	server.Register(utils.IP{
+		Address: registrarAddress,
+		Port:    registrarPort,
+	})
+	_ = server.UpdateIPTable()
 	server.Listen()
 }
