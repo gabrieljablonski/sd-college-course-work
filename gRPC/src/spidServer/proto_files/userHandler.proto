@@ -13,12 +13,15 @@ service UserHandler {
     rpc RequestDissociation (RequestDissociationRequest) returns (RequestDissociationResponse) {}
     rpc RequestSpidInfo (RequestSpidInfoRequest) returns (RequestSpidInfoResponse) {}
     rpc RequestLockChange (RequestLockChangeRequest) returns (RequestLockChangeResponse) {}
+    rpc AddRemoteUser (AddRemoteUserRequest) returns (AddRemoteUserResponse) {}
+    rpc UpdateRemoteUser (UpdateRemoteUserRequest) returns (UpdateRemoteUserResponse) {}
+    rpc RemoveRemoteUser (RemoveRemoteUserRequest) returns (RemoveRemoteUserResponse) {}
 }
 
 message User {
     string id = 1;
     string name = 2;
-    GlobalPosition location = 3;
+    GlobalPosition position = 3;
     string lastUpdated = 4;
     string currentSpidID = 5;
 }
@@ -33,7 +36,8 @@ message GetUserResponse {
 }
 
 message RegisterUserRequest {
-    string userName = 1;
+    string name = 1;
+    GlobalPosition position = 2;
 }
 
 message RegisterUserResponse {
@@ -98,4 +102,28 @@ message RequestLockChangeRequest {
 message RequestLockChangeResponse {
     string message = 1;
     Spid spid = 2;
+}
+
+message AddRemoteUserRequest {
+    User user = 1;
+}
+
+message AddRemoteUserResponse {
+    string message = 1;
+}
+
+message UpdateRemoteUserRequest {
+    User user = 1;
+}
+
+message UpdateRemoteUserResponse {
+    string message = 1;
+}
+
+message RemoveRemoteUserRequest {
+    User user = 1;
+}
+
+message RemoveRemoteUserResponse {
+    string message = 1;
 }

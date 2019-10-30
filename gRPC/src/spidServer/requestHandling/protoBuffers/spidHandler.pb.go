@@ -83,7 +83,7 @@ type Spid struct {
 	Id                   string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	BatteryLevel         uint32          `protobuf:"varint,2,opt,name=batteryLevel,proto3" json:"batteryLevel,omitempty"`
 	LockInfo             *LockInfo       `protobuf:"bytes,3,opt,name=lockInfo,proto3" json:"lockInfo,omitempty"`
-	Location             *GlobalPosition `protobuf:"bytes,4,opt,name=location,proto3" json:"location,omitempty"`
+	Position             *GlobalPosition `protobuf:"bytes,4,opt,name=position,proto3" json:"position,omitempty"`
 	LastUpdated          string          `protobuf:"bytes,5,opt,name=lastUpdated,proto3" json:"lastUpdated,omitempty"`
 	CurrentUserID        string          `protobuf:"bytes,6,opt,name=currentUserID,proto3" json:"currentUserID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
@@ -137,9 +137,9 @@ func (m *Spid) GetLockInfo() *LockInfo {
 	return nil
 }
 
-func (m *Spid) GetLocation() *GlobalPosition {
+func (m *Spid) GetPosition() *GlobalPosition {
 	if m != nil {
-		return m.Location
+		return m.Position
 	}
 	return nil
 }
@@ -245,8 +245,8 @@ func (m *GetSpidResponse) GetSpid() *Spid {
 }
 
 type RegisterSpidRequest struct {
-	BatteryLevel         uint32          `protobuf:"varint,2,opt,name=batteryLevel,proto3" json:"batteryLevel,omitempty"`
-	Location             *GlobalPosition `protobuf:"bytes,1,opt,name=location,proto3" json:"location,omitempty"`
+	BatteryLevel         uint32          `protobuf:"varint,1,opt,name=batteryLevel,proto3" json:"batteryLevel,omitempty"`
+	Position             *GlobalPosition `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
 	XXX_unrecognized     []byte          `json:"-"`
 	XXX_sizecache        int32           `json:"-"`
@@ -284,9 +284,9 @@ func (m *RegisterSpidRequest) GetBatteryLevel() uint32 {
 	return 0
 }
 
-func (m *RegisterSpidRequest) GetLocation() *GlobalPosition {
+func (m *RegisterSpidRequest) GetPosition() *GlobalPosition {
 	if m != nil {
-		return m.Location
+		return m.Position
 	}
 	return nil
 }
@@ -510,6 +510,240 @@ func (m *DeleteSpidResponse) GetSpid() *Spid {
 	return nil
 }
 
+type AddRemoteSpidRequest struct {
+	Spid                 *Spid    `protobuf:"bytes,1,opt,name=spid,proto3" json:"spid,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddRemoteSpidRequest) Reset()         { *m = AddRemoteSpidRequest{} }
+func (m *AddRemoteSpidRequest) String() string { return proto.CompactTextString(m) }
+func (*AddRemoteSpidRequest) ProtoMessage()    {}
+func (*AddRemoteSpidRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{10}
+}
+
+func (m *AddRemoteSpidRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddRemoteSpidRequest.Unmarshal(m, b)
+}
+func (m *AddRemoteSpidRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddRemoteSpidRequest.Marshal(b, m, deterministic)
+}
+func (m *AddRemoteSpidRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddRemoteSpidRequest.Merge(m, src)
+}
+func (m *AddRemoteSpidRequest) XXX_Size() int {
+	return xxx_messageInfo_AddRemoteSpidRequest.Size(m)
+}
+func (m *AddRemoteSpidRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddRemoteSpidRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddRemoteSpidRequest proto.InternalMessageInfo
+
+func (m *AddRemoteSpidRequest) GetSpid() *Spid {
+	if m != nil {
+		return m.Spid
+	}
+	return nil
+}
+
+type AddRemoteSpidResponse struct {
+	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddRemoteSpidResponse) Reset()         { *m = AddRemoteSpidResponse{} }
+func (m *AddRemoteSpidResponse) String() string { return proto.CompactTextString(m) }
+func (*AddRemoteSpidResponse) ProtoMessage()    {}
+func (*AddRemoteSpidResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{11}
+}
+
+func (m *AddRemoteSpidResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddRemoteSpidResponse.Unmarshal(m, b)
+}
+func (m *AddRemoteSpidResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddRemoteSpidResponse.Marshal(b, m, deterministic)
+}
+func (m *AddRemoteSpidResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddRemoteSpidResponse.Merge(m, src)
+}
+func (m *AddRemoteSpidResponse) XXX_Size() int {
+	return xxx_messageInfo_AddRemoteSpidResponse.Size(m)
+}
+func (m *AddRemoteSpidResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddRemoteSpidResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddRemoteSpidResponse proto.InternalMessageInfo
+
+func (m *AddRemoteSpidResponse) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+type UpdateRemoteSpidRequest struct {
+	Spid                 *Spid    `protobuf:"bytes,1,opt,name=spid,proto3" json:"spid,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateRemoteSpidRequest) Reset()         { *m = UpdateRemoteSpidRequest{} }
+func (m *UpdateRemoteSpidRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateRemoteSpidRequest) ProtoMessage()    {}
+func (*UpdateRemoteSpidRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{12}
+}
+
+func (m *UpdateRemoteSpidRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateRemoteSpidRequest.Unmarshal(m, b)
+}
+func (m *UpdateRemoteSpidRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateRemoteSpidRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateRemoteSpidRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateRemoteSpidRequest.Merge(m, src)
+}
+func (m *UpdateRemoteSpidRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateRemoteSpidRequest.Size(m)
+}
+func (m *UpdateRemoteSpidRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateRemoteSpidRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateRemoteSpidRequest proto.InternalMessageInfo
+
+func (m *UpdateRemoteSpidRequest) GetSpid() *Spid {
+	if m != nil {
+		return m.Spid
+	}
+	return nil
+}
+
+type UpdateRemoteSpidResponse struct {
+	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateRemoteSpidResponse) Reset()         { *m = UpdateRemoteSpidResponse{} }
+func (m *UpdateRemoteSpidResponse) String() string { return proto.CompactTextString(m) }
+func (*UpdateRemoteSpidResponse) ProtoMessage()    {}
+func (*UpdateRemoteSpidResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{13}
+}
+
+func (m *UpdateRemoteSpidResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateRemoteSpidResponse.Unmarshal(m, b)
+}
+func (m *UpdateRemoteSpidResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateRemoteSpidResponse.Marshal(b, m, deterministic)
+}
+func (m *UpdateRemoteSpidResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateRemoteSpidResponse.Merge(m, src)
+}
+func (m *UpdateRemoteSpidResponse) XXX_Size() int {
+	return xxx_messageInfo_UpdateRemoteSpidResponse.Size(m)
+}
+func (m *UpdateRemoteSpidResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateRemoteSpidResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateRemoteSpidResponse proto.InternalMessageInfo
+
+func (m *UpdateRemoteSpidResponse) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
+type RemoveRemoteSpidRequest struct {
+	Spid                 *Spid    `protobuf:"bytes,1,opt,name=spid,proto3" json:"spid,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RemoveRemoteSpidRequest) Reset()         { *m = RemoveRemoteSpidRequest{} }
+func (m *RemoveRemoteSpidRequest) String() string { return proto.CompactTextString(m) }
+func (*RemoveRemoteSpidRequest) ProtoMessage()    {}
+func (*RemoveRemoteSpidRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{14}
+}
+
+func (m *RemoveRemoteSpidRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RemoveRemoteSpidRequest.Unmarshal(m, b)
+}
+func (m *RemoveRemoteSpidRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RemoveRemoteSpidRequest.Marshal(b, m, deterministic)
+}
+func (m *RemoveRemoteSpidRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RemoveRemoteSpidRequest.Merge(m, src)
+}
+func (m *RemoveRemoteSpidRequest) XXX_Size() int {
+	return xxx_messageInfo_RemoveRemoteSpidRequest.Size(m)
+}
+func (m *RemoveRemoteSpidRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RemoveRemoteSpidRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RemoveRemoteSpidRequest proto.InternalMessageInfo
+
+func (m *RemoveRemoteSpidRequest) GetSpid() *Spid {
+	if m != nil {
+		return m.Spid
+	}
+	return nil
+}
+
+type RemoveRemoteSpidResponse struct {
+	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RemoveRemoteSpidResponse) Reset()         { *m = RemoveRemoteSpidResponse{} }
+func (m *RemoveRemoteSpidResponse) String() string { return proto.CompactTextString(m) }
+func (*RemoveRemoteSpidResponse) ProtoMessage()    {}
+func (*RemoveRemoteSpidResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_97215654e7c7179a, []int{15}
+}
+
+func (m *RemoveRemoteSpidResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RemoveRemoteSpidResponse.Unmarshal(m, b)
+}
+func (m *RemoveRemoteSpidResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RemoveRemoteSpidResponse.Marshal(b, m, deterministic)
+}
+func (m *RemoveRemoteSpidResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RemoveRemoteSpidResponse.Merge(m, src)
+}
+func (m *RemoveRemoteSpidResponse) XXX_Size() int {
+	return xxx_messageInfo_RemoveRemoteSpidResponse.Size(m)
+}
+func (m *RemoveRemoteSpidResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RemoveRemoteSpidResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RemoveRemoteSpidResponse proto.InternalMessageInfo
+
+func (m *RemoveRemoteSpidResponse) GetMessage() string {
+	if m != nil {
+		return m.Message
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*LockInfo)(nil), "spidProtoBuffers.LockInfo")
 	proto.RegisterType((*Spid)(nil), "spidProtoBuffers.Spid")
@@ -521,43 +755,55 @@ func init() {
 	proto.RegisterType((*UpdateSpidResponse)(nil), "spidProtoBuffers.UpdateSpidResponse")
 	proto.RegisterType((*DeleteSpidRequest)(nil), "spidProtoBuffers.DeleteSpidRequest")
 	proto.RegisterType((*DeleteSpidResponse)(nil), "spidProtoBuffers.DeleteSpidResponse")
+	proto.RegisterType((*AddRemoteSpidRequest)(nil), "spidProtoBuffers.AddRemoteSpidRequest")
+	proto.RegisterType((*AddRemoteSpidResponse)(nil), "spidProtoBuffers.AddRemoteSpidResponse")
+	proto.RegisterType((*UpdateRemoteSpidRequest)(nil), "spidProtoBuffers.UpdateRemoteSpidRequest")
+	proto.RegisterType((*UpdateRemoteSpidResponse)(nil), "spidProtoBuffers.UpdateRemoteSpidResponse")
+	proto.RegisterType((*RemoveRemoteSpidRequest)(nil), "spidProtoBuffers.RemoveRemoteSpidRequest")
+	proto.RegisterType((*RemoveRemoteSpidResponse)(nil), "spidProtoBuffers.RemoveRemoteSpidResponse")
 }
 
 func init() { proto.RegisterFile("spidHandler.proto", fileDescriptor_97215654e7c7179a) }
 
 var fileDescriptor_97215654e7c7179a = []byte{
-	// 484 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x51, 0x6b, 0xd3, 0x50,
-	0x14, 0x5e, 0x6a, 0x57, 0xbb, 0x93, 0x6d, 0xda, 0xe3, 0x18, 0x21, 0x4f, 0xf5, 0x3a, 0xa5, 0x28,
-	0xf4, 0xa1, 0x82, 0x4f, 0x82, 0x20, 0x85, 0x59, 0xd8, 0xc3, 0xc8, 0x9c, 0xe2, 0x10, 0x24, 0xed,
-	0x3d, 0x2d, 0x17, 0xe3, 0xbd, 0xf1, 0xde, 0xdb, 0x89, 0xff, 0x5c, 0x7c, 0x92, 0xdc, 0xa6, 0x69,
-	0x62, 0xe2, 0xdc, 0xa0, 0x6f, 0x3d, 0xa7, 0xdf, 0xf9, 0xf2, 0x9d, 0xef, 0x3b, 0x09, 0xf4, 0x4c,
-	0x2a, 0xf8, 0xbb, 0x58, 0xf2, 0x84, 0xf4, 0x30, 0xd5, 0xca, 0x2a, 0x7c, 0x98, 0xb5, 0xce, 0xb3,
-	0x9f, 0x6f, 0x97, 0xf3, 0x39, 0x69, 0x13, 0x06, 0x0b, 0x92, 0xa4, 0xc5, 0x6c, 0x4c, 0x73, 0x21,
-	0x85, 0x15, 0x4a, 0x9a, 0x15, 0x96, 0x7d, 0x80, 0xee, 0x99, 0x9a, 0x7d, 0x9d, 0xc8, 0xb9, 0xc2,
-	0x10, 0xba, 0xea, 0x9a, 0xb4, 0x16, 0x9c, 0x02, 0xaf, 0xef, 0x0d, 0xba, 0x51, 0x51, 0x63, 0x00,
-	0xf7, 0x53, 0x92, 0x5c, 0xc8, 0x45, 0xd0, 0x72, 0x7f, 0xad, 0x4b, 0x3c, 0x82, 0x5d, 0x63, 0x63,
-	0x4b, 0xc1, 0xbd, 0xbe, 0x37, 0xd8, 0x8b, 0x56, 0x05, 0xfb, 0xe5, 0x41, 0xfb, 0x22, 0x15, 0x1c,
-	0x0f, 0xa1, 0x25, 0xb8, 0xa3, 0xdb, 0x8b, 0x5a, 0x82, 0x23, 0x83, 0xfd, 0x69, 0x6c, 0x2d, 0xe9,
-	0x9f, 0x67, 0x74, 0x4d, 0x89, 0x63, 0x3b, 0x88, 0x2a, 0x3d, 0x7c, 0x05, 0xdd, 0x24, 0x17, 0xe5,
-	0x58, 0xfd, 0x51, 0x38, 0xfc, 0x7b, 0xa7, 0xe1, 0x5a, 0x76, 0x54, 0x60, 0xf1, 0xb5, 0x9b, 0x8b,
-	0xb3, 0xfd, 0x82, 0xb6, 0x9b, 0xeb, 0xd7, 0xe7, 0x4e, 0x13, 0x35, 0x8d, 0x93, 0x73, 0x65, 0x9c,
-	0x0f, 0x51, 0x31, 0x81, 0x7d, 0xf0, 0x93, 0xd8, 0xd8, 0xcb, 0x94, 0xc7, 0x96, 0x78, 0xb0, 0xeb,
-	0x24, 0x97, 0x5b, 0x78, 0x02, 0x07, 0xb3, 0xa5, 0xd6, 0x24, 0xed, 0xa5, 0x21, 0x3d, 0x19, 0x07,
-	0x1d, 0x87, 0xa9, 0x36, 0xd9, 0x00, 0x0e, 0x4f, 0xc9, 0x66, 0xcb, 0x47, 0xf4, 0x7d, 0x49, 0xc6,
-	0xe2, 0x31, 0x74, 0x32, 0x19, 0x93, 0x71, 0xee, 0x43, 0x5e, 0xb1, 0x8f, 0xf0, 0xa0, 0x40, 0x9a,
-	0x54, 0x49, 0xe3, 0x7c, 0xfe, 0x46, 0xc6, 0xc4, 0x0b, 0xca, 0xb1, 0xeb, 0x12, 0x9f, 0x43, 0x3b,
-	0x1b, 0x73, 0x86, 0xf9, 0xa3, 0xe3, 0xfa, 0x62, 0x8e, 0xc7, 0x61, 0xd8, 0x0f, 0x78, 0x14, 0xd1,
-	0x42, 0x18, 0x4b, 0xba, 0xac, 0xe3, 0x36, 0xde, 0x97, 0x3d, 0xf4, 0xee, 0xea, 0x21, 0xfb, 0x0c,
-	0x47, 0xd5, 0x07, 0x6f, 0x75, 0xad, 0x37, 0xd0, 0x5b, 0x45, 0x51, 0x5e, 0x6a, 0x4d, 0xe0, 0xdd,
-	0x82, 0xe0, 0x0a, 0xb0, 0x4c, 0xb0, 0x55, 0x71, 0x2f, 0xa0, 0x37, 0xa6, 0x84, 0xaa, 0xe2, 0xfe,
-	0x95, 0xfc, 0x15, 0x60, 0x19, 0xbc, 0x4d, 0x21, 0xa3, 0xdf, 0x2d, 0xf0, 0x2f, 0x36, 0x1f, 0x05,
-	0x7c, 0x0f, 0x7e, 0x7e, 0x65, 0xee, 0x25, 0x69, 0x8a, 0xb3, 0x72, 0xae, 0xe1, 0xe3, 0x1b, 0x10,
-	0x2b, 0xa5, 0x6c, 0x07, 0xbf, 0xc0, 0x7e, 0x39, 0x69, 0x7c, 0x5a, 0x1f, 0x6a, 0x38, 0xc1, 0xf0,
-	0xd9, 0xff, 0x60, 0xc5, 0x03, 0x3e, 0x01, 0x6c, 0xb2, 0xc2, 0x27, 0xf5, 0xb9, 0xda, 0x29, 0x84,
-	0x27, 0x37, 0x83, 0xca, 0xd4, 0x1b, 0xf7, 0x9b, 0xa8, 0x6b, 0x41, 0x36, 0x51, 0xd7, 0x03, 0x64,
-	0x3b, 0xd3, 0x8e, 0xfb, 0xac, 0xbe, 0xfc, 0x13, 0x00, 0x00, 0xff, 0xff, 0x8b, 0x48, 0x28, 0x94,
-	0x97, 0x05, 0x00, 0x00,
+	// 580 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x51, 0x6f, 0x12, 0x41,
+	0x10, 0xe6, 0x10, 0x90, 0x0e, 0xa5, 0x96, 0x15, 0xeb, 0xe5, 0x9e, 0x70, 0xad, 0x8a, 0x35, 0x21,
+	0x11, 0x8d, 0x4f, 0x26, 0xc6, 0x06, 0x53, 0x49, 0xfa, 0xd0, 0x5c, 0xad, 0xc6, 0xc6, 0xc4, 0x1c,
+	0xec, 0x40, 0x36, 0xbd, 0xde, 0x9d, 0xbb, 0x0b, 0xc6, 0x7f, 0xe6, 0x4f, 0xf3, 0xd1, 0xdc, 0x72,
+	0x1c, 0x77, 0xdc, 0x51, 0xd0, 0xf2, 0xc6, 0x2c, 0xdf, 0x7c, 0xdf, 0xcc, 0xec, 0x7c, 0x9b, 0x83,
+	0x86, 0x0c, 0x38, 0xfb, 0xe8, 0x78, 0xcc, 0x45, 0xd1, 0x09, 0x84, 0xaf, 0x7c, 0xb2, 0x1f, 0x1e,
+	0x9d, 0x85, 0x3f, 0x8f, 0x27, 0xa3, 0x11, 0x0a, 0x69, 0x99, 0x63, 0xf4, 0x50, 0xf0, 0x61, 0x0f,
+	0x47, 0xdc, 0xe3, 0x8a, 0xfb, 0x9e, 0x9c, 0x61, 0xe9, 0x67, 0xa8, 0x9e, 0xfa, 0xc3, 0xab, 0xbe,
+	0x37, 0xf2, 0x89, 0x05, 0x55, 0x7f, 0x8a, 0x42, 0x70, 0x86, 0xa6, 0xd1, 0x32, 0xda, 0x55, 0x3b,
+	0x8e, 0x89, 0x09, 0x77, 0x03, 0xf4, 0x18, 0xf7, 0xc6, 0x66, 0x51, 0xff, 0x35, 0x0f, 0x49, 0x13,
+	0xca, 0x52, 0x39, 0x0a, 0xcd, 0x3b, 0x2d, 0xa3, 0xbd, 0x63, 0xcf, 0x02, 0xfa, 0xc7, 0x80, 0xd2,
+	0x79, 0xc0, 0x19, 0xd9, 0x83, 0x22, 0x67, 0x9a, 0x6e, 0xc7, 0x2e, 0x72, 0x46, 0x28, 0xec, 0x0e,
+	0x1c, 0xa5, 0x50, 0xfc, 0x3a, 0xc5, 0x29, 0xba, 0x9a, 0xad, 0x6e, 0xa7, 0xce, 0xc8, 0x1b, 0xa8,
+	0xba, 0x51, 0x51, 0x9a, 0xb5, 0xd6, 0xb5, 0x3a, 0xcb, 0x3d, 0x75, 0xe6, 0x65, 0xdb, 0x31, 0x96,
+	0xbc, 0x85, 0x6a, 0xe0, 0x4b, 0xdd, 0x9f, 0x59, 0xd2, 0x79, 0xad, 0x6c, 0xde, 0x89, 0xeb, 0x0f,
+	0x1c, 0xf7, 0x2c, 0xc2, 0xd9, 0x71, 0x06, 0x69, 0x41, 0xcd, 0x75, 0xa4, 0xba, 0x08, 0x98, 0xa3,
+	0x90, 0x99, 0x65, 0x5d, 0x72, 0xf2, 0x88, 0x1c, 0x42, 0x7d, 0x38, 0x11, 0x02, 0x3d, 0x75, 0x21,
+	0x51, 0xf4, 0x7b, 0x66, 0x45, 0x63, 0xd2, 0x87, 0xb4, 0x0d, 0x7b, 0x27, 0xa8, 0xc2, 0xe6, 0x6d,
+	0xfc, 0x31, 0x41, 0xa9, 0xc8, 0x01, 0x54, 0xc2, 0x32, 0xfa, 0xbd, 0x68, 0x0e, 0x51, 0x44, 0xbf,
+	0xc0, 0xbd, 0x18, 0x29, 0x03, 0xdf, 0x93, 0x7a, 0xce, 0xd7, 0x28, 0xa5, 0x33, 0xc6, 0x08, 0x3b,
+	0x0f, 0xc9, 0x11, 0x94, 0xc2, 0x34, 0x3d, 0xb0, 0x5a, 0xf7, 0x20, 0xdb, 0x98, 0xe6, 0xd1, 0x18,
+	0xfa, 0x13, 0xee, 0xdb, 0x38, 0xe6, 0x52, 0xa1, 0x48, 0xd6, 0xb1, 0x3c, 0x7b, 0x23, 0x67, 0xf6,
+	0xc9, 0x19, 0x16, 0xff, 0x75, 0x86, 0xf4, 0x1b, 0x34, 0xd3, 0xc2, 0x5b, 0x6d, 0xeb, 0x1d, 0x34,
+	0x66, 0x57, 0x91, 0x6c, 0x6a, 0x4e, 0x60, 0x6c, 0x40, 0x70, 0x09, 0x24, 0x49, 0xb0, 0xd5, 0xe2,
+	0x5e, 0x40, 0xa3, 0x87, 0x2e, 0xa6, 0x8b, 0x5b, 0x75, 0xf3, 0x97, 0x40, 0x92, 0xe0, 0xad, 0x16,
+	0x72, 0x0c, 0xcd, 0xf7, 0x8c, 0xd9, 0x78, 0xed, 0xff, 0xff, 0xa0, 0x5e, 0xc2, 0x83, 0x25, 0x8e,
+	0x75, 0x25, 0xd2, 0x0f, 0xf0, 0x70, 0x36, 0xdb, 0xdb, 0x29, 0xbf, 0x06, 0x33, 0x4b, 0xb3, 0x89,
+	0x78, 0x88, 0x9f, 0xde, 0x5e, 0x3c, 0x4b, 0xb3, 0x4e, 0xbc, 0xfb, 0xbb, 0x0c, 0xb5, 0xf3, 0xc5,
+	0x2b, 0x4c, 0x3e, 0x41, 0x2d, 0xb2, 0xb5, 0x7e, 0x95, 0xf2, 0xfc, 0x93, 0x7a, 0x1f, 0xac, 0x47,
+	0x37, 0x20, 0x66, 0xea, 0xb4, 0x40, 0xbe, 0xc3, 0x6e, 0xd2, 0x5a, 0xe4, 0x49, 0x36, 0x29, 0xc7,
+	0xf3, 0xd6, 0xd3, 0x75, 0xb0, 0x58, 0xe0, 0x2b, 0xc0, 0xc2, 0x1c, 0xe4, 0x71, 0x36, 0x2f, 0xe3,
+	0x3d, 0xeb, 0xf0, 0x66, 0x50, 0x92, 0x7a, 0xb1, 0xee, 0x79, 0xd4, 0x19, 0xe7, 0xe4, 0x51, 0x67,
+	0x1d, 0x43, 0x0b, 0x64, 0x00, 0xf5, 0xd4, 0xa6, 0x92, 0x9c, 0x86, 0xf3, 0xec, 0x60, 0x3d, 0x5b,
+	0x8b, 0x8b, 0x35, 0xae, 0x60, 0x7f, 0x79, 0x27, 0xc9, 0xf3, 0x55, 0xad, 0x67, 0x95, 0x8e, 0x36,
+	0x81, 0x26, 0xc5, 0x96, 0x77, 0x30, 0x4f, 0x6c, 0xc5, 0xba, 0xe7, 0x89, 0xad, 0x5a, 0x69, 0x5a,
+	0x18, 0x54, 0xf4, 0x57, 0xc0, 0xab, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x26, 0xa1, 0xbe, 0xf8,
+	0x46, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -576,6 +822,9 @@ type SpidHandlerClient interface {
 	RegisterSpid(ctx context.Context, in *RegisterSpidRequest, opts ...grpc.CallOption) (*RegisterSpidResponse, error)
 	UpdateSpid(ctx context.Context, in *UpdateSpidRequest, opts ...grpc.CallOption) (*UpdateSpidResponse, error)
 	DeleteSpid(ctx context.Context, in *DeleteSpidRequest, opts ...grpc.CallOption) (*DeleteSpidResponse, error)
+	AddRemoteSpid(ctx context.Context, in *AddRemoteSpidRequest, opts ...grpc.CallOption) (*AddRemoteSpidResponse, error)
+	UpdateRemoteSpid(ctx context.Context, in *UpdateRemoteSpidRequest, opts ...grpc.CallOption) (*UpdateRemoteSpidResponse, error)
+	RemoveRemoteSpid(ctx context.Context, in *RemoveRemoteSpidRequest, opts ...grpc.CallOption) (*RemoveRemoteSpidResponse, error)
 }
 
 type spidHandlerClient struct {
@@ -622,12 +871,42 @@ func (c *spidHandlerClient) DeleteSpid(ctx context.Context, in *DeleteSpidReques
 	return out, nil
 }
 
+func (c *spidHandlerClient) AddRemoteSpid(ctx context.Context, in *AddRemoteSpidRequest, opts ...grpc.CallOption) (*AddRemoteSpidResponse, error) {
+	out := new(AddRemoteSpidResponse)
+	err := c.cc.Invoke(ctx, "/spidProtoBuffers.SpidHandler/AddRemoteSpid", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *spidHandlerClient) UpdateRemoteSpid(ctx context.Context, in *UpdateRemoteSpidRequest, opts ...grpc.CallOption) (*UpdateRemoteSpidResponse, error) {
+	out := new(UpdateRemoteSpidResponse)
+	err := c.cc.Invoke(ctx, "/spidProtoBuffers.SpidHandler/UpdateRemoteSpid", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *spidHandlerClient) RemoveRemoteSpid(ctx context.Context, in *RemoveRemoteSpidRequest, opts ...grpc.CallOption) (*RemoveRemoteSpidResponse, error) {
+	out := new(RemoveRemoteSpidResponse)
+	err := c.cc.Invoke(ctx, "/spidProtoBuffers.SpidHandler/RemoveRemoteSpid", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SpidHandlerServer is the server API for SpidHandler service.
 type SpidHandlerServer interface {
 	GetSpidInfo(context.Context, *GetSpidRequest) (*GetSpidResponse, error)
 	RegisterSpid(context.Context, *RegisterSpidRequest) (*RegisterSpidResponse, error)
 	UpdateSpid(context.Context, *UpdateSpidRequest) (*UpdateSpidResponse, error)
 	DeleteSpid(context.Context, *DeleteSpidRequest) (*DeleteSpidResponse, error)
+	AddRemoteSpid(context.Context, *AddRemoteSpidRequest) (*AddRemoteSpidResponse, error)
+	UpdateRemoteSpid(context.Context, *UpdateRemoteSpidRequest) (*UpdateRemoteSpidResponse, error)
+	RemoveRemoteSpid(context.Context, *RemoveRemoteSpidRequest) (*RemoveRemoteSpidResponse, error)
 }
 
 // UnimplementedSpidHandlerServer can be embedded to have forward compatible implementations.
@@ -645,6 +924,15 @@ func (*UnimplementedSpidHandlerServer) UpdateSpid(ctx context.Context, req *Upda
 }
 func (*UnimplementedSpidHandlerServer) DeleteSpid(ctx context.Context, req *DeleteSpidRequest) (*DeleteSpidResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSpid not implemented")
+}
+func (*UnimplementedSpidHandlerServer) AddRemoteSpid(ctx context.Context, req *AddRemoteSpidRequest) (*AddRemoteSpidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddRemoteSpid not implemented")
+}
+func (*UnimplementedSpidHandlerServer) UpdateRemoteSpid(ctx context.Context, req *UpdateRemoteSpidRequest) (*UpdateRemoteSpidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRemoteSpid not implemented")
+}
+func (*UnimplementedSpidHandlerServer) RemoveRemoteSpid(ctx context.Context, req *RemoveRemoteSpidRequest) (*RemoveRemoteSpidResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveRemoteSpid not implemented")
 }
 
 func RegisterSpidHandlerServer(s *grpc.Server, srv SpidHandlerServer) {
@@ -723,6 +1011,60 @@ func _SpidHandler_DeleteSpid_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SpidHandler_AddRemoteSpid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddRemoteSpidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SpidHandlerServer).AddRemoteSpid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/spidProtoBuffers.SpidHandler/AddRemoteSpid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SpidHandlerServer).AddRemoteSpid(ctx, req.(*AddRemoteSpidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SpidHandler_UpdateRemoteSpid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRemoteSpidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SpidHandlerServer).UpdateRemoteSpid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/spidProtoBuffers.SpidHandler/UpdateRemoteSpid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SpidHandlerServer).UpdateRemoteSpid(ctx, req.(*UpdateRemoteSpidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SpidHandler_RemoveRemoteSpid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveRemoteSpidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SpidHandlerServer).RemoveRemoteSpid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/spidProtoBuffers.SpidHandler/RemoveRemoteSpid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SpidHandlerServer).RemoveRemoteSpid(ctx, req.(*RemoveRemoteSpidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _SpidHandler_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "spidProtoBuffers.SpidHandler",
 	HandlerType: (*SpidHandlerServer)(nil),
@@ -742,6 +1084,18 @@ var _SpidHandler_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSpid",
 			Handler:    _SpidHandler_DeleteSpid_Handler,
+		},
+		{
+			MethodName: "AddRemoteSpid",
+			Handler:    _SpidHandler_AddRemoteSpid_Handler,
+		},
+		{
+			MethodName: "UpdateRemoteSpid",
+			Handler:    _SpidHandler_UpdateRemoteSpid_Handler,
+		},
+		{
+			MethodName: "RemoveRemoteSpid",
+			Handler:    _SpidHandler_RemoveRemoteSpid_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
