@@ -31,6 +31,8 @@ type Manager struct {
 	FileManager     utils.FileManager
 	Users           entities.Users
 	Spids           entities.Spids
+	RemoteUsers     entities.Users
+	RemoteSpids     entities.Spids
 	LoggerDirty     *log.Logger
 	WritingToMemory bool
 	WritingToFile   bool
@@ -50,6 +52,8 @@ func NewManager(basePath string) Manager {
 func (m *Manager) LoadFromFile() {
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
+	m.RemoteUsers = m.GetRemoteUsersFromFile()
+	m.RemoteSpids = m.GetRemoteSpidsFromFile()
 }
 
 func (m *Manager) GetServerID() uuid.UUID {
@@ -77,6 +81,8 @@ func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 		log.Print("Writing users and spids to file.")
 		m.WriteUsersToFile()
 		m.WriteSpidsToFile()
+		m.WriteRemoteUsersToFile()
+		m.WriteRemoteSpidsToFile()
 
 		log.Print("Truncating dirty log file...")
 		pathDirty := m.FileManager.BasePath + Sep + DefaultDirtyRequestsPath
