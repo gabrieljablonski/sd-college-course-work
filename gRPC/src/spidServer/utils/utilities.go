@@ -1,8 +1,14 @@
 package utils
 
+import "fmt"
+
 type IP struct {
 	Address string
 	Port    string
+}
+
+func (ip IP) ToString() string {
+	return fmt.Sprintf("%s:%s", ip.Address, ip.Port)
 }
 
 func CheckKeys(m map[string]interface{}, keys []string) string {
