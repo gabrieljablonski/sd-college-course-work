@@ -58,3 +58,33 @@ func (h *Handler) DeleteSpid(ctx context.Context, request *pb.DeleteSpidRequest)
 		Spid:    spid,
 	}, nil
 }
+
+func (h *Handler) AddRemoteSpid(ctx context.Context, request *pb.AddRemoteSpidRequest) (*pb.AddRemoteSpidResponse, error) {
+	err := h.addRemoteSpid(request.Spid)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AddRemoteSpidResponse{
+		Message: "Spid added remotely successfully.",
+	}, nil
+}
+
+func (h *Handler) UpdateRemoteSpid(ctx context.Context, request *pb.UpdateRemoteSpidRequest) (*pb.UpdateRemoteSpidResponse, error) {
+	err := h.updateRemoteSpid(request.Spid)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateRemoteSpidResponse{
+		Message: "Spid updated remotely successfully.",
+	}, nil
+}
+
+func (h *Handler) RemoveRemoteSpid(ctx context.Context, request *pb.RemoveRemoteSpidRequest) (*pb.RemoveRemoteSpidResponse, error) {
+	err := h.removeRemoteSpid(request.Spid)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.RemoveRemoteSpidResponse{
+		Message: "Spid removed remotely successfully.",
+	}, nil
+}

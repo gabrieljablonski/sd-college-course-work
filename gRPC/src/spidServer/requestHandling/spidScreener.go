@@ -50,7 +50,8 @@ func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition)
 		if err != nil {
 			return nil, err
 		}
-		return spid.ToProtoBufferEntity(), nil
+		err = h.addRemoteSpid(spid.ToProtoBufferEntity())
+		return spid.ToProtoBufferEntity(), err
 	}
 	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
 	if err != nil {
@@ -82,7 +83,11 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		if err != nil {
 			return err
 		}
-		return h.DBManager.UpdateSpid(spid)
+		err = h.DBManager.UpdateSpid(spid)
+		if err != nil {
+			return err
+		}
+		return h.updateRemoteSpid(pbSpid)
 	}
 	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
 	if err != nil {
@@ -110,7 +115,11 @@ func (h *Handler) deleteSpid(pbSpid *pb.Spid) error {
 		if err != nil {
 			return err
 		}
-		return h.DBManager.UpdateSpid(spid)
+		err = h.DBManager.DeleteSpid(spid)
+		if err != nil {
+			return err
+		}
+		return h.removeRemoteSpid(pbSpid)
 	}
 	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
 	if err != nil {
@@ -124,5 +133,77 @@ func (h *Handler) deleteSpid(pbSpid *pb.Spid) error {
 		SpidID: pbSpid.Id,
 	}
 	_, err = client.DeleteSpid(ctx, request)
+	return err
+}
+
+func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
+	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(pbSpid.Position))
+	if HostIsLocal(ip) {
+		spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
+		if err != nil {
+			return err
+		}
+		return h.DBManager.AddRemoteSpid(spid)
+	}
+	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := pb.NewSpidHandlerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	request := &pb.AddRemoteSpidRequest{
+		Spid: pbSpid,
+	}
+	_, err = client.AddRemoteSpid(ctx, request)
+	return err
+}
+
+func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
+	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(pbSpid.Position))
+	if HostIsLocal(ip) {
+		spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
+		if err != nil {
+			return err
+		}
+		return h.DBManager.UpdateRemoteSpid(spid)
+	}
+	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := pb.NewSpidHandlerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	request := &pb.UpdateRemoteSpidRequest{
+		Spid: pbSpid,
+	}
+	_, err = client.UpdateRemoteSpid(ctx, request)
+	return err
+}
+
+func (h *Handler) removeRemoteSpid(pbSpid *pb.Spid) error {
+	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(pbSpid.Position))
+	if HostIsLocal(ip) {
+		spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
+		if err != nil {
+			return err
+		}
+		return h.DBManager.RemoveRemoteSpid(spid)
+	}
+	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	client := pb.NewSpidHandlerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	request := &pb.RemoveRemoteSpidRequest{
+		Spid: pbSpid,
+	}
+	_, err = client.RemoveRemoteSpid(ctx, request)
 	return err
 }
