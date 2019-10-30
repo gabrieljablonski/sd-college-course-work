@@ -42,8 +42,8 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 	return response.Spid, err
 }
 
-func (h *Handler) registerSpid(batteryLevel uint32, location gps.GlobalPosition) (*pb.Spid, error) {
-	spid := entities.NewSpid(batteryLevel, location)
+func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
+	spid := entities.NewSpid(batteryLevel, position)
 	ip := h.WhereIsEntity(spid.ID)
 	if HostIsLocal(ip) {
 		err := h.DBManager.RegisterSpid(spid)
@@ -62,7 +62,7 @@ func (h *Handler) registerSpid(batteryLevel uint32, location gps.GlobalPosition)
 	defer cancel()
 	request := &pb.RegisterSpidRequest{
 		BatteryLevel: batteryLevel,
-		Location: location.ToProtoBufferEntity(),
+		Position:     position.ToProtoBufferEntity(),
 	}
 	response, err := client.RegisterSpid(ctx, request)
 	if err != nil {
