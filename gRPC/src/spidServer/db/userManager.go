@@ -74,12 +74,11 @@ func (m *Manager) QueryUser(userID uuid.UUID) (user entities.User, err error) {
 	return m.Users.Users[userID], nil
 }
 
-func (m *Manager) RegisterUser(userName string) (user entities.User, err error) {
-	user = entities.NewUser(userName)
+func (m *Manager) RegisterUser(user entities.User) error {
 	log.Printf("Registering user: %s.", user.ToString())
 	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
-	return user, nil
+	return nil
 }
 
 func (m *Manager) UpdateUser(user entities.User) error {
