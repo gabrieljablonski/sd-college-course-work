@@ -8,8 +8,25 @@ import (
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
+	"spidServer/utils"
 	"time"
 )
+
+type remoteUserCall func(client pb.UserHandlerClient, ctx context.Context) (interface{}, error)
+
+func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interface{}, error) {
+	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+	client := pb.NewUserHandlerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	return remoteCall(client, ctx)
+}
 
 func (h *Handler) queryUser(userID string) (*pb.User, error) {
 	id, err := uuid.Parse(userID)
@@ -24,22 +41,17 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 		}
 		return user.ToProtoBufferEntity(), err
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.GetUserRequest{
+			UserID: id.String(),
+		}
+		return client.GetUserInfo(ctx, request)
+	}
+	response, err := h.callUserGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.GetUserRequest{
-		UserID: id.String(),
-	}
-	response, err := client.GetUserInfo(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return response.User, err
+	return response.(pb.GetUserResponse).User, nil
 }
 
 func (h *Handler) registerUser(name string, position *pb.GlobalPosition) (*pb.User, error) {
@@ -53,22 +65,17 @@ func (h *Handler) registerUser(name string, position *pb.GlobalPosition) (*pb.Us
 		err = h.addRemoteUser(user.ToProtoBufferEntity())
 		return user.ToProtoBufferEntity(), err
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.RegisterUserRequest{
+			Name: name,
+		}
+		return client.RegisterUser(ctx, request)
+	}
+	response, err := h.callUserGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.RegisterUserRequest{
-		Name: name,
-	}
-	response, err := client.RegisterUser(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return response.User, nil
+	return response.(pb.RegisterUserResponse).User, nil
 }
 
 func (h *Handler) updateUser(pbUser *pb.User) error {
@@ -88,18 +95,13 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		}
 		return h.updateRemoteUser(pbUser)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.UpdateUserRequest{
+			User: pbUser,
+		}
+		return client.UpdateUser(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.UpdateUserRequest{
-		User: pbUser,
-	}
-	_, err = client.UpdateUser(ctx, request)
+	_, err = h.callUserGRPC(ip, remoteCall)
 	return err
 }
 
@@ -120,18 +122,13 @@ func (h *Handler) deleteUser(pbUser *pb.User) error {
 		}
 		return h.removeRemoteUser(pbUser)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.DeleteUserRequest{
+			UserID: pbUser.Id,
+		}
+		return client.DeleteUser(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.DeleteUserRequest{
-		UserID: pbUser.Id,
-	}
-	_, err = client.DeleteUser(ctx, request)
+	_, err = h.callUserGRPC(ip, remoteCall)
 	return err
 }
 
@@ -144,18 +141,13 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 		}
 		return h.DBManager.AddRemoteUser(user)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.AddRemoteUserRequest{
+			User: pbUser,
+		}
+		return client.AddRemoteUser(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.AddRemoteUserRequest{
-		User: pbUser,
-	}
-	_, err = client.AddRemoteUser(ctx, request)
+	_, err := h.callUserGRPC(ip, remoteCall)
 	return err
 }
 
@@ -168,18 +160,13 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 		}
 		return h.DBManager.UpdateRemoteUser(user)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.UpdateRemoteUserRequest{
+			User: pbUser,
+		}
+		return client.UpdateRemoteUser(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.UpdateRemoteUserRequest{
-		User: pbUser,
-	}
-	_, err = client.UpdateRemoteUser(ctx, request)
+	_, err := h.callUserGRPC(ip, remoteCall)
 	return err
 }
 
@@ -192,17 +179,12 @@ func (h *Handler) removeRemoteUser(pbUser *pb.User) error {
 		}
 		return h.DBManager.RemoveRemoteUser(user)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.RemoveRemoteUserRequest{
+			User: pbUser,
+		}
+		return client.RemoveRemoteUser(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewUserHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.RemoveRemoteUserRequest{
-		User: pbUser,
-	}
-	_, err = client.RemoveRemoteUser(ctx, request)
+	_, err := h.callUserGRPC(ip, remoteCall)
 	return err
 }
