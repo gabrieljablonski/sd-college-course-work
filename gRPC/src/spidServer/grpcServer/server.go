@@ -19,7 +19,7 @@ import (
 
 const (
 	DefaultProtocol = "tcp"
-	DefaultPort = "43210"
+	DefaultPort = "45678"
 )
 
 type Server struct {
