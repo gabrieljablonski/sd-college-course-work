@@ -98,7 +98,7 @@ func (s *Server) Register(registrarIP utils.IP) {
 	s.Handler.ServerPoolSize = serverPoolSize
 }
 
-func (s *Server) UpdateIPTable() error {
+func (s *Server) UpdateIPMap() error {
 	if !s.Registered {
 		log.Fatal("server not registered")
 	}
@@ -107,14 +107,14 @@ func (s *Server) UpdateIPTable() error {
 	if err != nil {
 		log.Fatalf("failed to connect to %s: %s", addr, err)
 	}
-	request := fmt.Sprintf("REQUEST IP TABLE %d\n", s.Handler.Number)
+	request := fmt.Sprintf("REQUEST IP MAP %d\n", s.Handler.Number)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
-		log.Fatalf("failed to send ip table request: %s", err)
+		log.Fatalf("failed to send ip map request: %s", err)
 	}
 	response, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
-		log.Fatalf("failed to get ip table response: %s", err)
+		log.Fatalf("failed to get ip map response: %s", err)
 	}
 	var ipMap map[int]string
 	err = json.Unmarshal([]byte(response), &ipMap)
@@ -122,7 +122,7 @@ func (s *Server) UpdateIPTable() error {
 		log.Fatalf("failed to parse ip map: %s", err)
 	}
 	if len(ipMap) == 0 {
-		msg := "ip table not ready"
+		msg := "ip map not ready"
 		log.Print(msg)
 		return fmt.Errorf(msg)
 	}
@@ -145,7 +145,7 @@ func (s *Server) UpdateIPTable() error {
 			Port:    split[1],
 		}
 	}
-	log.Printf("Updated IP table: %s", s.Handler.IPMap)
+	log.Printf("Updated IP map: %s", s.Handler.IPMap)
 	return nil
 }
 
