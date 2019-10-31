@@ -8,6 +8,7 @@ import (
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
+	"strconv"
 )
 
 const (
@@ -16,10 +17,11 @@ const (
 
 type Handler struct {
 	DBManager db.Manager
-	IPTable	  []utils.IP
+	IPMap     map[int]utils.IP
 	// number from 1 to `n` indicating position in global IP table
 	Number		int
-	Boundaries  []gps.GlobalPosition
+	ServerPoolSize int
+	BaseDelta   int
 
 	pb.SpidHandlerServer
 	pb.UserHandlerServer
@@ -33,51 +35,40 @@ func HostIsLocal(ip utils.IP) bool {
 	return ip.Address == LocalHost
 }
 
-func (h *Handler) CalculateBoundaries() {
-	// visual representation of this algorithm applied for 9 divisions
-	// can be seen in `global_boundaries_9_regions.png`.
-	// the boundaries are represented by the red dots
-	if len(h.IPTable) == 0 {
-		log.Fatal("ip table is empty")
+func (h *Handler) ClosestHost(targetServer int) utils.IP {
+	if target, ok := h.IPMap[targetServer]; ok {
+		return target
 	}
-	h.Boundaries = make([]gps.GlobalPosition, 0)
-	// the result should be an integer
-	// rounding to avoid situations like 1.99999... being truncated to 1
-	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Handler.IPTable)))))
-	// using ceiling just to avoid rounding issues
-	longitudeDelta := math.Ceil(360.0 / float64(baseDelta))
-	latitudeDelta := math.Ceil(180.0 / float64(baseDelta))
-	for i := 1; i <= baseDelta; i++ {
-		for j := 1; j <= baseDelta; j++ {
-			lat := -90.0 + float64(i)*latitudeDelta
-			lon := -180.0 + float64(j)*longitudeDelta
-			// fixing upper limits manually to avoid rounding issues
-			if i == baseDelta {
-				lat = 90.0
-			}
-			if j == baseDelta {
-				lon = 180.0
-			}
-			h.Boundaries = append(s.Boundaries, gps.GlobalPosition{
-				Latitude:  lat,
-				Longitude: lon,
-			})
+	targetX := targetServer/h.BaseDelta
+	targetY := targetServer % h.BaseDelta
+	minDist := math.Inf(1)
+	closestServer := utils.IP{}
+	for n, ip := range h.IPMap {
+		nx := n/h.BaseDelta
+		ny := n % h.BaseDelta
+		dist := math.Sqrt(math.Pow(float64(nx-targetX), 2) + math.Pow(float64(ny-targetY), 2))
+		if dist <= minDist{
+			minDist = dist
+			closestServer = ip
 		}
 	}
+	if closestServer.Address == "" {
+		// this should never happen
+		log.Fatalf("unexpected error finding closest host: targetServer=%s; minDist=%.2f; IPMap=%s",
+					strconv.Itoa(targetServer), minDist, h.IPMap)
+	}
+	return closestServer
 }
 
 func (h *Handler) WhereIsPosition(position gps.GlobalPosition) utils.IP {
-	if len(h.Boundaries) == 0 {
-		log.Fatal("boundaries not calculated")
-	}
-	baseDelta := int(math.Round(math.Sqrt(float64(len(s.Boundaries)))))
-	longitudeDelta := math.Ceil(360.0/float64(baseDelta))
-	latitudeDelta := math.Ceil(180.0/float64(baseDelta))
+	h.BaseDelta = int(math.Round(math.Sqrt(float64(h.ServerPoolSize))))
+	longitudeDelta := math.Ceil(360.0/float64(h.BaseDelta))
+	latitudeDelta := math.Ceil(180.0/float64(h.BaseDelta))
 
 	bLongitude := int(math.Floor(position.Longitude/longitudeDelta))
 	bLatitude := int(math.Floor(position.Latitude/latitudeDelta))
-	serverNumber := baseDelta*bLatitude + bLongitude
-	return h.IPTable[serverNumber]
+	serverNumber := h.BaseDelta*bLatitude + bLongitude
+	return h.ClosestHost(serverNumber)
 }
 
 func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
@@ -85,10 +76,10 @@ func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
 	//   -- all entities have a home server mapped by this rule
 	//   -- all spids are also replicated to server
 	//      mapped geographically so they can be easily found by users close by
-	if len(h.IPTable) == 0 {
+	if len(h.IPMap) == 0 {
 		log.Fatal("ip table is empty")
 	}
 	// uuid has uniform distribution
-	serverNumber := id.ID() % uint32(len(h.IPTable))
-	return h.IPTable[serverNumber]
+	serverNumber := id.ID() % uint32(len(h.IPMap))
+	return h.ClosestHost(int(serverNumber))
 }
