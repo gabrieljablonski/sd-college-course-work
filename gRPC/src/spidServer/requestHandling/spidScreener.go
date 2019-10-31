@@ -8,8 +8,25 @@ import (
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
+	"spidServer/utils"
 	"time"
 )
+
+type remoteSpidCall func(client pb.SpidHandlerClient, ctx context.Context) (interface{}, error)
+
+func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interface{}, error) {
+	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+	client := pb.NewSpidHandlerClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	return remoteCall(client, ctx)
+}
 
 func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 	id, err := uuid.Parse(spidID)
@@ -24,22 +41,17 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 		}
 		return spid.ToProtoBufferEntity(), err
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.GetSpidRequest{
+			SpidID: id.String(),
+		}
+		return client.GetSpidInfo(ctx, request)
+	}
+	response, err := h.callSpidGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.GetSpidRequest{
-		SpidID: id.String(),
-	}
-	response, err := client.GetSpidInfo(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return response.Spid, err
+	return response.(pb.GetSpidResponse).Spid, nil
 }
 
 func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
@@ -53,23 +65,18 @@ func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition)
 		err = h.addRemoteSpid(spid.ToProtoBufferEntity())
 		return spid.ToProtoBufferEntity(), err
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.RegisterSpidRequest{
+			BatteryLevel: batteryLevel,
+			Position:     position.ToProtoBufferEntity(),
+		}
+		return client.RegisterSpid(ctx, request)
+	}
+	response, err := h.callSpidGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.RegisterSpidRequest{
-		BatteryLevel: batteryLevel,
-		Position:     position.ToProtoBufferEntity(),
-	}
-	response, err := client.RegisterSpid(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return response.Spid, nil
+	return response.(pb.RegisterSpidResponse).Spid, nil
 }
 
 func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
@@ -89,18 +96,13 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		}
 		return h.updateRemoteSpid(pbSpid)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.UpdateSpidRequest{
+			Spid: pbSpid,
+		}
+		return client.UpdateSpid(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.UpdateSpidRequest{
-		Spid: pbSpid,
-	}
-	_, err = client.UpdateSpid(ctx, request)
+	_, err = h.callSpidGRPC(ip, remoteCall)
 	return err
 }
 
@@ -121,18 +123,13 @@ func (h *Handler) deleteSpid(pbSpid *pb.Spid) error {
 		}
 		return h.removeRemoteSpid(pbSpid)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.DeleteSpidRequest{
+			SpidID: pbSpid.Id,
+		}
+		return client.DeleteSpid(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.DeleteSpidRequest{
-		SpidID: pbSpid.Id,
-	}
-	_, err = client.DeleteSpid(ctx, request)
+	_, err = h.callSpidGRPC(ip, remoteCall)
 	return err
 }
 
@@ -145,18 +142,13 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 		}
 		return h.DBManager.AddRemoteSpid(spid)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.AddRemoteSpidRequest{
+			Spid: pbSpid,
+		}
+		return client.AddRemoteSpid(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.AddRemoteSpidRequest{
-		Spid: pbSpid,
-	}
-	_, err = client.AddRemoteSpid(ctx, request)
+	_, err := h.callSpidGRPC(ip, remoteCall)
 	return err
 }
 
@@ -169,18 +161,13 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 		}
 		return h.DBManager.UpdateRemoteSpid(spid)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.UpdateRemoteSpidRequest{
+			Spid: pbSpid,
+		}
+		return client.UpdateRemoteSpid(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.UpdateRemoteSpidRequest{
-		Spid: pbSpid,
-	}
-	_, err = client.UpdateRemoteSpid(ctx, request)
+	_, err := h.callSpidGRPC(ip, remoteCall)
 	return err
 }
 
@@ -193,17 +180,12 @@ func (h *Handler) removeRemoteSpid(pbSpid *pb.Spid) error {
 		}
 		return h.DBManager.RemoveRemoteSpid(spid)
 	}
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
-	if err != nil {
-		return err
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.RemoveRemoteSpidRequest{
+			Spid: pbSpid,
+		}
+		return client.RemoveRemoteSpid(ctx, request)
 	}
-	defer conn.Close()
-	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	request := &pb.RemoveRemoteSpidRequest{
-		Spid: pbSpid,
-	}
-	_, err = client.RemoveRemoteSpid(ctx, request)
+	_, err := h.callSpidGRPC(ip, remoteCall)
 	return err
 }
