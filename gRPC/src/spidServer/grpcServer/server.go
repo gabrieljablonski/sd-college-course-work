@@ -87,12 +87,15 @@ func (s *Server) Register(registrarIP utils.IP) {
 	if response == "full\n" {
 		log.Fatalf("all server slots are filled")
 	}
-	serverNumber, err := strconv.Atoi(strings.Trim(response, "\n"))
+	split := strings.Split(strings.Trim(response, "\n"), " ")
+	serverNumber, err := strconv.Atoi(split[0])
 	if err != nil {
 		log.Fatalf("failed to parse register response: %s", err)
 	}
-	log.Printf("Server registered as number %d", serverNumber)
+	serverPoolSize, err := strconv.Atoi(split[1])
+	log.Printf("Server registered as number %d.\n%d servers in total.", serverNumber, serverPoolSize)
 	s.Handler.Number = serverNumber
+	s.Handler.ServerPoolSize = serverPoolSize
 }
 
 func (s *Server) UpdateIPTable() error {
@@ -104,7 +107,7 @@ func (s *Server) UpdateIPTable() error {
 	if err != nil {
 		log.Fatalf("failed to connect to %s: %s", addr, err)
 	}
-	request := fmt.Sprintf("REQUEST IP TABLE\n")
+	request := fmt.Sprintf("REQUEST IP TABLE %d\n", s.Handler.Number)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send ip table request: %s", err)
@@ -113,36 +116,36 @@ func (s *Server) UpdateIPTable() error {
 	if err != nil {
 		log.Fatalf("failed to get ip table response: %s", err)
 	}
-	var ipTableList []string
-	err = json.Unmarshal([]byte(response), &ipTableList)
+	var ipMap map[int]string
+	err = json.Unmarshal([]byte(response), &ipMap)
 	if err != nil {
-		log.Fatalf("failed to parse ip table: %s", err)
+		log.Fatalf("failed to parse ip map: %s", err)
 	}
-	if len(ipTableList) == 0 {
+	if len(ipMap) == 0 {
 		msg := "ip table not ready"
 		log.Print(msg)
 		return fmt.Errorf(msg)
 	}
-	s.Handler.IPTable = make([]utils.IP, 0)
-	for i, ip := range ipTableList {
-		if i == s.Handler.Number {
-			s.Handler.IPTable = append(
-				s.Handler.IPTable,
-				s.IP,
-			)
+	if len(ipMap) != s.Handler.ServerPoolSize {
+		msg := "unexpected ip map size not ready"
+		log.Print(msg)
+		return fmt.Errorf(msg)
+	}
+	for serverNumber, ip := range ipMap {
+		if serverNumber == s.Handler.Number {
+			s.Handler.IPMap[serverNumber] = utils.IP{
+				Address: "localhost",
+				Port:    s.IP.Port,
+			}
 			continue
 		}
 		split := strings.Split(ip, ":")
-		s.Handler.IPTable = append(
-			s.Handler.IPTable,
-			utils.IP{
-				Address: split[0],
-				Port:    split[1],
-			},
-		)
+		s.Handler.IPMap[serverNumber] = utils.IP{
+			Address: split[0],
+			Port:    split[1],
+		}
 	}
-	log.Printf("Updated IP table: %s", s.Handler.IPTable)
-	s.Handler.CalculateBoundaries()
+	log.Printf("Updated IP table: %s", s.Handler.IPMap)
 	return nil
 }
 
