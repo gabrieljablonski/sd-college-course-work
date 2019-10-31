@@ -79,6 +79,7 @@ func (s *Server) Register(registrarIP utils.IP) {
 		}
 	}
 	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.ID.String(), s.IP.Port)
+	log.Print("Sending request: ", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send register request: %s", err)
@@ -87,6 +88,7 @@ func (s *Server) Register(registrarIP utils.IP) {
 	if response == "full\n" {
 		log.Fatalf("all server slots are filled")
 	}
+	log.Print("Received response: ", response)
 	split := strings.Split(strings.Trim(response, "\n"), " ")
 	serverNumber, err := strconv.Atoi(split[0])
 	if err != nil {
@@ -108,6 +110,7 @@ func (s *Server) UpdateIPMap() error {
 		log.Fatalf("failed to connect to %s: %s", addr, err)
 	}
 	request := fmt.Sprintf("REQUEST IP MAP %d\n", s.Handler.Number)
+	log.Print("Sending request: ", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
 		log.Fatalf("failed to send ip map request: %s", err)
@@ -116,6 +119,7 @@ func (s *Server) UpdateIPMap() error {
 	if err != nil {
 		log.Fatalf("failed to get ip map response: %s", err)
 	}
+	log.Print("Received response: ", response)
 	var ipMap map[int]string
 	err = json.Unmarshal([]byte(response), &ipMap)
 	if err != nil {
@@ -131,6 +135,7 @@ func (s *Server) UpdateIPMap() error {
 		log.Print(msg)
 		return fmt.Errorf(msg)
 	}
+	s.Handler.IPMap = make(map[int]utils.IP)
 	for serverNumber, ip := range ipMap {
 		if serverNumber == s.Handler.Number {
 			s.Handler.IPMap[serverNumber] = utils.IP{
