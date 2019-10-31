@@ -3,7 +3,7 @@ import json
 import re
 
 
-DEFAULT_PORT = 45678
+DEFAULT_PORT = 43210
 DEFAULT_IP_MAP_PATH = 'ip_map.spd'
 
 
@@ -53,13 +53,13 @@ def main(port, number_of_servers, ip_map_path):
                     print(f"saving to file: {ip_map}")
                     json.dump(ip_map, f)
             # assuming ordered dictionary
-            response = list(ip_map).index(uuid)
+            response = f"{list(ip_map).index(uuid)} {number_of_servers}"
         
-        elif recv == 'REQUEST IP MAP':
+        elif 'REQUEST IP MAP' in recv:
             if len(ip_map) != number_of_servers:
-                response = '[]'
+                response = '{}'
             else:
-                response = [addr for addr in ip_map.values()]
+                response = {str(i):addr for i, addr in enumerate(ip_map.values())}
         print(f"sending {response}")
         response = str(response).replace("'",'"')
         conn.sendall(f"{response}\n".encode())
