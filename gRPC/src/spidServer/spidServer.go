@@ -29,6 +29,6 @@ func main() {
 		Address: registrarAddress,
 		Port:    registrarPort,
 	})
-	_ = server.UpdateIPTable()
+	_ = server.UpdateIPMap()
 	server.Listen()
 }

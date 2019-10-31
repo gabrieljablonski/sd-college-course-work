@@ -18,7 +18,7 @@ const (
 type Handler struct {
 	DBManager db.Manager
 	IPMap     map[int]utils.IP
-	// number from 1 to `n` indicating position in global IP table
+	// number from 1 to `n` indicating index in global IP map
 	Number		int
 	ServerPoolSize int
 	BaseDelta   int
@@ -51,6 +51,9 @@ func (h *Handler) ClosestHost(targetServer int) utils.IP {
 			minDist = dist
 			closestServer = ip
 		}
+		if dist == 0 {
+			break
+		}
 	}
 	if closestServer.Address == "" {
 		// this should never happen
@@ -77,7 +80,7 @@ func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
 	//   -- all spids are also replicated to server
 	//      mapped geographically so they can be easily found by users close by
 	if len(h.IPMap) == 0 {
-		log.Fatal("ip table is empty")
+		log.Fatal("ip map is empty")
 	}
 	// uuid has uniform distribution
 	serverNumber := id.ID() % uint32(len(h.IPMap))
