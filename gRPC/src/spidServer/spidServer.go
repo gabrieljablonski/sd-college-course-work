@@ -2,11 +2,17 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"spidServer/grpcServer"
 	"spidServer/utils"
 	"strings"
+	"time"
+)
+
+const (
+	UpdateIPMapPeriod = 1*time.Second
 )
 
 func main() {
@@ -29,6 +35,9 @@ func main() {
 		Address: registrarAddress,
 		Port:    registrarPort,
 	})
-	_ = server.UpdateIPMap()
+	for err := fmt.Errorf(""); err != nil; err = server.UpdateIPMap() {
+		time.Sleep(UpdateIPMapPeriod)
+		log.Print("Trying ip map update...")
+	}
 	server.Listen()
 }
