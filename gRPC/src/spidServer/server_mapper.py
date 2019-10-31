@@ -67,6 +67,105 @@ def main(port, number_of_servers, ip_map_path):
                 if len(ip_map) != number_of_servers:
                     response = '{}'
                 else:
+                    # creates a map with the server ips in all 6 main cardinal directions
+                    # from the server requesting the map.
+                    #
+                    # in all directions, the distance increases by a factor of 2 each time
+                    # (first is 1 away, second is 2, third is 4, fourth is 8, ...).
+                    #
+                    # moving diagonally is also considered 1 unit of distance.
+                    #
+                    # the maximum size for a resulting map is bounded by:
+                    # 6*floor(log2(n-1))
+                    # which corresponds to a server exactly in the middle of the map
+                    response = {str(server_number): ip_map[server_number]}
+                    base_delta = int(round(number_of_servers**.5))
+                    sX = server_number//base_delta
+                    sy = server_number % base_delta
+                    # north
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tY -= b
+                        if tY < 0:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # south
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tY += b
+                        if tY >= base_delta:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # west
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX -= b
+                        if tX < 0:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # east
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX += b
+                        if tX >= base_delta:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # northeast
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX += b
+                        tY -= b
+                        if tX >= base_delta or tY < 0:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # southeast
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX += b
+                        tY += b
+                        if tX >= base_delta or tY >= base_delta:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # southwest
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX -= b
+                        tY += b
+                        if tX < 0 or tY >= base_delta:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
+                    # northwest
+                    tX, tY = sX, sY
+                    b = 1
+                    while 1:
+                        tX -= b
+                        tY -= b
+                        if tX < 0 or tY < 0:
+                            break
+                        tN = tY*base_delta + tX
+                        response[tN] = ip_map[tN]
+                        b *= 2
                     response = {str(i):addr for i, addr in enumerate(ip_map.values())}
         print(f"sending {response}")
         response = str(response).replace("'",'"')
