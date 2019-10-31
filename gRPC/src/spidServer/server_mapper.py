@@ -40,26 +40,34 @@ def main(port, number_of_servers, ip_map_path):
         response = ''
         if 'REGISTER SERVER' in recv:
             # REGISTER SERVER <uuid> <port>
-            uuid, server_port = recv.split()[2:]
+            try:
+                uuid, server_port = recv.split()[2:]
+            except IndexError as e:
+                response = str(e)
+            else:
+                if len(ip_map) == number_of_servers and uuid not in ip_map:
+                    # all server slots already filled
+                    response = 'full'
 
-            if len(ip_map) == number_of_servers and uuid not in ip_map:
-                # all server slots already filled
-                response = 'full'
+                ip_map[uuid] = f"{client_addr[0]}:{server_port}"
 
-            ip_map[uuid] = f"{client_addr[0]}:{server_port}"
-
-            if len(ip_map) and not ip_map_path:
-                with open(DEFAULT_IP_MAP_PATH, 'w') as f:
-                    print(f"saving to file: {ip_map}")
-                    json.dump(ip_map, f)
-            # assuming ordered dictionary
-            response = f"{list(ip_map).index(uuid)} {number_of_servers}"
+                if len(ip_map) and not ip_map_path:
+                    with open(DEFAULT_IP_MAP_PATH, 'w') as f:
+                        print(f"saving to file: {ip_map}")
+                        json.dump(ip_map, f)
+                # assuming ordered dictionary
+                response = f"{list(ip_map).index(uuid)} {number_of_servers}"
         
         elif 'REQUEST IP MAP' in recv:
-            if len(ip_map) != number_of_servers:
-                response = '{}'
+            try:
+                server_number = int(recv.split()[-1])
+            except (ValueError, TypeError) as e:
+                response = str(e)
             else:
-                response = {str(i):addr for i, addr in enumerate(ip_map.values())}
+                if len(ip_map) != number_of_servers:
+                    response = '{}'
+                else:
+                    response = {str(i):addr for i, addr in enumerate(ip_map.values())}
         print(f"sending {response}")
         response = str(response).replace("'",'"')
         conn.sendall(f"{response}\n".encode())
