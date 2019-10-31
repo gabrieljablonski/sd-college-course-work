@@ -44,33 +44,16 @@ func NewManager(basePath string) Manager {
 	eh.HandleFatal(err)
 	m := Manager{FileManager: utils.FileManager{BasePath: basePath}}
 	m.LoggerDirty = log.New(dirtyLogFile, "", 0)
-	m.LoadFromFile()
+	m.loadFromFile()
 	go m.WriteToFilePeriodically(DefaultWriteToFilePeriod)
 	return m
 }
 
-func (m *Manager) LoadFromFile() {
+func (m *Manager) loadFromFile() {
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
 	m.RemoteUsers = m.GetRemoteUsersFromFile()
 	m.RemoteSpids = m.GetRemoteSpidsFromFile()
-}
-
-func (m *Manager) GetServerID() uuid.UUID {
-	serverIDPath := DefaultServerIDLocation
-	id, err := m.FileManager.ReadFile(serverIDPath)
-	if err != nil {
-		return uuid.Nil
-	}
-	uid, err := uuid.Parse(string(id))
-	if err != nil {
-		return uuid.Nil
-	}
-	return uid
-}
-
-func (m *Manager) WriteServerID(uid uuid.UUID) error {
-	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
 }
 
 func (m *Manager) WriteToFilePeriodically(period time.Duration) {
@@ -93,4 +76,21 @@ func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 		eh.HandleFatal(err)
 		m.WritingToFile = false
 	}
+}
+
+func (m *Manager) GetServerID() uuid.UUID {
+	serverIDPath := DefaultServerIDLocation
+	id, err := m.FileManager.ReadFile(serverIDPath)
+	if err != nil {
+		return uuid.Nil
+	}
+	uid, err := uuid.Parse(string(id))
+	if err != nil {
+		return uuid.Nil
+	}
+	return uid
+}
+
+func (m *Manager) WriteServerID(uid uuid.UUID) error {
+	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
 }
