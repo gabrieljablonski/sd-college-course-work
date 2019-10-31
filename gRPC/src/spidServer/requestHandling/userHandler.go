@@ -20,7 +20,7 @@ func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 }
 
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
-	user, err :=  h.registerUser(request.UserName)
+	user, err :=  h.registerUser(request.Name, request.Position)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register user")
 	}
