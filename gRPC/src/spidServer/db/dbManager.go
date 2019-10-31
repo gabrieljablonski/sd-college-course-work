@@ -15,7 +15,7 @@ const (
 	DefaultWriteToFilePeriod   = 5000000*time.Millisecond
 
 	Sep                        = string(os.PathSeparator)
-	BaseDataPath               = "db" + Sep + "data" + Sep
+	BaseDataPath               = "data" + Sep
 	BaseLogsPath               = BaseDataPath + "logs" + Sep
 	BaseStatePath              = BaseDataPath + "state" + Sep
 	DefaultLogPath             = BaseLogsPath + "request_logs.spd"
