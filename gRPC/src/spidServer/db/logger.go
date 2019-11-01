@@ -80,3 +80,84 @@ func (m *Manager) recoverWriteAction(data string) (writeAction WriteAction, err 
 	log.Printf("Recover write action: %s", writeAction)
 	return writeAction, err
 }
+
+func (m *Manager) processWriteAction(action WriteAction) error {
+	switch action.Location {
+	default:
+		return fmt.Errorf("invalid write action location `%s`", action.Location)
+	case Local:
+		return m.processLocalWriteAction(action)
+	case Remote:
+		return m.processRemoteWriteAction(action)
+	}
+}
+
+func (m *Manager) processLocalWriteAction(action WriteAction) error {
+	switch action.EntityType {
+	default:
+		return fmt.Errorf("invalid write action entity type `%s`", action.EntityType)
+	case Spid:
+		var handler func(*entities.Spid) error
+		switch action.Type {
+		default:
+			return fmt.Errorf("invalid write action type `%s`", action.Type)
+		case Register:
+			handler = m.RegisterSpid
+		case Update:
+			handler = m.UpdateSpid
+		case Delete:
+			handler = m.DeleteSpid
+		}
+		spid := action.Entity.(entities.Spid)
+		return handler(&spid)
+	case User:
+		var handler func(*entities.User) error
+		switch action.Type {
+		default:
+			return fmt.Errorf("invalid write action type `%s`", action.Type)
+		case Register:
+			handler = m.RegisterUser
+		case Update:
+			handler = m.UpdateUser
+		case Delete:
+			handler = m.DeleteUser
+		}
+		user := action.Entity.(entities.User)
+		return handler(&user)
+	}
+}
+
+func (m *Manager) processRemoteWriteAction(action WriteAction) error {
+	switch action.EntityType {
+	default:
+		return fmt.Errorf("invalid write action entity type `%s`", action.EntityType)
+	case Spid:
+		var handler func(*entities.Spid) error
+		switch action.Type {
+		default:
+			return fmt.Errorf("invalid write action type `%s`", action.Type)
+		case Add:
+			handler = m.AddRemoteSpid
+		case Update:
+			handler = m.UpdateRemoteSpid
+		case Remove:
+			handler = m.RemoveRemoteSpid
+		}
+		spid := action.Entity.(entities.Spid)
+		return handler(&spid)
+	case User:
+		var handler func(*entities.User) error
+		switch action.Type {
+		default:
+			return fmt.Errorf("invalid write action type `%s`", action.Type)
+		case Register:
+			handler = m.AddRemoteUser
+		case Update:
+			handler = m.UpdateRemoteUser
+		case Delete:
+			handler = m.RemoveRemoteUser
+		}
+		user := action.Entity.(entities.User)
+		return handler(&user)
+	}
+}
