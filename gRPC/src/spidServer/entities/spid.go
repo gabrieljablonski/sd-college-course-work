@@ -26,7 +26,7 @@ func NewSpids() *Spids {
 	}
 }
 
-func (s Spids) ToString() string {
+func (s Spids) String() string {
 	ss, err := json.Marshal(s)
 	if err != nil {
 		log.Printf("Failed to convert spids to string: %s", err)
@@ -67,7 +67,7 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid *Spid, err error
 	}, nil
 }
 
-func (s Spid) ToString() string {
+func (s Spid) String() string {
 	ss, err := json.Marshal(s)
 	if err != nil {
 		log.Printf("Failed to convert spid to string: %s", err)
@@ -113,6 +113,7 @@ func IsValidLockState(lockState string) bool {
 }
 
 func (s Spid) Marshal() ([]byte, error) {
+	log.Printf("%s", s)
 	return json.Marshal(s)
 }
 

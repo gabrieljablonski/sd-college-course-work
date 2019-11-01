@@ -17,8 +17,8 @@ type localSpidCall func(handler *Handler) (*entities.Spid, error)
 type remoteSpidCall func(client pb.SpidHandlerClient, ctx context.Context) (interface{}, error)
 
 func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interface{}, error) {
-	log.Printf("Making remote call to %s.", ip.ToString())
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	log.Printf("Making remote call to %s.", ip)
+	conn, err := grpc.Dial(ip.String(), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interfac
 }
 
 func (h *Handler) routeSpidCall(ip utils.IP, localCall localSpidCall, remoteCall remoteSpidCall) (*pb.Spid, error) {
-	log.Printf("Spid agent: %s", ip.ToString())
+	log.Printf("Spid agent: %s", ip)
 	if IsHostLocal(ip) {
 		log.Printf("Agent is local.")
 		spid, err := localCall(h)
@@ -83,7 +83,7 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 }
 
 func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
-	log.Printf("Registering spid with battery level %d and position\n%s", batteryLevel, position.ToString())
+	log.Printf("Registering spid with battery level %d and position\n%s", batteryLevel, position)
 	spid := entities.NewSpid(batteryLevel, position)
 	ip := h.WhereIsEntity(spid.ID)
 	localCall := func(handler *Handler) (*entities.Spid, error) {

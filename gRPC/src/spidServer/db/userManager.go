@@ -24,7 +24,7 @@ func (m *Manager) GetUsersFromFile() *entities.Users {
 	if users.Users == nil {
 		users = entities.NewUsers()
 	}
-	log.Printf("Read users: %s.", users.ToString())
+	log.Printf("Read users: %s.", users)
 	return users
 }
 
@@ -35,13 +35,13 @@ func (m *Manager) WriteUsersToFile() {
 		return
 	}
 
-	log.Printf("Making copy of users file...")
+	log.Printf("Making backup of users file...")
 	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultUsersLocation
 	dst := src + ".bk"
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing users: %s", m.Users.ToString())
+	log.Printf("Writing users: %s", m.Users)
 	err = m.FileManager.WriteToFile(DefaultUsersLocation, marshaledUsers)
 	if err != nil {
 		log.Printf("Failed to write users to file: %s", err)
@@ -58,12 +58,12 @@ func (m *Manager) QueryUser(userID uuid.UUID) (*entities.User, error) {
 		log.Print(err)
 		return nil, err
 	}
-	log.Printf("User found: %s", u.ToString())
+	log.Printf("User found: %s", u)
 	return u, nil
 }
 
 func (m *Manager) RegisterUser(user *entities.User) error {
-	log.Printf("Registering user: %s.", user.ToString())
+	log.Printf("Registering user: %s.", user)
 	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
 	return nil
@@ -74,7 +74,7 @@ func (m *Manager) UpdateUser(user *entities.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating user: %s.", user.ToString())
+	log.Printf("Updating user: %s.", user)
 	m.Users.Users[user.ID] = user
 	log.Print("User updated.")
 	return nil
@@ -85,7 +85,7 @@ func (m *Manager) DeleteUser(user *entities.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Deleting user: %s.", user.ToString())
+	log.Printf("Deleting user: %s.", user)
 	delete(m.Users.Users, user.ID)
 	log.Print("User deleted.")
 	return nil

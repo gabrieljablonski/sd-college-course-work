@@ -7,7 +7,7 @@ type IP struct {
 	Port    string
 }
 
-func (ip IP) ToString() string {
+func (ip IP) String() string {
 	return fmt.Sprintf("%s:%s", ip.Address, ip.Port)
 }
 

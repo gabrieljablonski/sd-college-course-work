@@ -17,8 +17,8 @@ type localUserCall func(handler *Handler) (*entities.User, error)
 type remoteUserCall func(client pb.UserHandlerClient, ctx context.Context) (interface{}, error)
 
 func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interface{}, error) {
-	log.Printf("Making remote call to %s.", ip.ToString())
-	conn, err := grpc.Dial(ip.ToString(), grpc.WithInsecure())
+	log.Printf("Making remote call to %s.", ip)
+	conn, err := grpc.Dial(ip.String(), grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interfac
 }
 
 func (h *Handler) routeUserCall(ip utils.IP, localCall localUserCall, remoteCall remoteUserCall) (*pb.User, error) {
-	log.Printf("User agent: %s", ip.ToString())
+	log.Printf("User agent: %s", ip)
 	if IsHostLocal(ip) {
 		log.Printf("Agent is local.")
 		user, err := localCall(h)
@@ -91,7 +91,7 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 }
 
 func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.User, error) {
-	log.Printf("Registering user with name `%s` and position\n%s", name, position.ToString())
+	log.Printf("Registering user with name `%s` and position\n%s", name, position)
 	user := entities.NewUser(name, position)
 	ip := h.WhereIsEntity(user.ID)
 	localCall := func(handler *Handler) (*entities.User, error) {
