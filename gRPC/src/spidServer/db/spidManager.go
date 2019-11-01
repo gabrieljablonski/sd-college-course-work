@@ -65,7 +65,11 @@ func (m *Manager) RegisterSpid(spid *entities.Spid) error {
 	log.Printf("Registering spid: %s.", spid)
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       RegisterLocal,
+		EntityType: Spid,
+		Entity:     spid,
+	})
 }
 
 func (m *Manager) UpdateSpid(spid *entities.Spid) error {
@@ -76,7 +80,11 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 	log.Printf("Updating spid: %s.", spid)
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid updated.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       UpdateLocal,
+		EntityType: Spid,
+		Entity:     spid,
+	})
 }
 
 func (m *Manager) DeleteSpid(spid *entities.Spid) error {
@@ -86,6 +94,10 @@ func (m *Manager) DeleteSpid(spid *entities.Spid) error {
 	}
 	log.Printf("Deleting spid: %s.", spid)
 	delete(m.Spids.Spids, spid.ID)
-	log.Print("Spid updated.")
-	return nil
+	log.Print("Spid deleted.")
+	return m.logWriteAction(WriteAction{
+		Type:       DeleteLocal,
+		EntityType: Spid,
+		Entity:     spid,
+	})
 }
