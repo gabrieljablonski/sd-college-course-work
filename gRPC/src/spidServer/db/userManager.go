@@ -66,7 +66,11 @@ func (m *Manager) RegisterUser(user *entities.User) error {
 	log.Printf("Registering user: %s.", user)
 	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:   RegisterLocal,
+		EntityType: User,
+		Entity: user,
+	})
 }
 
 func (m *Manager) UpdateUser(user *entities.User) error {
@@ -77,7 +81,11 @@ func (m *Manager) UpdateUser(user *entities.User) error {
 	log.Printf("Updating user: %s.", user)
 	m.Users.Users[user.ID] = user
 	log.Print("User updated.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:   UpdateLocal,
+		EntityType: User,
+		Entity: user,
+	})
 }
 
 func (m *Manager) DeleteUser(user *entities.User) error {
@@ -88,5 +96,9 @@ func (m *Manager) DeleteUser(user *entities.User) error {
 	log.Printf("Deleting user: %s.", user)
 	delete(m.Users.Users, user.ID)
 	log.Print("User deleted.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:   UpdateLocal,
+		EntityType: User,
+		Entity: user,
+	})
 }

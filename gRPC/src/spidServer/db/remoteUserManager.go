@@ -69,7 +69,11 @@ func (m *Manager) AddRemoteUser(user *entities.User) error {
 	log.Printf("Adding remote user: %s.", user)
 	m.RemoteUsers.Users[user.ID] = user
 	log.Print("Remote user added.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       AddRemote,
+		EntityType: User,
+		Entity:     user,
+	})
 }
 
 func (m *Manager) UpdateRemoteUser(user *entities.User) error {
@@ -80,7 +84,11 @@ func (m *Manager) UpdateRemoteUser(user *entities.User) error {
 	log.Printf("Updating remote user: %s.", user)
 	m.RemoteUsers.Users[user.ID] = user
 	log.Print("Remote user updated.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       UpdateRemote,
+		EntityType: User,
+		Entity:     user,
+	})
 }
 
 func (m *Manager) RemoveRemoteUser(user *entities.User) error {
@@ -91,6 +99,10 @@ func (m *Manager) RemoveRemoteUser(user *entities.User) error {
 	log.Printf("Removing remote user: %s.", user)
 	delete(m.Users.Users, user.ID)
 	log.Print("Remote user removed.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       RemoveRemote,
+		EntityType: User,
+		Entity:     user,
+	})
 }
 

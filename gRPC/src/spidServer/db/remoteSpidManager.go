@@ -70,7 +70,11 @@ func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
 	log.Printf("Adding remote spid: %s.", spid)
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid added.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:   AddRemote,
+		EntityType: Spid,
+		Entity: spid,
+	})
 }
 
 func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
@@ -81,7 +85,11 @@ func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 	log.Printf("Updating remote spid: %s.", spid)
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid updated.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:   UpdateRemote,
+		EntityType: Spid,
+		Entity: spid,
+	})
 }
 
 func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
@@ -92,5 +100,9 @@ func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
 	log.Printf("Removing remote spid: %s.", spid)
 	delete(m.Spids.Spids, spid.ID)
 	log.Print("Remote spid removed.")
-	return nil
+	return m.logWriteAction(WriteAction{
+		Type:       RemoveRemote,
+		EntityType: Spid,
+		Entity:     spid,
+	})
 }
