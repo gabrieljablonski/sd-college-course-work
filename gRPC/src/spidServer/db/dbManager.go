@@ -51,10 +51,8 @@ func NewManager(basePath string) Manager {
 func (m *Manager) loadFromFile() {
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
-	m.RemoteUsers = entities.NewUsers()
-	m.RemoteSpids = entities.NewSpids()
-	//m.RemoteUsers = m.GetRemoteUsersFromFile()
-	//m.RemoteSpids = m.GetRemoteSpidsFromFile()
+	m.RemoteUsers = m.GetRemoteUsersFromFile()
+	m.RemoteSpids = m.GetRemoteSpidsFromFile()
 }
 
 func (m *Manager) WriteToFilePeriodically(period time.Duration) {
