@@ -31,11 +31,11 @@ func NewHandler(basePath string) Handler {
 	return Handler{DBManager: db.NewManager(basePath)}
 }
 
-func HostIsLocal(ip utils.IP) bool {
+func IsHostLocal(ip utils.IP) bool {
 	return ip.Address == LocalHost
 }
 
-func (h *Handler) ClosestHost(targetServer int) utils.IP {
+func (h *Handler) getClosestHost(targetServer int) utils.IP {
 	if target, ok := h.IPMap[targetServer]; ok {
 		return target
 	}
@@ -47,7 +47,7 @@ func (h *Handler) ClosestHost(targetServer int) utils.IP {
 		nx := n/h.BaseDelta
 		ny := n % h.BaseDelta
 		dist := math.Sqrt(math.Pow(float64(nx-targetX), 2) + math.Pow(float64(ny-targetY), 2))
-		if dist <= minDist{
+		if dist <= minDist {
 			minDist = dist
 			closestServer = ip
 		}
@@ -71,7 +71,7 @@ func (h *Handler) WhereIsPosition(position gps.GlobalPosition) utils.IP {
 	bLongitude := int(math.Floor(position.Longitude/longitudeDelta))
 	bLatitude := int(math.Floor(position.Latitude/latitudeDelta))
 	serverNumber := h.BaseDelta*bLatitude + bLongitude
-	return h.ClosestHost(serverNumber)
+	return h.getClosestHost(serverNumber)
 }
 
 func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
@@ -84,5 +84,5 @@ func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
 	}
 	// uuid has uniform distribution
 	serverNumber := id.ID() % uint32(len(h.IPMap))
-	return h.ClosestHost(int(serverNumber))
+	return h.getClosestHost(int(serverNumber))
 }
