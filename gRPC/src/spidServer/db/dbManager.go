@@ -18,7 +18,6 @@ const (
 	BaseDataPath               = "data" + Sep
 	BaseLogsPath               = BaseDataPath + "logs" + Sep
 	BaseStatePath              = BaseDataPath + "state" + Sep
-	DefaultLogPath             = BaseLogsPath + "request_logs.spd"
 	DefaultDirtyRequestsPath   = BaseLogsPath + "dirty_requests.spd"
 	DefaultUsersLocation 	   = BaseStatePath + "users.spd"
 	DefaultRemoteUsersLocation = BaseStatePath + "users_remote.spd"
