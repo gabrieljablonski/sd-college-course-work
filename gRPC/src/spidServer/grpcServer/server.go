@@ -15,6 +15,7 @@ import (
 	"spidServer/utils"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -152,6 +153,27 @@ func (s *Server) UpdateIPMap() error {
 	}
 	log.Printf("Updated IP map: %s", s.Handler.IPMap)
 	return nil
+}
+
+func (s *Server) HandleRemoteEntities() {
+	for ; len(s.Handler.IPMap) == 0; {
+		// Wait until all servers are setup
+		time.Sleep(time.Second)
+	}
+	s.handleRemoteUsers()
+	s.handleRemoteSpids()
+}
+
+func (s *Server) handleRemoteUsers() {
+	for _, user := range s.Handler.DBManager.Users.Users {
+		_ = s.Handler.HandleRemoteUser(user)
+	}
+}
+
+func (s *Server) handleRemoteSpids() {
+	for _, spid := range s.Handler.DBManager.Spids.Spids {
+		_ = s.Handler.HandleRemoteSpid(spid)
+	}
 }
 
 func (s *Server) Listen() {
