@@ -22,7 +22,7 @@ message User {
     string id = 1;
     string name = 2;
     GlobalPosition position = 3;
-    string lastUpdated = 4;
+    sint64 lastUpdated = 4;
     string currentSpidID = 5;
 }
 
