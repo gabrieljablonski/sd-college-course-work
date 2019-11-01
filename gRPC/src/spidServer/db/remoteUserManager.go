@@ -35,7 +35,7 @@ func (m *Manager) WriteRemoteUsersToFile() {
 		return
 	}
 	log.Printf("Making backup of remote users file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultRemoteUsersLocation
+	src := m.FileManager.GetAbsolutePath(DefaultRemoteUsersLocation)
 	dst := src + ".bk"
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)

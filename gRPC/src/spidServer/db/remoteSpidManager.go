@@ -36,7 +36,7 @@ func (m *Manager) WriteRemoteSpidsToFile() {
 	}
 
 	log.Printf("Making backup of remote spids file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultRemoteSpidsLocation
+	src := m.FileManager.GetAbsolutePath(DefaultRemoteSpidsLocation)
 	dst := src + ".bk"
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)

@@ -36,7 +36,7 @@ func (m *Manager) WriteUsersToFile() {
 	}
 
 	log.Printf("Making backup of users file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultUsersLocation
+	src := m.FileManager.GetAbsolutePath(DefaultUsersLocation)
 	dst := src + ".bk"
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)

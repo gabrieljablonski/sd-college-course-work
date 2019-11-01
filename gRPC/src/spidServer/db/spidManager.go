@@ -36,7 +36,7 @@ func (m *Manager) WriteSpidsToFile() {
 	}
 
 	log.Printf("Making backup of spids file...")
-	src := m.FileManager.BasePath + string(os.PathSeparator) + DefaultSpidsLocation
+	src := m.FileManager.GetAbsolutePath(DefaultSpidsLocation)
 	dst := src + ".bk"
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
