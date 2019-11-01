@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"spidServer/db"
+	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
@@ -33,6 +34,22 @@ func NewHandler(basePath string) Handler {
 
 func IsHostLocal(ip utils.IP) bool {
 	return ip.Address == LocalHost
+}
+
+func (h *Handler) HandleRemoteUser(user *entities.User) error {
+	ip := h.WhereIsPosition(user.Position)
+	if IsHostLocal(ip) {
+		return nil
+	}
+	return h.addRemoteUser(user.ToProtoBufferEntity())
+}
+
+func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
+	ip := h.WhereIsPosition(spid.Position)
+	if IsHostLocal(ip) {
+		return nil
+	}
+	return h.addRemoteSpid(spid.ToProtoBufferEntity())
 }
 
 func (h *Handler) getClosestHost(targetServer int) utils.IP {
