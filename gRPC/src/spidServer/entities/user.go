@@ -19,7 +19,7 @@ func NewUsers() *Users {
 	}
 }
 
-func (u Users) ToString() string {
+func (u Users) String() string {
 	s, err := json.Marshal(u)
 	if err != nil {
 		log.Printf("Failed to convert users to string: %s", err)
@@ -54,7 +54,7 @@ func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user *User, err error
 	}, nil
 }
 
-func (u User) ToString() string {
+func (u User) String() string {
 	s, err := json.Marshal(u)
 	if err != nil {
 		log.Printf("Failed to convert user to string: %s", err)

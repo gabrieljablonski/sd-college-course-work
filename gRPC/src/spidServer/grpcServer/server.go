@@ -64,7 +64,7 @@ func NewServer(port string) Server {
 func (s *Server) Register(registrarIP utils.IP) {
 	// placeholder solution
 	// connect to server map registrar to get a server number (from 0 to `n`-1)
-	addr := registrarIP.ToString()
+	addr := registrarIP.String()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
 		log.Fatalf("failed to register server at %s: %s", addr, err)
@@ -79,7 +79,7 @@ func (s *Server) Register(registrarIP utils.IP) {
 			log.Fatalf("failed to save new server id: %s", err)
 		}
 	}
-	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.ID.String(), s.IP.Port)
+	request := fmt.Sprintf("REGISTER SERVER %s %s\n", s.ID, s.IP.Port)
 	log.Print("Sending request: ", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
@@ -105,7 +105,7 @@ func (s *Server) UpdateIPMap() error {
 	if !s.Registered {
 		log.Fatal("server not registered")
 	}
-	addr := s.RegistrarIP.ToString()
+	addr := s.RegistrarIP.String()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
 		log.Fatalf("failed to connect to %s: %s", addr, err)

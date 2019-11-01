@@ -24,7 +24,7 @@ func (m *Manager) GetSpidsFromFile() *entities.Spids {
 	if spids.Spids == nil {
 		spids = entities.NewSpids()
 	}
-	log.Printf("Read spids: %s.", spids.ToString())
+	log.Printf("Read spids: %s.", spids)
 	return spids
 }
 
@@ -41,7 +41,7 @@ func (m *Manager) WriteSpidsToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing spids: %s", m.Spids.ToString())
+	log.Printf("Writing spids: %s", m.Spids)
 	err = m.FileManager.WriteToFile(DefaultSpidsLocation, marshaledSpids)
 	if err != nil {
 		log.Printf("Failed to write spids to file: %s", err)
@@ -57,12 +57,12 @@ func (m *Manager) QuerySpid(spidID uuid.UUID) (*entities.Spid, error) {
 		err := fmt.Errorf("spid with ID %s not found", spidID)
 		return nil, err
 	}
-	log.Printf("Spid found: %s", s.ToString())
+	log.Printf("Spid found: %s", s)
 	return s, nil
 }
 
 func (m *Manager) RegisterSpid(spid *entities.Spid) error {
-	log.Printf("Registering spid: %s.", spid.ToString())
+	log.Printf("Registering spid: %s.", spid)
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
 	return nil
@@ -73,7 +73,7 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating spid: %s.", spid.ToString())
+	log.Printf("Updating spid: %s.", spid)
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid updated.")
 	return nil
@@ -84,7 +84,7 @@ func (m *Manager) DeleteSpid(spid *entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Deleting spid: %s.", spid.ToString())
+	log.Printf("Deleting spid: %s.", spid)
 	delete(m.Spids.Spids, spid.ID)
 	log.Print("Spid updated.")
 	return nil

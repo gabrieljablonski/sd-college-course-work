@@ -24,7 +24,7 @@ func (m *Manager) GetRemoteSpidsFromFile() *entities.Spids {
 	if spids.Spids == nil {
 		spids = entities.NewSpids()
 	}
-	log.Printf("Read remote spids: %s.", spids.ToString())
+	log.Printf("Read remote spids: %s.", spids)
 	return spids
 }
 
@@ -41,7 +41,7 @@ func (m *Manager) WriteRemoteSpidsToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing remote spids: %s", m.RemoteSpids.ToString())
+	log.Printf("Writing remote spids: %s", m.RemoteSpids)
 	err = m.FileManager.WriteToFile(DefaultRemoteSpidsLocation, marshaledSpids)
 	if err != nil {
 		log.Printf("Failed to write remote spids to file: %s", err)
@@ -62,12 +62,12 @@ func (m *Manager) QueryRemoteSpid(spidID uuid.UUID) (*entities.Spid, error) {
 		err := fmt.Errorf("remote spid with ID %s not found", spidID)
 		return nil, err
 	}
-	log.Printf("Remote spid found: %s", s.ToString())
+	log.Printf("Remote spid found: %s", s)
 	return s, nil
 }
 
 func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
-	log.Printf("Adding remote spid: %s.", spid.ToString())
+	log.Printf("Adding remote spid: %s.", spid)
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid added.")
 	return nil
@@ -78,7 +78,7 @@ func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating remote spid: %s.", spid.ToString())
+	log.Printf("Updating remote spid: %s.", spid)
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid updated.")
 	return nil
@@ -89,7 +89,7 @@ func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Removing remote spid: %s.", spid.ToString())
+	log.Printf("Removing remote spid: %s.", spid)
 	delete(m.Spids.Spids, spid.ID)
 	log.Print("Remote spid removed.")
 	return nil
