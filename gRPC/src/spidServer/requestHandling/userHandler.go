@@ -23,7 +23,7 @@ func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
 	user, err :=  h.registerUser(request.Name, gps.FromProtoBufferEntity(request.Position))
 	if err != nil {
-		return nil, fmt.Errorf("failed to register user")
+		return nil, fmt.Errorf("failed to register user: %s", err)
 	}
 	return &pb.RegisterUserResponse{
 		Message: "User registered successfully.",
@@ -220,7 +220,7 @@ func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLock
 func (h *Handler) AddRemoteUser(ctx context.Context, request *pb.AddRemoteUserRequest) (*pb.AddRemoteUserResponse, error) {
 	err := h.addRemoteUser(request.User)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to add remote user: %s", err)
 	}
 	return &pb.AddRemoteUserResponse{
 		Message: "User added remotely successfully.",
@@ -230,7 +230,7 @@ func (h *Handler) AddRemoteUser(ctx context.Context, request *pb.AddRemoteUserRe
 func (h *Handler) UpdateRemoteUser(ctx context.Context, request *pb.UpdateRemoteUserRequest) (*pb.UpdateRemoteUserResponse, error) {
 	err := h.updateRemoteUser(request.User)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update remote user: %s", err)
 	}
 	return &pb.UpdateRemoteUserResponse{
 		Message: "User updated remotely successfully.",
@@ -240,7 +240,7 @@ func (h *Handler) UpdateRemoteUser(ctx context.Context, request *pb.UpdateRemote
 func (h *Handler) RemoveRemoteUser(ctx context.Context, request *pb.RemoveRemoteUserRequest) (*pb.RemoveRemoteUserResponse, error) {
 	err := h.removeRemoteUser(request.User)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to remove remote user: %s", err)
 	}
 	return &pb.RemoveRemoteUserResponse{
 		Message: "User removed remotely successfully.",
