@@ -74,7 +74,7 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 	}
 	if closestServer.Address == "" {
 		// this should never happen
-		log.Fatalf("unexpected error finding closest host: targetServer=%s; minDist=%.2f; IPMap=%s",
+		log.Fatalf("Unexpected error finding closest host: targetServer=%s; minDist=%.2f; IPMap=%s",
 					strconv.Itoa(targetServer), minDist, h.IPMap)
 	}
 	return closestServer

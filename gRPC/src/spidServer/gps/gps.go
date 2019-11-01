@@ -26,7 +26,7 @@ func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) GlobalPosition
 }
 
 func (p GlobalPosition) String() string {
-	return fmt.Sprintf("{\n\tLatitude: %f,\n\tLongitude: %f\n}", p.Latitude, p.Longitude)
+	return fmt.Sprintf("GlobalPosition{Latitude: %f, Longitude: %f}", p.Latitude, p.Longitude)
 }
 
 func (p GlobalPosition) ToProtoBufferEntity() *protoBuffers.GlobalPosition {

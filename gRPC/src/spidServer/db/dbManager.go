@@ -43,6 +43,7 @@ func NewManager(basePath string) Manager {
 	m := Manager{FileManager: utils.FileManager{BasePath: basePath}}
 	m.loadFromFile()
 	pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
+	log.Print("Creating new log file...")
 	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
 	m.DirtyLogger = log.New(dirtyLogFile, "", 0)
@@ -79,6 +80,7 @@ func (m *Manager) recoverFromSavedLogs() {
 }
 
 func (m *Manager) loadFromFile() {
+	log.Print("Recovering previous server state from files...")
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
 	m.RemoteUsers = m.GetRemoteUsersFromFile()
@@ -109,15 +111,19 @@ func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 }
 
 func (m *Manager) GetServerID() uuid.UUID {
+	log.Print("Recovering server ID from file...")
 	serverIDPath := DefaultServerIDLocation
 	id, err := m.FileManager.ReadFile(serverIDPath)
 	if err != nil {
+		log.Printf("Unable to read file: %s", err)
 		return uuid.Nil
 	}
 	uid, err := uuid.Parse(string(id))
 	if err != nil {
+		log.Printf("Failed to parse id `%s`: %s", id, err)
 		return uuid.Nil
 	}
+	log.Printf("Recovered %s", uid.String())
 	return uid
 }
 

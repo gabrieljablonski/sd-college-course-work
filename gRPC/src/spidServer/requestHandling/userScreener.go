@@ -48,7 +48,7 @@ func (h *Handler) routeUserCall(ip utils.IP, localCall localUserCall, remoteCall
 	}
 	switch t := response.(type) {
 	default:
-		fmt.Printf("Invalid type %T", t)
+		log.Printf("Invalid type %T", t)
 		return nil, fmt.Errorf("invalid response type %T", t)
 	case *pb.GetUserResponse:
 		return response.(*pb.GetUserResponse).User, nil
