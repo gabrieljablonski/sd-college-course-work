@@ -48,7 +48,7 @@ func (h *Handler) routeSpidCall(ip utils.IP, localCall localSpidCall, remoteCall
 	}
 	switch t := response.(type) {
 	default:
-		fmt.Printf("Invalid type %T", t)
+		log.Printf("Invalid type %T", t)
 		return nil, fmt.Errorf("invalid response type %T", t)
 	case *pb.GetSpidResponse:
 		return response.(*pb.GetSpidResponse).Spid, nil
