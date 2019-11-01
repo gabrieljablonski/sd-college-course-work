@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"spidServer/entities"
+	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
 )
 
@@ -20,7 +21,7 @@ func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 }
 
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
-	user, err :=  h.registerUser(request.Name, request.Position)
+	user, err :=  h.registerUser(request.Name, gps.FromProtoBufferEntity(request.Position))
 	if err != nil {
 		return nil, fmt.Errorf("failed to register user")
 	}
