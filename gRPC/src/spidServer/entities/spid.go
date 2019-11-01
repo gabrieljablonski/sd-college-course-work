@@ -34,7 +34,7 @@ type Spid struct {
 	BatteryLevel  uint32             `json:"battery_level"`
 	Lock          LockInfo           `json:"lock"`
 	Position      gps.GlobalPosition `json:"position"`
-	LastUpdated   time.Time          `json:"last_updated"`
+	LastUpdated   int64              `json:"last_updated"`
 	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
 
@@ -47,10 +47,6 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error)
 	if err != nil {
 		return spid, err
 	}
-	t, err := time.Parse(time.Now().String(), pbSpid.LastUpdated)
-	if err != nil {
-		return spid, err
-	}
 	return Spid{
 		ID:            idS,
 		BatteryLevel:  pbSpid.BatteryLevel,
@@ -60,7 +56,7 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error)
 			State:    pbSpid.LockInfo.State,
 		},
 		Position:      gps.FromProtoBufferEntity(pbSpid.Position),
-		LastUpdated:   t,
+		LastUpdated:   pbSpid.LastUpdated,
 		CurrentUserID: idU,
 	}, nil
 }
@@ -84,7 +80,7 @@ func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
 			State:                s.Lock.State,
 		},
 		Position:             s.Position.ToProtoBufferEntity(),
-		LastUpdated:          s.LastUpdated.String(),
+		LastUpdated:          s.LastUpdated,
 		CurrentUserID:        s.CurrentUserID.String(),
 	}
 }
@@ -95,7 +91,7 @@ func NewSpid(batteryLevel uint32, position gps.GlobalPosition) Spid {
 		BatteryLevel:  batteryLevel,
 		Lock:          LockInfo{false, false, "locked"},
 		Position:      position,
-		LastUpdated:   time.Unix(0,0),
+		LastUpdated:   time.Now().Unix(),
 		CurrentUserID: uuid.Nil,
 	}
 }
@@ -126,7 +122,7 @@ func UnmarshalSpids(marshaledSpids []byte) (Spids, error) {
 
 func (s *Spid) UpdatePosition(position gps.GlobalPosition) {
 	s.Position = position
-	s.LastUpdated = time.Now()
+	s.LastUpdated = time.Now().Unix()
 }
 
 func (s *Spid) UpdateLockState(lockState string) error {

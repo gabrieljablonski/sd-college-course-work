@@ -24,7 +24,7 @@ message Spid {
     uint32 batteryLevel = 2;
     LockInfo lockInfo = 3;
     GlobalPosition position = 4;
-    string lastUpdated = 5;
+    sint64 lastUpdated = 5;
     string currentUserID = 6;
 }
 
