@@ -39,5 +39,6 @@ func main() {
 		time.Sleep(UpdateIPMapPeriod)
 		log.Print("Trying ip map update...")
 	}
+	go server.HandleRemoteEntities()
 	server.Listen()
 }
