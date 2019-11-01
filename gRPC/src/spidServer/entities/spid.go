@@ -17,7 +17,13 @@ type LockInfo struct {
 }
 
 type Spids struct {
-	Spids map[uuid.UUID]Spid `json:"spids"`
+	Spids map[uuid.UUID]*Spid `json:"spids"`
+}
+
+func NewSpids() *Spids {
+	return &Spids{
+		Spids: map[uuid.UUID]*Spid{},
+	}
 }
 
 func (s Spids) ToString() string {
@@ -38,7 +44,7 @@ type Spid struct {
 	CurrentUserID uuid.UUID          `json:"current_user_id"`
 }
 
-func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error) {
+func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid *Spid, err error) {
 	idS, err := uuid.Parse(pbSpid.Id)
 	if err != nil {
 		return spid, err
@@ -47,7 +53,7 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid Spid, err error)
 	if err != nil {
 		return spid, err
 	}
-	return Spid{
+	return &Spid{
 		ID:            idS,
 		BatteryLevel:  pbSpid.BatteryLevel,
 		Lock:          LockInfo{
@@ -85,8 +91,8 @@ func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
 	}
 }
 
-func NewSpid(batteryLevel uint32, position gps.GlobalPosition) Spid {
-	return Spid{
+func NewSpid(batteryLevel uint32, position gps.GlobalPosition) *Spid {
+	return &Spid{
 		ID:            uuid.New(),
 		BatteryLevel:  batteryLevel,
 		Lock:          LockInfo{false, false, "locked"},
@@ -110,14 +116,14 @@ func (s Spid) Marshal() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-func MarshalSpids(spids Spids) ([]byte, error) {
+func MarshalSpids(spids *Spids) ([]byte, error) {
 	return json.MarshalIndent(spids, "", "    ")
 }
 
-func UnmarshalSpids(marshaledSpids []byte) (Spids, error) {
+func UnmarshalSpids(marshaledSpids []byte) (*Spids, error) {
 	var spids Spids
 	err := json.Unmarshal(marshaledSpids, &spids)
-	return spids, err
+	return &spids, err
 }
 
 func (s *Spid) UpdatePosition(position gps.GlobalPosition) {

@@ -10,7 +10,13 @@ import (
 )
 
 type Users struct {
-	Users map[uuid.UUID]User `json:"users"`
+	Users map[uuid.UUID]*User `json:"users"`
+}
+
+func NewUsers() *Users {
+	return &Users{
+		Users: map[uuid.UUID]*User{},
+	}
 }
 
 func (u Users) ToString() string {
@@ -23,14 +29,14 @@ func (u Users) ToString() string {
 }
 
 type User struct {
-	ID            uuid.UUID          `json:"id"`
-	Name          string             `json:"name"`
-	Position      gps.GlobalPosition `json:"position"`
-	LastUpdated   int64              `json:"last_updated"`
-	CurrentSpidID uuid.UUID          `json:"current_spid_id"`
+	ID            uuid.UUID           `json:"id"`
+	Name          string              `json:"name"`
+	Position      gps.GlobalPosition  `json:"position"`
+	LastUpdated   int64               `json:"last_updated"`
+	CurrentSpidID uuid.UUID           `json:"current_spid_id"`
 }
 
-func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user User, err error) {
+func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user *User, err error) {
 	idU, err := uuid.Parse(pbUser.Id)
 	if err != nil {
 		return user, err
@@ -39,7 +45,7 @@ func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user User, err error)
 	if err != nil {
 		return user, err
 	}
-	return User{
+	return &User{
 		ID:            idU,
 		Name:          pbUser.Name,
 		Position:      gps.FromProtoBufferEntity(pbUser.Position),
@@ -67,8 +73,8 @@ func (u User) ToProtoBufferEntity() *protoBuffers.User {
 	}
 }
 
-func NewUser(name string, position gps.GlobalPosition) User {
-	return User{
+func NewUser(name string, position gps.GlobalPosition) *User {
+	return &User{
 		ID:            uuid.New(),
 		Name:          name,
 		Position:      position,
@@ -81,14 +87,14 @@ func (u User) Marshal() ([]byte, error) {
 	return json.Marshal(u)
 }
 
-func MarshalUsers(users Users) ([]byte, error) {
+func MarshalUsers(users *Users) ([]byte, error) {
 	return json.MarshalIndent(users, "", "    ")
 }
 
-func UnmarshalUsers(marshaledUsers []byte) (Users, error) {
+func UnmarshalUsers(marshaledUsers []byte) (*Users, error) {
 	var users Users
 	err := json.Unmarshal(marshaledUsers, &users)
-	return users, err
+	return &users, err
 }
 
 func (u *User) UpdatePosition(position gps.GlobalPosition) {
