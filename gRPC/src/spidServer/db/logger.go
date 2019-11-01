@@ -2,49 +2,68 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
+	"spidServer/entities"
 )
 
 const (
 	Spid = iota
 	User
 
-	RegisterLocal
-	UpdateLocal
-	DeleteLocal
+	Local
+	Remote
 
-	AddRemote
-	UpdateRemote
-	RemoveRemote
+	Register
+	Update
+	Delete
+	Add
+	Remove
 )
-
-type WriteActionEntityType int
-
-func (e WriteActionEntityType) String() string {
-	entities := map[WriteActionEntityType]string{
-		User: "USER",
-		Spid: "SPID",
-	}
-	return entities[e]
-}
 
 type WriteActionType int
 
 func (a WriteActionType) String() string {
 	types := map[WriteActionType]string{
-		RegisterLocal: "REGISTER",
-		UpdateLocal:   "UPDATE",
-		DeleteLocal:   "DELETE",
-		AddRemote:     "ADD REMOTE",
-		UpdateRemote:  "UPDATE REMOTE",
-		RemoveRemote:  "REMOVE REMOTE",
+		Register: "REGISTER",
+		Update:   "UPDATE",
+		Delete:   "DELETE",
+		Add:      "ADD",
+		Remove:   "REMOVE",
 	}
 	return types[a]
 }
 
+type WriteActionLocation int
+
+func (e WriteActionLocation) String() string {
+	locations := map[WriteActionLocation]string{
+		Local: "LOCAL",
+		Remote: "REMOTE",
+	}
+	return locations[e]
+}
+
+type WriteActionEntityType int
+
+func (e WriteActionEntityType) String() string {
+	entityTypes := map[WriteActionEntityType]string{
+		User: "USER",
+		Spid: "SPID",
+	}
+	return entityTypes[e]
+}
+
 type WriteAction struct {
-	Type   WriteActionType           `json:"type"`
+	Location   WriteActionLocation   `json:"location"`
 	EntityType WriteActionEntityType `json:"entity_type"`
-	Entity interface{}               `json:"entity"`
+	Type       WriteActionType       `json:"type"`
+	Entity     interface{}           `json:"entity"`
+}
+
+func (w WriteAction) String() string {
+	return fmt.Sprintf("WriteAction{Location: %s, EntityType: %s, Type: %s, Entity: %s}",
+		               w.Location, w.EntityType, w.Type, w.Entity)
 }
 
 func (m *Manager) logWriteAction(action WriteAction) error {
@@ -55,7 +74,9 @@ func (m *Manager) logWriteAction(action WriteAction) error {
 	return m.DirtyLogger.Output(2, string(jsonWriteAction))
 }
 
-func (m *Manager) recoverWriteAction(log []byte) (writeAction WriteAction, err error) {
-	err = json.Unmarshal(log, &writeAction)
+func (m *Manager) recoverWriteAction(data string) (writeAction WriteAction, err error) {
+	log.Printf("Trying to recover write action from `%s`", data)
+	err = json.Unmarshal([]byte(data), &writeAction)
+	log.Printf("Recover write action: %s", writeAction)
 	return writeAction, err
 }
