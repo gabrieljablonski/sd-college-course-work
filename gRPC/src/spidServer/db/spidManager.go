@@ -66,8 +66,9 @@ func (m *Manager) RegisterSpid(spid *entities.Spid) error {
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
 	return m.logWriteAction(WriteAction{
-		Type:       RegisterLocal,
+		Location:   Local,
 		EntityType: Spid,
+		Type:       Register,
 		Entity:     spid,
 	})
 }
@@ -81,8 +82,9 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid updated.")
 	return m.logWriteAction(WriteAction{
-		Type:       UpdateLocal,
+		Location:   Local,
 		EntityType: Spid,
+		Type:       Update,
 		Entity:     spid,
 	})
 }
@@ -96,8 +98,9 @@ func (m *Manager) DeleteSpid(spid *entities.Spid) error {
 	delete(m.Spids.Spids, spid.ID)
 	log.Print("Spid deleted.")
 	return m.logWriteAction(WriteAction{
-		Type:       DeleteLocal,
+		Location:   Local,
 		EntityType: Spid,
+		Type:       Delete,
 		Entity:     spid,
 	})
 }
