@@ -32,18 +32,18 @@ type Manager struct {
 	Spids           *entities.Spids
 	RemoteUsers     *entities.Users
 	RemoteSpids     *entities.Spids
-	LoggerDirty     *log.Logger
+	DirtyLogger     *log.Logger
 	WritingToMemory bool
 	WritingToFile   bool
 }
 
 func NewManager(basePath string) Manager {
-	pathDirty := basePath + Sep + DefaultDirtyRequestsPath
+	m := Manager{FileManager: utils.FileManager{BasePath: basePath}}
+	m.loadFromFile()
+	pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
 	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
-	m := Manager{FileManager: utils.FileManager{BasePath: basePath}}
-	m.LoggerDirty = log.New(dirtyLogFile, "", 0)
-	m.loadFromFile()
+	m.DirtyLogger = log.New(dirtyLogFile, "", 0)
 	go m.WriteToFilePeriodically(DefaultWriteToFilePeriod)
 	return m
 }
@@ -67,10 +67,10 @@ func (m *Manager) WriteToFilePeriodically(period time.Duration) {
 		m.WriteRemoteSpidsToFile()
 
 		log.Print("Truncating dirty log file...")
-		pathDirty := m.FileManager.BasePath + Sep + DefaultDirtyRequestsPath
+		pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
 		dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
-		// Old *File for LoggerDirty will be garbage collected
-		m.LoggerDirty = log.New(dirtyLogFile, "", 0)
+		// Old *File for DirtyLogger will be garbage collected
+		m.DirtyLogger = log.New(dirtyLogFile, "", 0)
 
 		eh.HandleFatal(err)
 		m.WritingToFile = false
