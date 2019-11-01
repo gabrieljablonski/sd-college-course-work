@@ -9,20 +9,20 @@ import (
 	eh "spidServer/errorHandling"
 )
 
-func (m *Manager) GetRemoteUsersFromFile() entities.Users {
+func (m *Manager) GetRemoteUsersFromFile() *entities.Users {
 	log.Print("Reading remote users.")
 	usersFromFile, err := m.FileManager.ReadFile(DefaultRemoteUsersLocation)
 	if err != nil {
 		log.Printf("Failed to read remote users from file: %s", err)
-		return entities.Users{}
+		return nil
 	}
 	users, err := entities.UnmarshalUsers(usersFromFile)
 	if err != nil {
 		log.Printf("Failed to parse remote users from file: %s", err)
-		return entities.Users{}
+		return nil
 	}
 	if users.Users == nil {
-		users.Users = map[uuid.UUID]entities.User{}
+		users = entities.NewUsers()
 	}
 	log.Printf("Read remote users: %s.", users.ToString())
 	return users
@@ -49,30 +49,30 @@ func (m *Manager) WriteRemoteUsersToFile() {
 	log.Print("Finished writing remote users.")
 }
 
-func (m *Manager) GetRemoteUsers() entities.Users {
+func (m *Manager) GetRemoteUsers() *entities.Users {
 	log.Print("Querying remote users.")
 	return m.RemoteUsers
 }
 
-func (m *Manager) QueryRemoteUser(userID uuid.UUID) (entities.User, error) {
+func (m *Manager) QueryRemoteUser(userID uuid.UUID) (*entities.User, error) {
 	log.Printf("Querying remote user with ID %s.", userID)
 	s, ok := m.RemoteUsers.Users[userID]
 	if !ok {
 		err := fmt.Errorf("remote user with ID %s not found", userID)
-		return entities.User{}, err
+		return nil, err
 	}
 	log.Printf("Remote user found: %s", s.ToString())
 	return s, nil
 }
 
-func (m *Manager) AddRemoteUser(user entities.User) error {
+func (m *Manager) AddRemoteUser(user *entities.User) error {
 	log.Printf("Adding remote user: %s.", user.ToString())
 	m.RemoteUsers.Users[user.ID] = user
 	log.Print("Remote user added.")
 	return nil
 }
 
-func (m *Manager) UpdateRemoteUser(user entities.User) error {
+func (m *Manager) UpdateRemoteUser(user *entities.User) error {
 	_, err := m.QueryRemoteUser(user.ID)
 	if err != nil {
 		return err
@@ -83,7 +83,7 @@ func (m *Manager) UpdateRemoteUser(user entities.User) error {
 	return nil
 }
 
-func (m *Manager) RemoveRemoteUser(user entities.User) error {
+func (m *Manager) RemoveRemoteUser(user *entities.User) error {
 	_, err := m.QueryUser(user.ID)
 	if err != nil {
 		return err

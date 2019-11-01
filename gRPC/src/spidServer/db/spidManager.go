@@ -9,20 +9,20 @@ import (
 	eh "spidServer/errorHandling"
 )
 
-func (m *Manager) GetSpidsFromFile() entities.Spids {
+func (m *Manager) GetSpidsFromFile() *entities.Spids {
 	log.Print("Reading spids.")
 	spidsFromFile, err := m.FileManager.ReadFile(DefaultSpidsLocation)
 	if err != nil {
 		log.Printf("Failed to read spids from file: %s", err)
-		return entities.Spids{}
+		return nil
 	}
 	spids, err := entities.UnmarshalSpids(spidsFromFile)
 	if err != nil {
 		log.Printf("Failed to parse users from file: %s", err)
-		return entities.Spids{}
+		return nil
 	}
 	if spids.Spids == nil {
-		spids.Spids = map[uuid.UUID]entities.Spid{}
+		spids = entities.NewSpids()
 	}
 	log.Printf("Read spids: %s.", spids.ToString())
 	return spids
@@ -50,25 +50,25 @@ func (m *Manager) WriteSpidsToFile() {
 	log.Print("Finished writing spids.")
 }
 
-func (m *Manager) QuerySpid(spidID uuid.UUID) (entities.Spid, error) {
+func (m *Manager) QuerySpid(spidID uuid.UUID) (*entities.Spid, error) {
 	log.Printf("Querying spid with ID %s.", spidID)
 	s, ok := m.Spids.Spids[spidID]
 	if !ok {
 		err := fmt.Errorf("spid with ID %s not found", spidID)
-		return entities.Spid{}, err
+		return nil, err
 	}
 	log.Printf("Spid found: %s", s.ToString())
 	return s, nil
 }
 
-func (m *Manager) RegisterSpid(spid entities.Spid) error {
+func (m *Manager) RegisterSpid(spid *entities.Spid) error {
 	log.Printf("Registering spid: %s.", spid.ToString())
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
 	return nil
 }
 
-func (m *Manager) UpdateSpid(spid entities.Spid) error {
+func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 	_, err := m.QuerySpid(spid.ID)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (m *Manager) UpdateSpid(spid entities.Spid) error {
 	return nil
 }
 
-func (m *Manager) DeleteSpid(spid entities.Spid) error {
+func (m *Manager) DeleteSpid(spid *entities.Spid) error {
 	_, err := m.QuerySpid(spid.ID)
 	if err != nil {
 		return err

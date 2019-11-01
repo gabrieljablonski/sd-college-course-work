@@ -28,10 +28,10 @@ const (
 
 type Manager struct {
 	FileManager     utils.FileManager
-	Users           entities.Users
-	Spids           entities.Spids
-	RemoteUsers     entities.Users
-	RemoteSpids     entities.Spids
+	Users           *entities.Users
+	Spids           *entities.Spids
+	RemoteUsers     *entities.Users
+	RemoteSpids     *entities.Spids
 	LoggerDirty     *log.Logger
 	WritingToMemory bool
 	WritingToFile   bool
@@ -51,8 +51,10 @@ func NewManager(basePath string) Manager {
 func (m *Manager) loadFromFile() {
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
-	m.RemoteUsers = m.GetRemoteUsersFromFile()
-	m.RemoteSpids = m.GetRemoteSpidsFromFile()
+	m.RemoteUsers = entities.NewUsers()
+	m.RemoteSpids = entities.NewSpids()
+	//m.RemoteUsers = m.GetRemoteUsersFromFile()
+	//m.RemoteSpids = m.GetRemoteSpidsFromFile()
 }
 
 func (m *Manager) WriteToFilePeriodically(period time.Duration) {

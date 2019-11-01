@@ -9,20 +9,20 @@ import (
 	eh "spidServer/errorHandling"
 )
 
-func (m *Manager) GetRemoteSpidsFromFile() entities.Spids {
+func (m *Manager) GetRemoteSpidsFromFile() *entities.Spids {
 	log.Print("Reading remote spids.")
 	spidsFromFile, err := m.FileManager.ReadFile(DefaultRemoteSpidsLocation)
 	if err != nil {
 		log.Printf("Failed to read remote spids from file: %s", err)
-		return entities.Spids{}
+		return nil
 	}
 	spids, err := entities.UnmarshalSpids(spidsFromFile)
 	if err != nil {
 		log.Printf("Failed to parse remote spids from file: %s", err)
-		return entities.Spids{}
+		return nil
 	}
 	if spids.Spids == nil {
-		spids.Spids = map[uuid.UUID]entities.Spid{}
+		spids = entities.NewSpids()
 	}
 	log.Printf("Read remote spids: %s.", spids.ToString())
 	return spids
@@ -50,30 +50,30 @@ func (m *Manager) WriteRemoteSpidsToFile() {
 	log.Print("Finished writing remote spids.")
 }
 
-func (m *Manager) GetRemoteSpids() entities.Spids {
+func (m *Manager) GetRemoteSpids() *entities.Spids {
 	log.Print("Querying remote spids.")
 	return m.RemoteSpids
 }
 
-func (m *Manager) QueryRemoteSpid(spidID uuid.UUID) (entities.Spid, error) {
+func (m *Manager) QueryRemoteSpid(spidID uuid.UUID) (*entities.Spid, error) {
 	log.Printf("Querying remote spid with ID %s.", spidID)
 	s, ok := m.RemoteSpids.Spids[spidID]
 	if !ok {
 		err := fmt.Errorf("remote spid with ID %s not found", spidID)
-		return entities.Spid{}, err
+		return nil, err
 	}
 	log.Printf("Remote spid found: %s", s.ToString())
 	return s, nil
 }
 
-func (m *Manager) AddRemoteSpid(spid entities.Spid) error {
+func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
 	log.Printf("Adding remote spid: %s.", spid.ToString())
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid added.")
 	return nil
 }
 
-func (m *Manager) UpdateRemoteSpid(spid entities.Spid) error {
+func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 	_, err := m.QueryRemoteSpid(spid.ID)
 	if err != nil {
 		return err
@@ -84,7 +84,7 @@ func (m *Manager) UpdateRemoteSpid(spid entities.Spid) error {
 	return nil
 }
 
-func (m *Manager) RemoveRemoteSpid(spid entities.Spid) error {
+func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
 	_, err := m.QuerySpid(spid.ID)
 	if err != nil {
 		return err
