@@ -21,7 +21,7 @@ func (h *Handler) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
 	spid, err :=  h.registerSpid(request.BatteryLevel, gps.FromProtoBufferEntity(request.Position))
 	if err != nil {
-		return nil, fmt.Errorf("failed to register spid")
+		return nil, fmt.Errorf("failed to register spid: %s", err)
 	}
 	return &pb.RegisterSpidResponse{
 		Message: "Spid registered successfully",
