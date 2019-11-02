@@ -250,3 +250,27 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }
+
+func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) {
+	position, err := gps.FromProtoBufferEntity(pbPosition)
+	if err != nil {
+		return "", err
+	}
+	ip := h.WhereIsPosition(position)
+	if IsHostLocal(ip) {
+		marshaledSpids, err := json.Marshal(h.DBManager.GetRemoteSpids())
+		return string(marshaledSpids), err
+	}
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.GetRemoteSpidsRequest{
+			Position: pbPosition,
+		}
+		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
+		return client.GetRemoteSpids(ctx, request)
+	}
+	response, err := h.callSpidGRPC(ip, remoteCall)
+	if err != nil {
+		return "", err
+	}
+	return response.(*pb.GetRemoteSpidsResponse).MarshaledSpids, nil
+}
