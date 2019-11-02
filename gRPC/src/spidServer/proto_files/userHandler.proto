@@ -121,7 +121,7 @@ message UpdateRemoteUserResponse {
 }
 
 message RemoveRemoteUserRequest {
-    User user = 1;
+    string userID = 1;
 }
 
 message RemoveRemoteUserResponse {

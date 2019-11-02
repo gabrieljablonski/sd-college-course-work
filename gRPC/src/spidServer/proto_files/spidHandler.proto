@@ -82,7 +82,7 @@ message UpdateRemoteSpidResponse {
 }
 
 message RemoveRemoteSpidRequest {
-    Spid spid = 1;
+    string spidID = 1;
 }
 
 message RemoveRemoteSpidResponse {
