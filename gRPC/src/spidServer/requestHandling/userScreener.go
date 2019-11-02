@@ -39,7 +39,7 @@ func (h *Handler) routeUserCall(ip utils.IP, localCall localUserCall, remoteCall
 		if err != nil || user == nil {
 			return nil, err
 		}
-		return user.ToProtoBufferEntity(), nil
+		return user.ToProtoBufferEntity()
 	}
 	log.Printf("Agent is remote.")
 	response, err := h.callUserGRPC(ip, remoteCall)
@@ -83,13 +83,17 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 }
 
 func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.User, error) {
-	user := entities.NewUser(name, position)
+	user, err := entities.NewUser(name, position)
+	if err != nil {
+		return nil, err
+	}
 	localCall := func(handler *Handler) (*entities.User, error) {
 		err := handler.DBManager.RegisterUser(user)
 		if err != nil {
 			return nil, err
 		}
-		return user, handler.addRemoteUser(user.ToProtoBufferEntity())
+		pbUser, _ := user.ToProtoBufferEntity()
+		return user, handler.addRemoteUser(pbUser)
 	}
 	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RegisterUserRequest{
@@ -213,7 +217,8 @@ func (h *Handler) removeRemoteUser(userID string) error {
 	if err != nil {
 		return err
 	}
-	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(user.Position))
+	pbPosition, _ := gps.FromProtoBufferEntity(user.Position)
+	ip := h.WhereIsPosition(pbPosition)
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
 	return err
 }

@@ -26,7 +26,13 @@ func (h *Handler) GetSpidInfo(ctx context.Context, request *pb.GetSpidRequest) (
 
 func (h *Handler) RegisterSpid(ctx context.Context, request *pb.RegisterSpidRequest) (*pb.RegisterSpidResponse, error) {
 	log.Print("Received RegisterSpid request.")
-	spid, err :=  h.registerSpid(request.BatteryLevel, gps.FromProtoBufferEntity(request.Position))
+	position, err := gps.FromProtoBufferEntity(request.Position)
+	if err != nil {
+		err = fmt.Errorf("failed to register spid: %s", err)
+		log.Print(err)
+		return nil, err
+	}
+	spid, err :=  h.registerSpid(request.BatteryLevel, position)
 	if err != nil {
 		err = fmt.Errorf("failed to register spid: %s", err)
 		log.Print(err)

@@ -47,11 +47,15 @@ type Spid struct {
 func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid *Spid, err error) {
 	idS, err := uuid.Parse(pbSpid.Id)
 	if err != nil {
-		return spid, err
+		return nil, err
 	}
 	idU, err := uuid.Parse(pbSpid.CurrentUserID)
 	if err != nil {
-		return spid, err
+		return nil, err
+	}
+	position, err := gps.FromProtoBufferEntity(pbSpid.Position)
+	if err != nil {
+		return nil, err
 	}
 	return &Spid{
 		ID:            idS,
@@ -61,7 +65,7 @@ func SpidFromProtoBufferEntity(pbSpid *protoBuffers.Spid) (spid *Spid, err error
 			Pending:  pbSpid.LockInfo.Pending,
 			State:    pbSpid.LockInfo.State,
 		},
-		Position:      gps.FromProtoBufferEntity(pbSpid.Position),
+		Position:      position,
 		LastUpdated:   pbSpid.LastUpdated,
 		CurrentUserID: idU,
 	}, nil
@@ -76,7 +80,11 @@ func (s Spid) String() string {
 	return string(ss)
 }
 
-func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
+func (s Spid) ToProtoBufferEntity() (*protoBuffers.Spid, error) {
+	position, err := s.Position.ToProtoBufferEntity()
+	if err != nil {
+		return nil, err
+	}
 	return &protoBuffers.Spid{
 		Id:                   s.ID.String(),
 		BatteryLevel:         s.BatteryLevel,
@@ -85,13 +93,16 @@ func (s Spid) ToProtoBufferEntity() *protoBuffers.Spid {
 			Pending:              s.Lock.Pending,
 			State:                s.Lock.State,
 		},
-		Position:             s.Position.ToProtoBufferEntity(),
+		Position:             position,
 		LastUpdated:          s.LastUpdated,
 		CurrentUserID:        s.CurrentUserID.String(),
-	}
+	}, nil
 }
 
-func NewSpid(batteryLevel uint32, position gps.GlobalPosition) *Spid {
+func NewSpid(batteryLevel uint32, position gps.GlobalPosition) (*Spid, error) {
+	if !position.IsValid() {
+		return nil, fmt.Errorf("invalid position: %v", position)
+	}
 	return &Spid{
 		ID:            uuid.New(),
 		BatteryLevel:  batteryLevel,
@@ -99,7 +110,7 @@ func NewSpid(batteryLevel uint32, position gps.GlobalPosition) *Spid {
 		Position:      position,
 		LastUpdated:   time.Now().Unix(),
 		CurrentUserID: uuid.Nil,
-	}
+	}, nil
 }
 
 func IsValidLockState(lockState string) bool {
@@ -127,9 +138,12 @@ func UnmarshalSpids(marshaledSpids []byte) (*Spids, error) {
 	return &spids, err
 }
 
-func (s *Spid) UpdatePosition(position gps.GlobalPosition) {
+func (s *Spid) UpdatePosition(position gps.GlobalPosition) error {
+	if !position.IsValid() {
+		return fmt.Errorf("invalid position: %v", position)
+	}
 	s.Position = position
-	s.LastUpdated = time.Now().Unix()
+	return nil
 }
 
 func (s *Spid) UpdateLockState(lockState string) error {
