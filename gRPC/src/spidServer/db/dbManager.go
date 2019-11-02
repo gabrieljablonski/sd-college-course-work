@@ -44,7 +44,7 @@ func NewManager(basePath string) Manager {
 	m.loadFromFile()
 	pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
 	log.Print("Creating new log file...")
-	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_CREATE|os.O_RDWR, 0644)
+	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
 	m.DirtyLogger = log.New(dirtyLogFile, "", 0)
 	go m.WriteToFilePeriodically(DefaultWriteToFilePeriod)
