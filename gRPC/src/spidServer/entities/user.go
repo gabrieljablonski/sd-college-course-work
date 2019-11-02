@@ -84,7 +84,7 @@ func (u User) ToProtoBufferEntity() (*protoBuffers.User, error) {
 
 func NewUser(name string, position gps.GlobalPosition) (*User, error) {
 	if !position.IsValid() {
-		return nil, fmt.Errorf("invalid position: %v", position)
+		return nil, fmt.Errorf("invalid position: %s", position)
 	}
 	return &User{
 		ID:            uuid.New(),
@@ -111,7 +111,7 @@ func UnmarshalUsers(marshaledUsers []byte) (*Users, error) {
 
 func (u *User) UpdatePosition(position gps.GlobalPosition) error {
 	if !position.IsValid() {
-		return fmt.Errorf("invalid position: %v", position)
+		return fmt.Errorf("invalid position: %s", position)
 	}
 	u.Position = position
 	return nil
