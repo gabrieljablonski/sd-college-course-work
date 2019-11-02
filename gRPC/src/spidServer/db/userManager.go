@@ -34,7 +34,6 @@ func (m *Manager) WriteUsersToFile() {
 		log.Printf("Failed to write users to file: %s", err)
 		return
 	}
-
 	log.Printf("Making backup of users file...")
 	src := m.FileManager.GetAbsolutePath(DefaultUsersLocation)
 	dst := src + ".bk"
@@ -64,6 +63,10 @@ func (m *Manager) QueryUser(userID uuid.UUID) (*entities.User, error) {
 
 func (m *Manager) RegisterUser(user *entities.User) error {
 	log.Printf("Registering user: %s.", user)
+	_, err := m.QueryUser(user.ID)
+	if err == nil {
+		return fmt.Errorf("user with id %s already exists", user.ID)
+	}
 	m.Users.Users[user.ID] = user
 	log.Print("User registered.")
 	return m.logWriteAction(WriteAction{
@@ -90,13 +93,13 @@ func (m *Manager) UpdateUser(user *entities.User) error {
 	})
 }
 
-func (m *Manager) DeleteUser(user *entities.User) error {
-	_, err := m.QueryUser(user.ID)
+func (m *Manager) DeleteUser(userID uuid.UUID) error {
+	user, err := m.QueryUser(userID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Deleting user: %s.", user)
-	delete(m.Users.Users, user.ID)
+	delete(m.Users.Users, userID)
 	log.Print("User deleted.")
 	return m.logWriteAction(WriteAction{
 		Location:   Local,

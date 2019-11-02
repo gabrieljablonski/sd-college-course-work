@@ -68,6 +68,10 @@ func (m *Manager) QueryRemoteSpid(spidID uuid.UUID) (*entities.Spid, error) {
 
 func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
 	log.Printf("Adding remote spid: %s.", spid)
+	_, err := m.QueryRemoteSpid(spid.ID)
+	if err == nil {
+		return fmt.Errorf("spid with id %s already exists", spid.ID)
+	}
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid added.")
 	return m.logWriteAction(WriteAction{
@@ -79,11 +83,11 @@ func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
 }
 
 func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
+	log.Printf("Updating remote spid: %s.", spid)
 	_, err := m.QueryRemoteSpid(spid.ID)
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating remote spid: %s.", spid)
 	m.RemoteSpids.Spids[spid.ID] = spid
 	log.Print("Remote spid updated.")
 	return m.logWriteAction(WriteAction{
@@ -94,8 +98,8 @@ func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 	})
 }
 
-func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
-	_, err := m.QuerySpid(spid.ID)
+func (m *Manager) RemoveRemoteSpid(spidID uuid.UUID) error {
+	spid, err := m.QuerySpid(spidID)
 	if err != nil {
 		return err
 	}

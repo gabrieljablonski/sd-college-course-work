@@ -59,6 +59,7 @@ func (m *Manager) QueryRemoteUser(userID uuid.UUID) (*entities.User, error) {
 	s, ok := m.RemoteUsers.Users[userID]
 	if !ok {
 		err := fmt.Errorf("remote user with ID %s not found", userID)
+		log.Print(err)
 		return nil, err
 	}
 	log.Printf("Remote user found: %s", s)
@@ -67,6 +68,10 @@ func (m *Manager) QueryRemoteUser(userID uuid.UUID) (*entities.User, error) {
 
 func (m *Manager) AddRemoteUser(user *entities.User) error {
 	log.Printf("Adding remote user: %s.", user)
+	_, err := m.QueryRemoteUser(user.ID)
+	if err == nil {
+		return fmt.Errorf("user with id %s already exists", user.ID)
+	}
 	m.RemoteUsers.Users[user.ID] = user
 	log.Print("Remote user added.")
 	return m.logWriteAction(WriteAction{
@@ -93,13 +98,13 @@ func (m *Manager) UpdateRemoteUser(user *entities.User) error {
 	})
 }
 
-func (m *Manager) RemoveRemoteUser(user *entities.User) error {
-	_, err := m.QueryUser(user.ID)
+func (m *Manager) RemoveRemoteUser(userID uuid.UUID) error {
+	user, err := m.QueryUser(userID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Removing remote user: %s.", user)
-	delete(m.Users.Users, user.ID)
+	delete(m.Users.Users, userID)
 	log.Print("Remote user removed.")
 	return m.logWriteAction(WriteAction{
 		Location:   Remote,
