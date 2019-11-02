@@ -62,6 +62,10 @@ func (m *Manager) QuerySpid(spidID uuid.UUID) (*entities.Spid, error) {
 }
 
 func (m *Manager) RegisterSpid(spid *entities.Spid) error {
+	_, err := m.QuerySpid(spid.ID)
+	if err == nil {
+		return fmt.Errorf("spid with id %s already exists", spid.ID)
+	}
 	log.Printf("Registering spid: %s.", spid)
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid registered.")
@@ -89,13 +93,13 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 	})
 }
 
-func (m *Manager) DeleteSpid(spid *entities.Spid) error {
-	_, err := m.QuerySpid(spid.ID)
+func (m *Manager) DeleteSpid(spidID uuid.UUID) error {
+	spid, err := m.QuerySpid(spidID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Deleting spid: %s.", spid)
-	delete(m.Spids.Spids, spid.ID)
+	delete(m.Spids.Spids, spidID)
 	log.Print("Spid deleted.")
 	return m.logWriteAction(WriteAction{
 		Location:   Local,

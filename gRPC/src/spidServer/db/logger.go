@@ -99,33 +99,29 @@ func (m *Manager) processLocalWriteAction(action WriteAction) error {
 	default:
 		return fmt.Errorf("invalid write action entity type `%s`", action.EntityType)
 	case Spid:
-		var handler func(*entities.Spid) error
+		spid := action.SpidEntity
 		switch action.Type {
 		default:
 			return fmt.Errorf("invalid write action type `%s`", action.Type)
 		case Register:
-			handler = m.RegisterSpid
+			return m.RegisterSpid(spid)
 		case Update:
-			handler = m.UpdateSpid
+			return m.UpdateSpid(spid)
 		case Delete:
-			handler = m.DeleteSpid
+			return m.DeleteSpid(spid.ID)
 		}
-		spid := action.Entity.(entities.Spid)
-		return handler(&spid)
 	case User:
-		var handler func(*entities.User) error
+		user := action.UserEntity
 		switch action.Type {
 		default:
 			return fmt.Errorf("invalid write action type `%s`", action.Type)
 		case Register:
-			handler = m.RegisterUser
+			return m.RegisterUser(user)
 		case Update:
-			handler = m.UpdateUser
+			return m.UpdateUser(user)
 		case Delete:
-			handler = m.DeleteUser
+			return m.DeleteUser(user.ID)
 		}
-		user := action.Entity.(entities.User)
-		return handler(&user)
 	}
 }
 
@@ -134,32 +130,28 @@ func (m *Manager) processRemoteWriteAction(action WriteAction) error {
 	default:
 		return fmt.Errorf("invalid write action entity type `%s`", action.EntityType)
 	case Spid:
-		var handler func(*entities.Spid) error
+		spid := action.SpidEntity
 		switch action.Type {
 		default:
 			return fmt.Errorf("invalid write action type `%s`", action.Type)
 		case Add:
-			handler = m.AddRemoteSpid
+			return m.AddRemoteSpid(spid)
 		case Update:
-			handler = m.UpdateRemoteSpid
+			return m.UpdateRemoteSpid(spid)
 		case Remove:
-			handler = m.RemoveRemoteSpid
+			return m.RemoveRemoteSpid(spid.ID)
 		}
-		spid := action.Entity.(entities.Spid)
-		return handler(&spid)
 	case User:
-		var handler func(*entities.User) error
+		user := action.UserEntity
 		switch action.Type {
 		default:
 			return fmt.Errorf("invalid write action type `%s`", action.Type)
 		case Register:
-			handler = m.AddRemoteUser
+			return m.AddRemoteUser(user)
 		case Update:
-			handler = m.UpdateRemoteUser
+			return m.UpdateRemoteUser(user)
 		case Delete:
-			handler = m.RemoveRemoteUser
+			return m.RemoveRemoteUser(user.ID)
 		}
-		user := action.Entity.(entities.User)
-		return handler(&user)
 	}
 }
