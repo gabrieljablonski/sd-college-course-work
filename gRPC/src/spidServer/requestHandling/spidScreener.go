@@ -79,7 +79,7 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 		request := &pb.GetSpidRequest{
 			SpidID: id.String(),
 		}
-		log.Print("Sending GetSpidInfo request.")
+		log.Printf("Sending GetSpidInfo request: %s.", request)
 		return client.GetSpidInfo(ctx, request)
 	}
 	ip := h.WhereIsEntity(id)
@@ -109,7 +109,7 @@ func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition)
 			BatteryLevel: batteryLevel,
 			Position:     pbPosition,
 		}
-		log.Print("Sending RegisterSpid request.")
+		log.Printf("Sending RegisterSpid request: %s.", request)
 		return client.RegisterSpid(ctx, request)
 	}
 	ip := h.WhereIsEntity(spid.ID)
@@ -150,7 +150,7 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		request := &pb.UpdateSpidRequest{
 			Spid: pbSpid,
 		}
-		log.Print("Sending UpdateSpid request.")
+		log.Printf("Sending UpdateSpid request: %s.", request)
 		return client.UpdateSpid(ctx, request)
 	}
 	ip := h.WhereIsEntity(spid.ID)
@@ -178,7 +178,7 @@ func (h *Handler) deleteSpid(spidID string) (*pb.Spid, error) {
 		request := &pb.DeleteSpidRequest{
 			SpidID: spidID,
 		}
-		log.Print("Sending DeleteSpid request.")
+		log.Printf("Sending DeleteSpid request: %s.", request)
 		return client.DeleteSpid(ctx, request)
 	}
 	ip := h.WhereIsEntity(spid.ID)
@@ -198,7 +198,7 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 		request := &pb.AddRemoteSpidRequest{
 			Spid: pbSpid,
 		}
-		log.Print("Sending AddRemoteSpid request.")
+		log.Printf("Sending AddRemoteSpid request: %s.", request)
 		return client.AddRemoteSpid(ctx, request)
 	}
 	ip := h.WhereIsPosition(spid.Position)
@@ -218,7 +218,7 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 		request := &pb.UpdateRemoteSpidRequest{
 			Spid: pbSpid,
 		}
-		log.Print("Sending UpdateRemoteSpid request.")
+		log.Printf("Sending UpdateRemoteSpid request: %s.", request)
 		return client.UpdateRemoteSpid(ctx, request)
 	}
 	ip := h.WhereIsPosition(spid.Position)
@@ -238,7 +238,7 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 		request := &pb.RemoveRemoteSpidRequest{
 			SpidID: spidID,
 		}
-		log.Print("Sending RemoveRemoteSpid request.")
+		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
 		return client.RemoveRemoteSpid(ctx, request)
 	}
 	spid, err := h.querySpid(spidID)
