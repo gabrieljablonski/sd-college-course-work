@@ -58,12 +58,12 @@ type WriteAction struct {
 	Location   WriteActionLocation   `json:"location"`
 	EntityType WriteActionEntityType `json:"entity_type"`
 	Type       WriteActionType       `json:"type"`
-	Entity     interface{}           `json:"entity"`
+	SpidEntity *entities.Spid        `json:"spid"`
+	UserEntity *entities.User		 `json:"user"`
 }
 
 func (w WriteAction) String() string {
-	return fmt.Sprintf("WriteAction{Location: %s, EntityType: %s, Type: %s, Entity: %s}",
-		               w.Location, w.EntityType, w.Type, w.Entity)
+	return fmt.Sprintf("%#v", w)
 }
 
 func (m *Manager) logWriteAction(action WriteAction) error {
@@ -79,7 +79,7 @@ func (m *Manager) logWriteAction(action WriteAction) error {
 func (m *Manager) recoverWriteAction(data string) (writeAction WriteAction, err error) {
 	log.Printf("Trying to recover write action from `%s`", data)
 	err = json.Unmarshal([]byte(data), &writeAction)
-	log.Printf("Recover write action: %s", writeAction)
+	log.Printf("Recovered write action: %s", writeAction)
 	return writeAction, err
 }
 

@@ -73,7 +73,7 @@ func (m *Manager) AddRemoteUser(user *entities.User) error {
 		Location:   Remote,
 		EntityType: User,
 		Type:       Add,
-		Entity:     user,
+		UserEntity: user,
 	})
 }
 
@@ -89,7 +89,7 @@ func (m *Manager) UpdateRemoteUser(user *entities.User) error {
 		Location:   Remote,
 		EntityType: User,
 		Type:       Update,
-		Entity:     user,
+		UserEntity: user,
 	})
 }
 
@@ -105,7 +105,7 @@ func (m *Manager) RemoveRemoteUser(user *entities.User) error {
 		Location:   Remote,
 		EntityType: User,
 		Type:       Delete,
-		Entity:     user,
+		UserEntity: user,
 	})
 }
 

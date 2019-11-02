@@ -74,7 +74,7 @@ func (m *Manager) AddRemoteSpid(spid *entities.Spid) error {
 		Location:   Remote,
 		EntityType: Spid,
 		Type:       Add,
-		Entity:     spid,
+		SpidEntity: spid,
 	})
 }
 
@@ -90,7 +90,7 @@ func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 		Location:   Remote,
 		EntityType: Spid,
 		Type:       Update,
-		Entity:     spid,
+		SpidEntity: spid,
 	})
 }
 
@@ -106,6 +106,6 @@ func (m *Manager) RemoveRemoteSpid(spid *entities.Spid) error {
 		Location:   Remote,
 		EntityType: Spid,
 		Type:       Remove,
-		Entity:     spid,
+		SpidEntity: spid,
 	})
 }
