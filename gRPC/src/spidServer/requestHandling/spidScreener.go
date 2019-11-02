@@ -111,9 +111,23 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 	log.Printf("Updating spid: %s", spid)
 	ip := h.WhereIsEntity(spid.ID)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
+		oldSpid, err := handler.DBManager.QuerySpid(spid.ID)
+		if err != nil {
+			return nil, err
+		}
 		err = handler.DBManager.UpdateSpid(spid)
 		if err != nil {
 			return nil, err
+		}
+		oldPosition := oldSpid.Position
+		newPosition := spid.Position
+		if handler.WhereIsPosition(oldPosition) != handler.WhereIsPosition(newPosition) {
+			// crossed over a boundary
+			err = handler.removeRemoteSpid(oldSpid.ToProtoBufferEntity())
+			if err != nil {
+				return nil, err
+			}
+			return nil, handler.addRemoteSpid(pbSpid)
 		}
 		return nil, handler.updateRemoteSpid(pbSpid)
 	}
