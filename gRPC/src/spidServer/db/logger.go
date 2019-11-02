@@ -67,6 +67,9 @@ func (w WriteAction) String() string {
 }
 
 func (m *Manager) logWriteAction(action WriteAction) error {
+	if m.DirtyLogger == nil {
+		return nil
+	}
 	log.Printf("Logging write action: %s", action)
 	jsonWriteAction, err := json.Marshal(action)
 	if err != nil {
