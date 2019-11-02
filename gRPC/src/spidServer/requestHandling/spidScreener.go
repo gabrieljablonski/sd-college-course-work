@@ -64,12 +64,10 @@ func (h *Handler) routeSpidCall(ip utils.IP, localCall localSpidCall, remoteCall
 }
 
 func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
-	log.Printf("Querying spid with id %s.", spidID)
 	id, err := uuid.Parse(spidID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid spid id: %s", err)
 	}
-	ip := h.WhereIsEntity(id)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		return handler.DBManager.QuerySpid(id)
 	}
@@ -79,13 +77,12 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 		}
 		return client.GetSpidInfo(ctx, request)
 	}
+	ip := h.WhereIsEntity(id)
 	return h.routeSpidCall(ip, localCall, remoteCall)
 }
 
 func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
-	log.Printf("Registering spid with battery level %d and position\n%s", batteryLevel, position)
 	spid := entities.NewSpid(batteryLevel, position)
-	ip := h.WhereIsEntity(spid.ID)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		err := handler.DBManager.RegisterSpid(spid)
 		if err != nil {
@@ -100,6 +97,7 @@ func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition)
 		}
 		return client.RegisterSpid(ctx, request)
 	}
+	ip := h.WhereIsEntity(spid.ID)
 	return h.routeSpidCall(ip, localCall, remoteCall)
 }
 
@@ -108,8 +106,6 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating spid: %s", spid)
-	ip := h.WhereIsEntity(spid.ID)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		oldSpid, err := handler.DBManager.QuerySpid(spid.ID)
 		if err != nil {
@@ -123,7 +119,7 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		newPosition := spid.Position
 		if handler.WhereIsPosition(oldPosition) != handler.WhereIsPosition(newPosition) {
 			// crossed over a boundary
-			err = handler.removeRemoteSpid(oldSpid.ToProtoBufferEntity())
+			err = handler.removeRemoteSpid(oldSpid.ID.String())
 			if err != nil {
 				return nil, err
 			}
@@ -137,36 +133,36 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		}
 		return client.UpdateSpid(ctx, request)
 	}
+	ip := h.WhereIsEntity(spid.ID)
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }
 
-func (h *Handler) deleteSpid(pbSpid *pb.Spid) error {
+func (h *Handler) deleteSpid(spidID string) (*pb.Spid, error) {
+	pbSpid, err := h.querySpid(spidID)
+	if err != nil {
+		return nil, err
+	}
 	spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Printf("Updating spid: %s", spid)
-	ip := h.WhereIsEntity(spid.ID)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
+		err = handler.DBManager.DeleteSpid(spid.ID)
 		if err != nil {
 			return nil, err
 		}
-		err = handler.DBManager.DeleteSpid(spid)
-		if err != nil {
-			return nil, err
-		}
-		return nil, handler.removeRemoteSpid(pbSpid)
+		return nil, handler.removeRemoteSpid(spidID)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.DeleteSpidRequest{
-			SpidID: pbSpid.Id,
+			SpidID: spidID,
 		}
 		return client.DeleteSpid(ctx, request)
 	}
+	ip := h.WhereIsEntity(spid.ID)
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
-	return err
+	return pbSpid, err
 }
 
 func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
@@ -174,8 +170,6 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Adding remote spid: %s", spid)
-	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(pbSpid.Position))
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		return nil, handler.DBManager.AddRemoteSpid(spid)
 	}
@@ -185,6 +179,7 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 		}
 		return client.AddRemoteSpid(ctx, request)
 	}
+	ip := h.WhereIsPosition(spid.Position)
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }
@@ -194,8 +189,6 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating remote spid: %s", spid)
-	ip := h.WhereIsPosition(spid.Position)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		return nil, handler.DBManager.UpdateRemoteSpid(spid)
 	}
@@ -205,26 +198,30 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 		}
 		return client.UpdateRemoteSpid(ctx, request)
 	}
+	ip := h.WhereIsPosition(spid.Position)
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }
 
-func (h *Handler) removeRemoteSpid(pbSpid *pb.Spid) error {
-	spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
+func (h *Handler) removeRemoteSpid(spidID string) error {
+	uid, err := uuid.Parse(spidID)
 	if err != nil {
 		return err
 	}
-	log.Printf("Removing remote spid: %s", spid)
-	ip := h.WhereIsPosition(spid.Position)
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		return nil, handler.DBManager.RemoveRemoteSpid(spid)
+		return nil, handler.DBManager.RemoveRemoteSpid(uid)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RemoveRemoteSpidRequest{
-			Spid: pbSpid,
+			SpidID: spidID,
 		}
 		return client.RemoveRemoteSpid(ctx, request)
 	}
+	spid, err := h.querySpid(spidID)
+	if err != nil {
+		return err
+	}
+	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(spid.Position))
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }

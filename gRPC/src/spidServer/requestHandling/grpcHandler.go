@@ -41,6 +41,7 @@ func (h *Handler) HandleRemoteUser(user *entities.User) error {
 	if IsHostLocal(ip) {
 		return nil
 	}
+	log.Printf("Handling user: %s", user)
 	return h.addRemoteUser(user.ToProtoBufferEntity())
 }
 
@@ -49,6 +50,7 @@ func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
 	if IsHostLocal(ip) {
 		return nil
 	}
+	log.Printf("Handling spid: %s", spid)
 	return h.addRemoteSpid(spid.ToProtoBufferEntity())
 }
 
