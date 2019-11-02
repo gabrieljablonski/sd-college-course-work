@@ -29,7 +29,7 @@ func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) (GlobalPositio
 		Longitude: position.Longitude,
 	}
 	if !p.IsValid() {
-		return NullPosition(), fmt.Errorf("invalid latitude or longitude: %v", p)
+		return NullPosition(), fmt.Errorf("invalid latitude or longitude: %s", p)
 	}
 	return p, nil
 }
@@ -41,7 +41,7 @@ func (p GlobalPosition) String() string {
 func (p GlobalPosition) ToProtoBufferEntity() (*protoBuffers.GlobalPosition, error) {
 	if !p.IsValid() {
 		pbP, _ := NullPosition().ToProtoBufferEntity()
-		return pbP, fmt.Errorf("invalid latitude or longitude: %v", p)
+		return pbP, fmt.Errorf("invalid latitude or longitude: %s", p)
 	}
 	return &protoBuffers.GlobalPosition{
 		Latitude:  p.Latitude,

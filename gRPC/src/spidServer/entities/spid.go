@@ -101,7 +101,7 @@ func (s Spid) ToProtoBufferEntity() (*protoBuffers.Spid, error) {
 
 func NewSpid(batteryLevel uint32, position gps.GlobalPosition) (*Spid, error) {
 	if !position.IsValid() {
-		return nil, fmt.Errorf("invalid position: %v", position)
+		return nil, fmt.Errorf("invalid position: %s", position)
 	}
 	return &Spid{
 		ID:            uuid.New(),
@@ -140,7 +140,7 @@ func UnmarshalSpids(marshaledSpids []byte) (*Spids, error) {
 
 func (s *Spid) UpdatePosition(position gps.GlobalPosition) error {
 	if !position.IsValid() {
-		return fmt.Errorf("invalid position: %v", position)
+		return fmt.Errorf("invalid position: %s", position)
 	}
 	s.Position = position
 	return nil
