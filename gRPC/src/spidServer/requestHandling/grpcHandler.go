@@ -91,7 +91,7 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 }
 
 func (h *Handler) WhereIsPosition(position gps.GlobalPosition) utils.IP {
-	h.BaseDelta = int(math.Round(math.Sqrt(float64(h.ServerPoolSize))))
+	log.Printf("Calculating where is %s.", position)
 	longitudeDelta := math.Ceil(360.0/float64(h.BaseDelta))
 	latitudeDelta := math.Ceil(180.0/float64(h.BaseDelta))
 

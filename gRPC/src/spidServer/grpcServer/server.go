@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/kardianos/osext"
 	"google.golang.org/grpc"
 	"log"
+	"math"
 	"net"
 	"spidServer/errorHandling"
 	"spidServer/requestHandling"
@@ -101,6 +103,7 @@ func (s *Server) Register(registrarIP utils.IP) {
 	log.Printf("Server registered as number %d.\n%d servers in total.", serverNumber, serverPoolSize)
 	s.Handler.Number = serverNumber
 	s.Handler.ServerPoolSize = serverPoolSize
+	s.Handler.BaseDelta = int(math.Round(math.Sqrt(float64(serverPoolSize))))
 }
 
 func (s *Server) UpdateIPMap() error {
@@ -133,11 +136,12 @@ func (s *Server) UpdateIPMap() error {
 		log.Print(msg)
 		return fmt.Errorf(msg)
 	}
-	if len(ipMap) != s.Handler.ServerPoolSize {
-		msg := "unexpected ip map size not ready"
-		log.Print(msg)
-		return fmt.Errorf(msg)
-	}
+	//map size is dynamic now
+	//if len(ipMap) != s.Handler.ServerPoolSize {
+	//	msg := "unexpected ip map size, not ready"
+	//	log.Print(msg)
+	//	return fmt.Errorf(msg)
+	//}
 	s.Handler.IPMap = make(map[int]utils.IP)
 	for serverNumber, ip := range ipMap {
 		if serverNumber == s.Handler.Number {
