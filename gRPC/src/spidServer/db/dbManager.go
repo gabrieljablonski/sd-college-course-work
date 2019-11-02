@@ -14,7 +14,7 @@ import (
 
 const (
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 5000000*time.Millisecond
+	DefaultWriteToFilePeriod   = 500000*time.Millisecond
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
@@ -47,7 +47,7 @@ func NewManager(basePath string) Manager {
 	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0644)
 	eh.HandleFatal(err)
 	m.DirtyLogger = log.New(dirtyLogFile, "", 0)
-	go m.WriteToFilePeriodically(DefaultWriteToFilePeriod)
+	go m.writeToFilePeriodically(DefaultWriteToFilePeriod)
 	return m
 }
 
@@ -77,6 +77,7 @@ func (m *Manager) recoverFromSavedLogs() {
 			log.Fatalf("Failed to process write action: %s", err)
 		}
 	}
+	m.writeEntitiesToFile()
 }
 
 func (m *Manager) loadFromFile() {
@@ -88,25 +89,28 @@ func (m *Manager) loadFromFile() {
 	m.recoverFromSavedLogs()
 }
 
-func (m *Manager) WriteToFilePeriodically(period time.Duration) {
+func (m *Manager) writeEntitiesToFile() {
+	log.Print("Writing users and spids to file.")
+	m.WriteUsersToFile()
+	m.WriteSpidsToFile()
+	m.WriteRemoteUsersToFile()
+	m.WriteRemoteSpidsToFile()
+	log.Print("Truncating dirty log file...")
+	m.truncateLogFile()
+}
+
+func (m *Manager) truncateLogFile() {
+	pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
+	dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	// Old *File for DirtyLogger will be garbage collected
+	m.DirtyLogger = log.New(dirtyLogFile, "", 0)
+	eh.HandleFatal(err)
+}
+
+func (m *Manager) writeToFilePeriodically(period time.Duration) {
 	for {
 		time.Sleep(period)
-		for ; m.WritingToMemory; {}
-		m.WritingToFile = true
-		log.Print("Writing users and spids to file.")
-		m.WriteUsersToFile()
-		m.WriteSpidsToFile()
-		m.WriteRemoteUsersToFile()
-		m.WriteRemoteSpidsToFile()
-
-		log.Print("Truncating dirty log file...")
-		pathDirty := m.FileManager.GetAbsolutePath(DefaultDirtyRequestsPath)
-		dirtyLogFile, err := os.OpenFile(pathDirty, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
-		// Old *File for DirtyLogger will be garbage collected
-		m.DirtyLogger = log.New(dirtyLogFile, "", 0)
-
-		eh.HandleFatal(err)
-		m.WritingToFile = false
+		m.writeEntitiesToFile()
 	}
 }
 
