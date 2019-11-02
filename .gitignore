@@ -7,7 +7,4 @@ venv/
 grpc_example/
 github.com/
 *golang.org/
-gRPC/src/spidServer/db/spids.spd.bk
-gRPC/src/spidServer/db/users.spd.bk
-gRPC/src/spidServer/requestHandling/dirty_requests.spd
-
+_server_instances/
