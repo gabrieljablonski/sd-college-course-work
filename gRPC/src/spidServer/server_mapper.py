@@ -49,15 +49,15 @@ def main(port, number_of_servers, ip_map_path):
                 if len(ip_map) == number_of_servers and uuid not in ip_map:
                     # all server slots already filled
                     response = 'full'
+                else:
+                    ip_map[uuid] = f"{client_addr[0]}:{server_port}"
+                    # assuming ordered dictionary
+                    response = f"{list(ip_map).index(uuid)} {number_of_servers}"
 
-                ip_map[uuid] = f"{client_addr[0]}:{server_port}"
-
-                if len(ip_map) and not ip_map_path:
-                    with open(DEFAULT_IP_MAP_PATH, 'w') as f:
-                        print(f"saving to file: {ip_map}")
-                        json.dump(ip_map, f)
-                # assuming ordered dictionary
-                response = f"{list(ip_map).index(uuid)} {number_of_servers}"
+                    if len(ip_map) and not ip_map_path:
+                        with open(DEFAULT_IP_MAP_PATH, 'w') as f:
+                            print(f"saving to file: {ip_map}")
+                            json.dump(ip_map, f)
         
         elif 'REQUEST IP MAP' in recv:
             try:
@@ -93,7 +93,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tY < 0:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # south
                     tX, tY = sX, sY
@@ -103,7 +103,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # west
                     tX, tY = sX, sY
@@ -113,7 +113,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tX < 0:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # east
                     tX, tY = sX, sY
@@ -123,7 +123,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tX >= base_delta:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # northeast
                     tX, tY = sX, sY
@@ -134,7 +134,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tX >= base_delta or tY < 0:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # southeast
                     tX, tY = sX, sY
@@ -145,7 +145,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tX >= base_delta or tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # southwest
                     tX, tY = sX, sY
@@ -156,7 +156,7 @@ def main(port, number_of_servers, ip_map_path):
                         if tX < 0 or tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
                     # northwest
                     tX, tY = sX, sY
@@ -167,9 +167,8 @@ def main(port, number_of_servers, ip_map_path):
                         if tX < 0 or tY < 0:
                             break
                         tN = tY*base_delta + tX
-                        response[tN] = ip_list[tN]
+                        response[str(tN)] = ip_list[tN]
                         b *= 2
-                    response = {str(i):addr for i, addr in enumerate(ip_map.values())}
         print(f"sending {response}")
         response = str(response).replace("'",'"')
         conn.sendall(f"{response}\n".encode())
