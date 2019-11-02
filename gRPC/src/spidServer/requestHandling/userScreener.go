@@ -75,6 +75,7 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 		request := &pb.GetUserRequest{
 			UserID: id.String(),
 		}
+		log.Print("Sending GetUserInfo request.")
 		return client.GetUserInfo(ctx, request)
 	}
 	ip := h.WhereIsEntity(id)
@@ -94,6 +95,7 @@ func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.Us
 		request := &pb.RegisterUserRequest{
 			Name: name,
 		}
+		log.Print("Sending RegisterUser request.")
 		return client.RegisterUser(ctx, request)
 	}
 	ip := h.WhereIsEntity(user.ID)
@@ -116,6 +118,7 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		request := &pb.UpdateUserRequest{
 			User: pbUser,
 		}
+		log.Print("Sending UpdateUser request.")
 		return client.UpdateUser(ctx, request)
 	}
 	ip := h.WhereIsEntity(user.ID)
@@ -143,6 +146,7 @@ func (h *Handler) deleteUser(userID string) (*pb.User, error) {
 		request := &pb.DeleteUserRequest{
 			UserID: userID,
 		}
+		log.Print("Sending DeleteUser request.")
 		return client.DeleteUser(ctx, request)
 	}
 	ip := h.WhereIsEntity(user.ID)
@@ -162,6 +166,7 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 		request := &pb.AddRemoteUserRequest{
 			User: pbUser,
 		}
+		log.Print("Sending AddRemoteUser request.")
 		return client.AddRemoteUser(ctx, request)
 	}
 	ip := h.WhereIsPosition(user.Position)
@@ -181,6 +186,7 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 		request := &pb.UpdateRemoteUserRequest{
 			User: pbUser,
 		}
+		log.Print("Sending UpdateRemoteUser request.")
 		return client.UpdateRemoteUser(ctx, request)
 	}
 	ip := h.WhereIsPosition(user.Position)
@@ -200,6 +206,7 @@ func (h *Handler) removeRemoteUser(userID string) error {
 		request := &pb.RemoveRemoteUserRequest{
 			UserID: userID,
 		}
+		log.Print("Sending RemoveRemoteUser request.")
 		return client.RemoveRemoteUser(ctx, request)
 	}
 	user, err := h.queryUser(userID)
