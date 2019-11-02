@@ -64,18 +64,12 @@ func (h *Handler) routeUserCall(ip utils.IP, localCall localUserCall, remoteCall
 }
 
 func (h *Handler) queryUser(userID string) (*pb.User, error) {
-	log.Printf("Querying user with id %s.", userID)
 	id, err := uuid.Parse(userID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user id: %s", err)
 	}
-	ip := h.WhereIsEntity(id)
-	if IsHostLocal(ip) {
-		user, err := h.DBManager.QueryUser(id)
-		if err != nil {
-			return nil, err
-		}
-		return user.ToProtoBufferEntity(), err
+	localCall := func(handler *Handler) (*entities.User, error) {
+		return handler.DBManager.QueryUser(id)
 	}
 	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.GetUserRequest{
@@ -83,17 +77,12 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 		}
 		return client.GetUserInfo(ctx, request)
 	}
-	response, err := h.callUserGRPC(ip, remoteCall)
-	if err != nil {
-		return nil, err
-	}
-	return response.(*pb.GetUserResponse).User, nil
+	ip := h.WhereIsEntity(id)
+	return h.routeUserCall(ip, localCall, remoteCall)
 }
 
 func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.User, error) {
-	log.Printf("Registering user with name `%s` and position\n%s", name, position)
 	user := entities.NewUser(name, position)
-	ip := h.WhereIsEntity(user.ID)
 	localCall := func(handler *Handler) (*entities.User, error) {
 		err := handler.DBManager.RegisterUser(user)
 		if err != nil {
@@ -107,6 +96,7 @@ func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.Us
 		}
 		return client.RegisterUser(ctx, request)
 	}
+	ip := h.WhereIsEntity(user.ID)
 	return h.routeUserCall(ip, localCall, remoteCall)
 }
 
@@ -115,8 +105,6 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating user: %s", user)
-	ip := h.WhereIsEntity(user.ID)
 	localCall := func(handler *Handler) (*entities.User, error) {
 		err = handler.DBManager.UpdateUser(user)
 		if err != nil {
@@ -130,32 +118,36 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		}
 		return client.UpdateUser(ctx, request)
 	}
+	ip := h.WhereIsEntity(user.ID)
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
 	return err
 }
 
-func (h *Handler) deleteUser(pbUser *pb.User) error {
+func (h *Handler) deleteUser(userID string) (*pb.User, error) {
+	pbUser, err := h.queryUser(userID)
+	if err != nil {
+		return nil, err
+	}
 	user, err := entities.UserFromProtoBufferEntity(pbUser)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Printf("Deleting user: %s", user)
-	ip := h.WhereIsEntity(user.ID)
 	localCall := func(handler *Handler) (*entities.User, error) {
-		err = handler.DBManager.DeleteUser(user)
+		err = handler.DBManager.DeleteUser(user.ID)
 		if err != nil {
 			return nil, err
 		}
-		return nil, handler.removeRemoteUser(pbUser)
+		return nil, handler.removeRemoteUser(userID)
 	}
 	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.DeleteUserRequest{
-			UserID: pbUser.Id,
+			UserID: userID,
 		}
 		return client.DeleteUser(ctx, request)
 	}
+	ip := h.WhereIsEntity(user.ID)
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
-	return err
+	return pbUser, err
 }
 
 func (h *Handler) addRemoteUser(pbUser *pb.User) error {
@@ -163,8 +155,6 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Adding remote user: %s", user)
-	ip := h.WhereIsPosition(user.Position)
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return nil, handler.DBManager.AddRemoteUser(user)
 	}
@@ -174,6 +164,7 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 		}
 		return client.AddRemoteUser(ctx, request)
 	}
+	ip := h.WhereIsPosition(user.Position)
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
 	return err
 }
@@ -183,8 +174,6 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("Updating remote user: %s", user)
-	ip := h.WhereIsPosition(user.Position)
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return nil, handler.DBManager.UpdateRemoteUser(user)
 	}
@@ -194,26 +183,30 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 		}
 		return client.UpdateRemoteUser(ctx, request)
 	}
+	ip := h.WhereIsPosition(user.Position)
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
 	return err
 }
 
-func (h *Handler) removeRemoteUser(pbUser *pb.User) error {
-	user, err := entities.UserFromProtoBufferEntity(pbUser)
+func (h *Handler) removeRemoteUser(userID string) error {
+	uid, err := uuid.Parse(userID)
 	if err != nil {
 		return err
 	}
-	log.Printf("Deleting remote user: %s", user)
-	ip := h.WhereIsPosition(user.Position)
 	localCall := func(handler *Handler) (*entities.User, error) {
-		return nil, handler.DBManager.RemoveRemoteUser(user)
+		return nil, handler.DBManager.RemoveRemoteUser(uid)
 	}
 	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RemoveRemoteUserRequest{
-			User: pbUser,
+			UserID: userID,
 		}
 		return client.RemoveRemoteUser(ctx, request)
 	}
+	user, err := h.queryUser(userID)
+	if err != nil {
+		return err
+	}
+	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(user.Position))
 	_, err = h.routeUserCall(ip, localCall, remoteCall)
 	return err
 }

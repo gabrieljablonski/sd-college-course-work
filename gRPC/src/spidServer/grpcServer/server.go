@@ -163,6 +163,7 @@ func (s *Server) HandleRemoteEntities() {
 		// Wait until all servers are setup
 		time.Sleep(time.Second)
 	}
+	log.Print("Handling remote entities...")
 	s.handleRemoteUsers()
 	s.handleRemoteSpids()
 }
