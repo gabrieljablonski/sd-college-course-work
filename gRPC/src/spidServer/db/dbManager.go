@@ -14,7 +14,7 @@ import (
 
 const (
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 500000*time.Millisecond
+	DefaultWriteToFilePeriod   = 5000*time.Millisecond
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
