@@ -16,8 +16,12 @@ func NullPosition() GlobalPosition {
 	return GlobalPosition{math.NaN(), math.NaN()}
 }
 
+func (p GlobalPosition) EqualTo(p2 GlobalPosition) bool {
+	return p.Longitude == p2.Longitude && p.Latitude == p2.Latitude
+}
+
 func (p GlobalPosition) IsValid() bool {
-	return p == NullPosition() || (p.Latitude >= -90 && p.Latitude <= 90 && p.Longitude >= -180 && p.Longitude <= 180)
+	return p.EqualTo(NullPosition()) || (p.Latitude >= -90 && p.Latitude <= 90 && p.Longitude >= -180 && p.Longitude <= 180)
 }
 
 func FromProtoBufferEntity(position *protoBuffers.GlobalPosition) (GlobalPosition, error) {
