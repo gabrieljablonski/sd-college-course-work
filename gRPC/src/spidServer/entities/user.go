@@ -2,6 +2,7 @@ package entities
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"log"
 	"spidServer/gps"
@@ -45,10 +46,14 @@ func UserFromProtoBufferEntity(pbUser *protoBuffers.User) (user *User, err error
 	if err != nil {
 		return user, err
 	}
+	position, err := gps.FromProtoBufferEntity(pbUser.Position)
+	if err != nil {
+		return nil, err
+	}
 	return &User{
 		ID:            idU,
 		Name:          pbUser.Name,
-		Position:      gps.FromProtoBufferEntity(pbUser.Position),
+		Position:      position,
 		LastUpdated:   pbUser.LastUpdated,
 		CurrentSpidID: idS,
 	}, nil
@@ -63,24 +68,31 @@ func (u User) String() string {
 	return string(s)
 }
 
-func (u User) ToProtoBufferEntity() *protoBuffers.User {
+func (u User) ToProtoBufferEntity() (*protoBuffers.User, error) {
+	position, err := u.Position.ToProtoBufferEntity()
+	if err != nil {
+		return nil, err
+	}
 	return &protoBuffers.User{
 		Id:            u.ID.String(),
 		Name:          u.Name,
-		Position:      u.Position.ToProtoBufferEntity(),
+		Position:      position,
 		LastUpdated:   u.LastUpdated,
 		CurrentSpidID: u.CurrentSpidID.String(),
-	}
+	}, nil
 }
 
-func NewUser(name string, position gps.GlobalPosition) *User {
+func NewUser(name string, position gps.GlobalPosition) (*User, error) {
+	if !position.IsValid() {
+		return nil, fmt.Errorf("invalid position: %v", position)
+	}
 	return &User{
 		ID:            uuid.New(),
 		Name:          name,
 		Position:      position,
 		LastUpdated:   time.Now().Unix(),
 		CurrentSpidID: uuid.Nil,
-	}
+	}, nil
 }
 
 func (u User) Marshal() ([]byte, error) {
@@ -97,7 +109,10 @@ func UnmarshalUsers(marshaledUsers []byte) (*Users, error) {
 	return &users, err
 }
 
-func (u *User) UpdatePosition(position gps.GlobalPosition) {
+func (u *User) UpdatePosition(position gps.GlobalPosition) error {
+	if !position.IsValid() {
+		return fmt.Errorf("invalid position: %v", position)
+	}
 	u.Position = position
-	u.LastUpdated = time.Now().Unix()
+	return nil
 }

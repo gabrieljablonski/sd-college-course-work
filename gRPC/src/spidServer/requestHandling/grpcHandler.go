@@ -42,7 +42,11 @@ func (h *Handler) HandleRemoteUser(user *entities.User) error {
 		return nil
 	}
 	log.Printf("Handling user: %s", user)
-	return h.addRemoteUser(user.ToProtoBufferEntity())
+	pbUser, err := user.ToProtoBufferEntity()
+	if err != nil {
+		return err
+	}
+	return h.addRemoteUser(pbUser)
 }
 
 func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
@@ -51,7 +55,11 @@ func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
 		return nil
 	}
 	log.Printf("Handling spid: %s", spid)
-	return h.addRemoteSpid(spid.ToProtoBufferEntity())
+	pbSpid, err := spid.ToProtoBufferEntity()
+	if err != nil {
+		return err
+	}
+	return h.addRemoteSpid(pbSpid)
 }
 
 func (h *Handler) getClosestHost(targetServer int) utils.IP {

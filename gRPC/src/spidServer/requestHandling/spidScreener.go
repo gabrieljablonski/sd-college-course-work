@@ -39,7 +39,11 @@ func (h *Handler) routeSpidCall(ip utils.IP, localCall localSpidCall, remoteCall
 		if err != nil || spid == nil {
 			return nil, err
 		}
-		return spid.ToProtoBufferEntity(), nil
+		pbSpid, err := spid.ToProtoBufferEntity()
+		if err != nil {
+			return nil, err
+		}
+		return pbSpid, nil
 	}
 	log.Printf("Agent is remote.")
 	response, err := h.callSpidGRPC(ip, remoteCall)
@@ -83,18 +87,27 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 }
 
 func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
-	spid := entities.NewSpid(batteryLevel, position)
+	spid, err := entities.NewSpid(batteryLevel, position)
+	if err != nil {
+		return nil, err
+	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		err := handler.DBManager.RegisterSpid(spid)
 		if err != nil {
 			return nil, err
 		}
-		return spid, handler.addRemoteSpid(spid.ToProtoBufferEntity())
+		pbSpid, err := spid.ToProtoBufferEntity()
+		if err != nil {
+			return nil, err
+		}
+		return spid, handler.addRemoteSpid(pbSpid)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
+		// already checked on NewSpid() call, no need to check again
+		pbPosition, _ := position.ToProtoBufferEntity()
 		request := &pb.RegisterSpidRequest{
 			BatteryLevel: batteryLevel,
-			Position:     position.ToProtoBufferEntity(),
+			Position:     pbPosition,
 		}
 		log.Print("Sending RegisterSpid request.")
 		return client.RegisterSpid(ctx, request)
@@ -228,7 +241,8 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 	if err != nil {
 		return err
 	}
-	ip := h.WhereIsPosition(gps.FromProtoBufferEntity(spid.Position))
+	pbPosition, _ := gps.FromProtoBufferEntity(spid.Position)
+	ip := h.WhereIsPosition(pbPosition)
 	_, err = h.routeSpidCall(ip, localCall, remoteCall)
 	return err
 }

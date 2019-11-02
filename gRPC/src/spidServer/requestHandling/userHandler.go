@@ -28,7 +28,13 @@ func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
 	log.Print("Received RegisterUser request.")
-	user, err :=  h.registerUser(request.Name, gps.FromProtoBufferEntity(request.Position))
+	pbPosition, err := gps.FromProtoBufferEntity(request.Position)
+	if err != nil {
+		err = fmt.Errorf("failed to register user: %s", err)
+		log.Print(err)
+		return nil, err
+	}
+	user, err :=  h.registerUser(request.Name, pbPosition)
 	if err != nil {
 		err = fmt.Errorf("failed to register user: %s", err)
 		log.Print(err)
@@ -117,17 +123,19 @@ func (h *Handler) RequestAssociation(ctx context.Context, request *pb.RequestAss
 	}
 	user.CurrentSpidID = spid.ID
 	spid.CurrentUserID = user.ID
-	err = h.updateUser(user.ToProtoBufferEntity())
+	pbUser, _ = user.ToProtoBufferEntity()
+	err = h.updateUser(pbUser)
 	if err != nil {
 		err = fmt.Errorf("%s: %s", errPrefix, err)
 		log.Print(err)
 		return nil, err
 	}
-	err = h.updateSpid(spid.ToProtoBufferEntity())
+	pbSpid, _ = spid.ToProtoBufferEntity()
+	err = h.updateSpid(pbSpid)
 	if err != nil {
 		// if update spid failed, rollback update user
 		user.CurrentSpidID = uuid.Nil
-		err2 := h.updateUser(user.ToProtoBufferEntity())
+		err2 := h.updateUser(pbUser)
 		if err2 != nil {
 			// if this ever happens, server will hold inconsistent data
 			err = fmt.Errorf("%s: failed to rollback `%s`, `%s`", errPrefix, err, err2)
@@ -140,7 +148,7 @@ func (h *Handler) RequestAssociation(ctx context.Context, request *pb.RequestAss
 	}
 	response := &pb.RequestAssociationResponse{
 		Message: "Association request successful.",
-		User:    user.ToProtoBufferEntity(),
+		User:    pbUser,
 	}
 	log.Printf("Sending response: %s", response)
 	return response, nil
@@ -185,17 +193,19 @@ func (h *Handler) RequestDissociation(ctx context.Context, request *pb.RequestDi
 	}
 	user.CurrentSpidID = uuid.Nil
 	spid.CurrentUserID = uuid.Nil
-	err = h.updateUser(user.ToProtoBufferEntity())
+	pbUser, _ = user.ToProtoBufferEntity()
+	pbSpid, _ = spid.ToProtoBufferEntity()
+	err = h.updateUser(pbUser)
 	if err != nil {
 		err = fmt.Errorf("%s: %s", errPrefix, err)
 		log.Print(err)
 		return nil, err
 	}
-	err = h.updateSpid(spid.ToProtoBufferEntity())
+	err = h.updateSpid(pbSpid)
 	if err != nil {
 		// if update spid failed, rollback update user
 		user.CurrentSpidID = uuid.Nil
-		err2 := h.updateUser(user.ToProtoBufferEntity())
+		err2 := h.updateUser(pbUser)
 		if err2 != nil {
 			// if this ever happens, server will hold inconsistent data
 			err = fmt.Errorf("%s: failed to rollback `%s`, `%s`", errPrefix, err, err2)
@@ -208,7 +218,7 @@ func (h *Handler) RequestDissociation(ctx context.Context, request *pb.RequestDi
 	}
 	response := &pb.RequestDissociationResponse{
 		Message: "Dissociation request successful.",
-		User:    user.ToProtoBufferEntity(),
+		User:    pbUser,
 	}
 	log.Printf("Sending response: %s", response)
 	return response, nil
@@ -247,9 +257,10 @@ func (h *Handler) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidIn
 		log.Print(err)
 		return nil, err
 	}
+	pbSpid, err = spid.ToProtoBufferEntity()
 	response := &pb.RequestSpidInfoResponse{
 		Message: "Spid info request successful.",
-		Spid:    spid.ToProtoBufferEntity(),
+		Spid:    pbSpid,
 	}
 	log.Printf("Sending response: %s", response)
 	return response, nil
@@ -294,7 +305,8 @@ func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLock
 		log.Print(err)
 		return nil, err
 	}
-	err = h.updateSpid(spid.ToProtoBufferEntity())
+	pbSpid, _ = spid.ToProtoBufferEntity()
+	err = h.updateSpid(pbSpid)
 	if err != nil {
 		err = fmt.Errorf("%s: %s", errPrefix, err)
 		log.Print(err)
@@ -302,7 +314,7 @@ func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLock
 	}
 	response := &pb.RequestLockChangeResponse{
 		Message: "Lock change request successful.",
-		Spid:    spid.ToProtoBufferEntity(),
+		Spid:    pbSpid,
 	}
 	log.Printf("Sending response: %s", response)
 	return response, nil
