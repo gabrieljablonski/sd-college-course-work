@@ -7,6 +7,7 @@ import (
 	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
+	"time"
 )
 
 func (m *Manager) GetUsersFromFile() *entities.Users {
@@ -83,6 +84,7 @@ func (m *Manager) UpdateUser(user *entities.User) error {
 		return err
 	}
 	log.Printf("Updating user: %s.", user)
+	user.LastUpdated = time.Now().Unix()
 	m.Users.Users[user.ID] = user
 	log.Print("User updated.")
 	return m.logWriteAction(WriteAction{
