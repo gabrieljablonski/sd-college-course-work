@@ -82,10 +82,10 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 	return h.routeUserCall(ip, localCall, remoteCall)
 }
 
-func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.User, error) {
-	user, err := entities.NewUser(name, position)
+func (h *Handler) registerUser(pbUser *pb.User) error {
+	user, err := entities.UserFromProtoBufferEntity(pbUser)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
 		err := handler.DBManager.RegisterUser(user)
@@ -97,13 +97,14 @@ func (h *Handler) registerUser(name string, position gps.GlobalPosition) (*pb.Us
 	}
 	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RegisterUserRequest{
-			Name: name,
+			User: pbUser,
 		}
 		log.Printf("Sending RegisterUser request: %s.", request)
 		return client.RegisterUser(ctx, request)
 	}
 	ip := h.WhereIsEntity(user.ID)
-	return h.routeUserCall(ip, localCall, remoteCall)
+	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	return err
 }
 
 func (h *Handler) updateUser(pbUser *pb.User) error {

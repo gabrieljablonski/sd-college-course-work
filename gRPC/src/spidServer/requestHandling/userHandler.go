@@ -26,14 +26,8 @@ func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (
 }
 
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
-	pbPosition, err := gps.FromProtoBufferEntity(request.Position)
-	if err != nil {
-		err = fmt.Errorf("failed to register user: %s", err)
-		log.Print(err)
-		return nil, err
-	}
-	user, err :=  h.registerUser(request.Name, pbPosition)
 	log.Printf("Received RegisterUser request: %s.", request)
+	err :=  h.registerUser(request.User)
 	if err != nil {
 		err = fmt.Errorf("failed to register user: %s", err)
 		log.Print(err)
