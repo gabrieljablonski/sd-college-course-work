@@ -11,32 +11,39 @@ import (
 )
 
 func (h *Handler) GetUserInfo(ctx context.Context, request *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	log.Print("Received GetUserInfo request.")
 	user, err :=  h.queryUser(request.UserID)
 	if err != nil {
 		err = fmt.Errorf("failed to get user info: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.GetUserResponse{
+	response := &pb.GetUserResponse{
 		Message: "User queried successfully.",
 		User:    user,
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RegisterUser(ctx context.Context, request *pb.RegisterUserRequest) (*pb.RegisterUserResponse, error) {
+	log.Print("Received RegisterUser request.")
 	user, err :=  h.registerUser(request.Name, gps.FromProtoBufferEntity(request.Position))
 	if err != nil {
 		err = fmt.Errorf("failed to register user: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RegisterUserResponse{
+	response := &pb.RegisterUserResponse{
 		Message: "User registered successfully.",
 		User:    user,
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) UpdateUser(ctx context.Context, request *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
+	log.Print("Received UpdateUser request.")
 	user, err :=  h.queryUser(request.User.Id)
 	if err != nil {
 		err = fmt.Errorf("failed to update user: %s", err)
@@ -47,26 +54,32 @@ func (h *Handler) UpdateUser(ctx context.Context, request *pb.UpdateUserRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update user position: %s", err)
 	}
-	return &pb.UpdateUserResponse{
+	response := &pb.UpdateUserResponse{
 		Message: "User position updated successfully.",
 		User:    user,
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) DeleteUser(ctx context.Context, request *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+	log.Print("Received DeleteUser request.")
 	user, err := h.deleteUser(request.UserID)
 	if err != nil {
 		err = fmt.Errorf("failed to delete user: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.DeleteUserResponse{
+	response := &pb.DeleteUserResponse{
 		Message: "Deleted user successfully.",
-		User: user,
-	}, nil
+		User:    user,
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RequestAssociation(ctx context.Context, request *pb.RequestAssociationRequest) (*pb.RequestAssociationResponse, error) {
+	log.Print("Received RequestAssociation request.")
 	errPrefix := "failed to request association"
 	pbUser, err := h.queryUser(request.UserID)
 	if err != nil {
@@ -125,13 +138,16 @@ func (h *Handler) RequestAssociation(ctx context.Context, request *pb.RequestAss
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RequestAssociationResponse{
+	response := &pb.RequestAssociationResponse{
 		Message: "Association request successful.",
 		User:    user.ToProtoBufferEntity(),
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RequestDissociation(ctx context.Context, request *pb.RequestDissociationRequest) (*pb.RequestDissociationResponse, error) {
+	log.Print("Received RequestDissociation request.")
 	errPrefix := "failed to request association"
 	pbUser, err := h.queryUser(request.UserID)
 	if err != nil {
@@ -190,13 +206,16 @@ func (h *Handler) RequestDissociation(ctx context.Context, request *pb.RequestDi
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RequestDissociationResponse{
+	response := &pb.RequestDissociationResponse{
 		Message: "Dissociation request successful.",
 		User:    user.ToProtoBufferEntity(),
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidInfoRequest) (*pb.RequestSpidInfoResponse, error) {
+	log.Print("Received RequestSpidInfo request.")
 	errPrefix := "failed to request spid info"
 	pbUser, err := h.queryUser(request.UserID)
 	if err != nil {
@@ -228,13 +247,16 @@ func (h *Handler) RequestSpidInfo(ctx context.Context, request *pb.RequestSpidIn
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RequestSpidInfoResponse{
+	response := &pb.RequestSpidInfoResponse{
 		Message: "Spid info request successful.",
 		Spid:    spid.ToProtoBufferEntity(),
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLockChangeRequest) (*pb.RequestLockChangeResponse, error) {
+	log.Print("Received RequestLockChange request.")
 	errPrefix := "failed to request lock change"
 	pbUser, err := h.queryUser(request.UserID)
 	if err != nil {
@@ -278,44 +300,55 @@ func (h *Handler) RequestLockChange(ctx context.Context, request *pb.RequestLock
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RequestLockChangeResponse{
+	response := &pb.RequestLockChangeResponse{
 		Message: "Lock change request successful.",
 		Spid:    spid.ToProtoBufferEntity(),
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) AddRemoteUser(ctx context.Context, request *pb.AddRemoteUserRequest) (*pb.AddRemoteUserResponse, error) {
+	log.Print("Received AddRemoteUser request.")
 	err := h.addRemoteUser(request.User)
 	if err != nil {
 		err = fmt.Errorf("failed to add remote user: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.AddRemoteUserResponse{
+	response := &pb.AddRemoteUserResponse{
 		Message: "User added remotely successfully.",
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) UpdateRemoteUser(ctx context.Context, request *pb.UpdateRemoteUserRequest) (*pb.UpdateRemoteUserResponse, error) {
+	log.Print("Received UpdateRemoteUser request.")
 	err := h.updateRemoteUser(request.User)
 	if err != nil {
 		err = fmt.Errorf("failed to update remote user: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.UpdateRemoteUserResponse{
+	response := &pb.UpdateRemoteUserResponse{
 		Message: "User updated remotely successfully.",
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }
 
 func (h *Handler) RemoveRemoteUser(ctx context.Context, request *pb.RemoveRemoteUserRequest) (*pb.RemoveRemoteUserResponse, error) {
+	log.Print("Received RemoveRemoteUser request.")
 	err := h.removeRemoteUser(request.UserID)
 	if err != nil {
 		err = fmt.Errorf("failed to remove remote user: %s", err)
 		log.Print(err)
 		return nil, err
 	}
-	return &pb.RemoveRemoteUserResponse{
+	response := &pb.RemoveRemoteUserResponse{
 		Message: "User removed remotely successfully.",
-	}, nil
+	}
+	log.Printf("Sending response: %s", response)
+	return response, nil
 }

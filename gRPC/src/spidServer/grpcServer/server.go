@@ -170,13 +170,15 @@ func (s *Server) HandleRemoteEntities() {
 
 func (s *Server) handleRemoteUsers() {
 	for _, user := range s.Handler.DBManager.Users.Users {
-		_ = s.Handler.HandleRemoteUser(user)
+		err := s.Handler.HandleRemoteUser(user)
+		log.Print(err)
 	}
 }
 
 func (s *Server) handleRemoteSpids() {
 	for _, spid := range s.Handler.DBManager.Spids.Spids {
-		_ = s.Handler.HandleRemoteSpid(spid)
+		err := s.Handler.HandleRemoteSpid(spid)
+		log.Print(err)
 	}
 }
 
