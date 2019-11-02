@@ -2,6 +2,7 @@ package requestHandling
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
@@ -86,10 +87,10 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 	return h.routeSpidCall(ip, localCall, remoteCall)
 }
 
-func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition) (*pb.Spid, error) {
-	spid, err := entities.NewSpid(batteryLevel, position)
+func (h *Handler) registerSpid(pbSpid *pb.Spid) error {
+	spid, err := entities.SpidFromProtoBufferEntity(pbSpid)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
 		err := handler.DBManager.RegisterSpid(spid)
@@ -104,16 +105,15 @@ func (h *Handler) registerSpid(batteryLevel uint32, position gps.GlobalPosition)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		// already checked on NewSpid() call, no need to check again
-		pbPosition, _ := position.ToProtoBufferEntity()
 		request := &pb.RegisterSpidRequest{
-			BatteryLevel: batteryLevel,
-			Position:     pbPosition,
+			Spid: pbSpid,
 		}
 		log.Printf("Sending RegisterSpid request: %s.", request)
 		return client.RegisterSpid(ctx, request)
 	}
 	ip := h.WhereIsEntity(spid.ID)
-	return h.routeSpidCall(ip, localCall, remoteCall)
+	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	return err
 }
 
 func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
