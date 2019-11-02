@@ -99,7 +99,7 @@ func (m *Manager) UpdateRemoteUser(user *entities.User) error {
 }
 
 func (m *Manager) RemoveRemoteUser(userID uuid.UUID) error {
-	user, err := m.QueryUser(userID)
+	user, err := m.QueryRemoteUser(userID)
 	if err != nil {
 		return err
 	}

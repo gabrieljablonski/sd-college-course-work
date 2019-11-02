@@ -99,7 +99,7 @@ func (m *Manager) UpdateRemoteSpid(spid *entities.Spid) error {
 }
 
 func (m *Manager) RemoveRemoteSpid(spidID uuid.UUID) error {
-	spid, err := m.QuerySpid(spidID)
+	spid, err := m.QueryRemoteSpid(spidID)
 	if err != nil {
 		return err
 	}
