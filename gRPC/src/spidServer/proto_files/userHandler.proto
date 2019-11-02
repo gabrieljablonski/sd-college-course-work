@@ -36,8 +36,7 @@ message GetUserResponse {
 }
 
 message RegisterUserRequest {
-    string name = 1;
-    GlobalPosition position = 2;
+    User user = 1;
 }
 
 message RegisterUserResponse {

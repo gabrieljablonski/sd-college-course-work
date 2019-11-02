@@ -11,6 +11,7 @@ service SpidHandler {
     rpc AddRemoteSpid (AddRemoteSpidRequest) returns (AddRemoteSpidResponse) {}
     rpc UpdateRemoteSpid (UpdateRemoteSpidRequest) returns (UpdateRemoteSpidResponse) {}
     rpc RemoveRemoteSpid (RemoveRemoteSpidRequest) returns (RemoveRemoteSpidResponse) {}
+    rpc GetRemoteSpids (GetRemoteSpidsRequest) returns (GetRemoteSpidsResponse) {}
 }
 
 message LockInfo {
@@ -38,8 +39,7 @@ message GetSpidResponse {
 }
 
 message RegisterSpidRequest {
-    uint32 batteryLevel = 1;
-    GlobalPosition position = 2;
+    Spid spid = 1;
 }
 
 message RegisterSpidResponse {
@@ -87,4 +87,13 @@ message RemoveRemoteSpidRequest {
 
 message RemoveRemoteSpidResponse {
     string message = 1;
+}
+
+message GetRemoteSpidsRequest {
+    GlobalPosition position = 1;
+}
+
+message GetRemoteSpidsResponse {
+    string message = 1;
+    string marshaledSpids = 2;
 }
