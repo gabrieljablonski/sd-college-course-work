@@ -70,7 +70,7 @@ func (m *Manager) RegisterUser(user *entities.User) error {
 		Location:   Local,
 		EntityType: User,
 		Type:       Register,
-		Entity:     user,
+		UserEntity: user,
 	})
 }
 
@@ -86,7 +86,7 @@ func (m *Manager) UpdateUser(user *entities.User) error {
 		Location:   Local,
 		EntityType: User,
 		Type:       Update,
-		Entity:     user,
+		UserEntity: user,
 	})
 }
 
@@ -102,6 +102,6 @@ func (m *Manager) DeleteUser(user *entities.User) error {
 		Location:   Local,
 		EntityType: User,
 		Type:       Delete,
-		Entity:     user,
+		UserEntity: user,
 	})
 }

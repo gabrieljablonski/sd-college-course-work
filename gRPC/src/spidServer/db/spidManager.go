@@ -69,7 +69,7 @@ func (m *Manager) RegisterSpid(spid *entities.Spid) error {
 		Location:   Local,
 		EntityType: Spid,
 		Type:       Register,
-		Entity:     spid,
+		SpidEntity:     spid,
 	})
 }
 
@@ -85,7 +85,7 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 		Location:   Local,
 		EntityType: Spid,
 		Type:       Update,
-		Entity:     spid,
+		SpidEntity:     spid,
 	})
 }
 
@@ -101,6 +101,6 @@ func (m *Manager) DeleteSpid(spid *entities.Spid) error {
 		Location:   Local,
 		EntityType: Spid,
 		Type:       Delete,
-		Entity:     spid,
+		SpidEntity:     spid,
 	})
 }
