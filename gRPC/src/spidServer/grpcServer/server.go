@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	"os"
 	"spidServer/errorHandling"
 	"spidServer/requestHandling"
 	pb "spidServer/requestHandling/protoBuffers"
@@ -50,7 +49,7 @@ func NewServer(port string) Server {
 	if port == "" {
 		port = DefaultPort
 	}
-	basePath, err := os.Getwd()
+	basePath, err := osext.ExecutableFolder()
 	errorHandling.HandleFatal(err)
 	handler := requestHandling.NewHandler(basePath)
 	return Server{
