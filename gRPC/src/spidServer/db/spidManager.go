@@ -7,6 +7,7 @@ import (
 	"os"
 	"spidServer/entities"
 	eh "spidServer/errorHandling"
+	"time"
 )
 
 func (m *Manager) GetSpidsFromFile() *entities.Spids {
@@ -83,6 +84,7 @@ func (m *Manager) UpdateSpid(spid *entities.Spid) error {
 		return err
 	}
 	log.Printf("Updating spid: %s.", spid)
+	spid.LastUpdated = time.Now().Unix()
 	m.Spids.Spids[spid.ID] = spid
 	log.Print("Spid updated.")
 	return m.logWriteAction(WriteAction{
