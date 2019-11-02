@@ -126,10 +126,6 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		if err != nil {
 			return nil, err
 		}
-		err = handler.DBManager.UpdateSpid(spid)
-		if err != nil {
-			return nil, err
-		}
 		oldPosition := oldSpid.Position
 		newPosition := spid.Position
 		if handler.WhereIsPosition(oldPosition) != handler.WhereIsPosition(newPosition) {
@@ -138,9 +134,17 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 			if err != nil {
 				return nil, err
 			}
-			return nil, handler.addRemoteSpid(pbSpid)
+			err = handler.addRemoteSpid(pbSpid)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err = handler.updateRemoteSpid(pbSpid)
+			if err != nil {
+				return nil, err
+			}
 		}
-		return nil, handler.updateRemoteSpid(pbSpid)
+		return nil, handler.DBManager.UpdateSpid(spid)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateSpidRequest{
