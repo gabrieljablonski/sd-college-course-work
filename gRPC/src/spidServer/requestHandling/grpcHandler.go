@@ -10,10 +10,12 @@ import (
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
 	"strconv"
+	"time"
 )
 
 const (
 	LocalHost = "localhost"
+	DefaultContextTimeout = 10*time.Second
 )
 
 type Handler struct {
