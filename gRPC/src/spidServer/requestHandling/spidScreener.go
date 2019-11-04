@@ -11,7 +11,6 @@ import (
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
-	"time"
 )
 
 type localSpidCall func(handler *Handler) (*entities.Spid, error)
@@ -27,7 +26,7 @@ func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interfac
 		_ = conn.Close()
 	}()
 	client := pb.NewSpidHandlerClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultContextTimeout)
 	defer cancel()
 	return remoteCall(client, ctx)
 }
