@@ -65,6 +65,9 @@ func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
 }
 
 func (h *Handler) getClosestHost(targetServer int) utils.IP {
+	if len(h.IPMap) == 0 {
+		log.Fatal("IP map not setup.")
+	}
 	if target, ok := h.IPMap[targetServer]; ok {
 		log.Printf("Target %d in ip map: %s.", targetServer, target)
 		return target
@@ -125,7 +128,7 @@ func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
 		log.Fatal("ip map is empty")
 	}
 	// uuid has uniform distribution
-	serverNumber := id.ID() % uint32(len(h.IPMap))
+	serverNumber := id.ID() % uint32(h.ServerPoolSize)
 	log.Printf("Server number is %d.", serverNumber)
 	return h.getClosestHost(int(serverNumber))
 }
