@@ -23,17 +23,17 @@ func main() {
 		filenameSlice := strings.Split(filename, "/")
 		filename = filenameSlice[len(filenameSlice)-1]
 		if ok {
-			fmt.Printf("%s usage: go run %s <port> <registrar address> <registrar port>\n", filename, filename)
+			fmt.Printf("%s usage: go run %s <port> <mapper address> <mapper port>\n", filename, filename)
 		}
 		return
 	}
 	port := arguments[1]
-	registrarAddress := arguments[2]
-	registrarPort := arguments[3]
+	mapperAddress := arguments[2]
+	mapperPort := arguments[3]
 	server := grpcServer.NewServer(port)
 	server.Register(utils.IP{
-		Address: registrarAddress,
-		Port:    registrarPort,
+		Address: mapperAddress,
+		Port:    mapperPort,
 	})
 	for err := fmt.Errorf(""); err != nil; err = server.UpdateIPMap() {
 		time.Sleep(UpdateIPMapPeriod)
