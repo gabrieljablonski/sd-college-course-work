@@ -27,11 +27,11 @@ const (
 )
 
 type Server struct {
-	ID 	        uuid.UUID
-	Handler     requestHandling.Handler
-	IP          utils.IP
-	RegistrarIP utils.IP
-	Registered  bool
+	ID         uuid.UUID
+	Handler    requestHandling.Handler
+	IP         utils.IP
+	MapperIP   utils.IP
+	Registered bool
 }
 
 // Get preferred outbound ip of this machine
@@ -64,15 +64,15 @@ func NewServer(port string) Server {
 	}
 }
 
-func (s *Server) Register(registrarIP utils.IP) {
+func (s *Server) Register(mapperIP utils.IP) {
 	// placeholder solution
-	// connect to server map registrar to get a server number (from 0 to `n`-1)
-	addr := registrarIP.String()
+	// connect to server mapper to get a server number (from 0 to `n`-1)
+	addr := mapperIP.String()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
 		log.Fatalf("Failed to register server at %s: %s", addr, err)
 	}
-	s.RegistrarIP = registrarIP
+	s.MapperIP = mapperIP
 	s.Registered = true
 	if s.ID == uuid.Nil {
 		// this should happen only when the whole system is being setup
@@ -110,7 +110,7 @@ func (s *Server) UpdateIPMap() error {
 	if !s.Registered {
 		log.Fatal("Server not registered")
 	}
-	addr := s.RegistrarIP.String()
+	addr := s.MapperIP.String()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
 		log.Fatalf("Failed to connect to %s: %s", addr, err)
