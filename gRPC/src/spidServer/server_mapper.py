@@ -89,7 +89,7 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tY -= b
+                        tY = sY - b
                         if tY < 0:
                             break
                         tN = tY*base_delta + tX
@@ -99,7 +99,7 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tY += b
+                        tY = sY + b
                         if tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
@@ -109,7 +109,7 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX -= b
+                        tX = sX - b
                         if tX < 0:
                             break
                         tN = tY*base_delta + tX
@@ -119,7 +119,7 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX += b
+                        tX = sX + b
                         if tX >= base_delta:
                             break
                         tN = tY*base_delta + tX
@@ -129,8 +129,8 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX += b
-                        tY -= b
+                        tX = sX + b
+                        tY = sY - b
                         if tX >= base_delta or tY < 0:
                             break
                         tN = tY*base_delta + tX
@@ -140,8 +140,8 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX += b
-                        tY += b
+                        tX = sX + b
+                        tY = sY + b
                         if tX >= base_delta or tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
@@ -151,8 +151,8 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX -= b
-                        tY += b
+                        tX = sX - b
+                        tY = sY + b
                         if tX < 0 or tY >= base_delta:
                             break
                         tN = tY*base_delta + tX
@@ -162,8 +162,8 @@ def main(port, number_of_servers, ip_map_path):
                     tX, tY = sX, sY
                     b = 1
                     while 1:
-                        tX -= b
-                        tY -= b
+                        tX = sX - b
+                        tY = sY - b
                         if tX < 0 or tY < 0:
                             break
                         tN = tY*base_delta + tX
