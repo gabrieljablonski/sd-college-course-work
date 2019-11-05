@@ -18,9 +18,8 @@ const (
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
-	BaseLogsPath               = BaseDataPath + "logs" + Sep
 	BaseStatePath              = BaseDataPath + "state" + Sep
-	DefaultDirtyRequestsPath   = BaseLogsPath + "dirty_requests.spd"
+	DefaultDirtyRequestsPath   = BaseStatePath + "dirty_requests.spd"
 	DefaultUsersLocation 	   = BaseStatePath + "users.spd"
 	DefaultRemoteUsersLocation = BaseStatePath + "users_remote.spd"
 	DefaultSpidsLocation       = BaseStatePath + "spids.spd"
