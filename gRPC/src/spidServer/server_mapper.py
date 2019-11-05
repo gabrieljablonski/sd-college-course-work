@@ -179,8 +179,8 @@ def main(port, base_delta, ip_map_path):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Setup SPID server mapper')
-    parser.add_argument('-p', '--port', type=int, required=False, help='Mapper port')
     parser.add_argument('-d', '--base-delta', type=int, required=True, help='Base delta (number of map lines/columns)')
+    parser.add_argument('-p', '--port', type=int, required=False, help='Mapper port')
     parser.add_argument('-t', '--ip-map', type=str, required=False, help='Path to already existing ip map')
 
     args = parser.parse_args()
