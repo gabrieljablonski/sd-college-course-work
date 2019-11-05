@@ -43,7 +43,7 @@ func (f FileManager) WriteToFile(path string, content []byte) error {
 	if err != nil {
 		return fmt.Errorf("failed to write to file %s: %s", path, err)
 	}
-	log.Printf("Wrote to file: `%s`", content)
+	log.Printf("Wrote to file.")
 	return nil
 }
 
