@@ -16,6 +16,7 @@ service UserHandler {
     rpc AddRemoteUser (AddRemoteUserRequest) returns (AddRemoteUserResponse) {}
     rpc UpdateRemoteUser (UpdateRemoteUserRequest) returns (UpdateRemoteUserResponse) {}
     rpc RemoveRemoteUser (RemoveRemoteUserRequest) returns (RemoveRemoteUserResponse) {}
+    rpc GetRemoteSpids (GetRemoteSpidsRequest) returns (GetRemoteSpidsResponse) {}
 }
 
 message User {
@@ -125,4 +126,13 @@ message RemoveRemoteUserRequest {
 
 message RemoveRemoteUserResponse {
     string message = 1;
+}
+
+message GetRemoteSpidsRequest {
+    GlobalPosition position = 1;
+}
+
+message GetRemoteSpidsResponse {
+    string message = 1;
+    string marshaledSpids = 2;
 }
