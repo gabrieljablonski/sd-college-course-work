@@ -104,7 +104,7 @@ func (m *Manager) RemoveRemoteUser(userID uuid.UUID) error {
 		return err
 	}
 	log.Printf("Removing remote user: %s.", user)
-	delete(m.Users.Users, userID)
+	delete(m.RemoteUsers.Users, userID)
 	log.Print("Remote user removed.")
 	return m.logWriteAction(WriteAction{
 		Location:   Remote,

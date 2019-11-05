@@ -104,7 +104,7 @@ func (m *Manager) RemoveRemoteSpid(spidID uuid.UUID) error {
 		return err
 	}
 	log.Printf("Removing remote spid: %s.", spid)
-	delete(m.Spids.Spids, spid.ID)
+	delete(m.RemoteSpids.Spids, spid.ID)
 	log.Print("Remote spid removed.")
 	return m.logWriteAction(WriteAction{
 		Location:   Remote,
