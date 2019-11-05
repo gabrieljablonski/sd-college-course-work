@@ -2,6 +2,7 @@ package requestHandling
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
@@ -222,4 +223,31 @@ func (h *Handler) removeRemoteUser(userID string) error {
 	targetServerNumber := h.WhereIsPosition(pbPosition)
 	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
+}
+
+func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) {
+	position, err := gps.FromProtoBufferEntity(pbPosition)
+	if err != nil {
+		return "", err
+	}
+	targetServerNumber := h.WhereIsPosition(position)
+	if targetServerNumber == h.ServerNumber {
+		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
+		marshaledSpids, err := json.Marshal(h.DBManager.GetRemoteSpids())
+		return string(marshaledSpids), err
+	}
+	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+		request := &pb.GetRemoteSpidsRequest{
+			Position: pbPosition,
+		}
+		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
+		return client.GetRemoteSpids(ctx, request)
+	}
+	ip := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ip)
+	response, err := h.callUserGRPC(ip, remoteCall)
+	if err != nil {
+		return "", err
+	}
+	return response.(*pb.GetRemoteSpidsResponse).MarshaledSpids, nil
 }

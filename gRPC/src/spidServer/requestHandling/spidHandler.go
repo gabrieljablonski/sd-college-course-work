@@ -115,19 +115,3 @@ func (h *Handler) RemoveRemoteSpid(ctx context.Context, request *pb.RemoveRemote
 	log.Printf("Sending response: %s", response)
 	return response, nil
 }
-
-func (h *Handler) GetRemoteSpids(ctx context.Context, request *pb.GetRemoteSpidsRequest) (*pb.GetRemoteSpidsResponse, error) {
-	log.Printf("Received GetRemoteSpids request: %s.", request)
-	marshaledSpids, err := h.getRemoteSpids(request.Position)
-	if err != nil {
-		err = fmt.Errorf("failed to get remote spids: %s", err)
-		log.Print(err)
-		return nil, err
-	}
-	response := &pb.GetRemoteSpidsResponse{
-		Message: "Remote spids queried successfully.",
-		MarshaledSpids: marshaledSpids,
-	}
-	log.Printf("Sending response: %s", response)
-	return response, nil
-}
