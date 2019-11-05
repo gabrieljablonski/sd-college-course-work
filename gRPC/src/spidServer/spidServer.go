@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/kardianos/osext"
+	"io"
 	"log"
 	"os"
 	"runtime"
+	"spidServer/db"
+	"spidServer/errorHandling"
 	"spidServer/grpcServer"
 	"spidServer/utils"
 	"strings"
@@ -16,6 +20,17 @@ const (
 )
 
 func main() {
+	basePath, err := osext.ExecutableFolder()
+	errorHandling.HandleFatal(err)
+	path := basePath + db.Sep + "logs.spd"
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	wtr := io.MultiWriter(os.Stdout,f)
+	log.SetOutput(wtr)
+
 	arguments := os.Args
 	if len(arguments) != 4 {
 		_, filename, _, ok := runtime.Caller(1)
