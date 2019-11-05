@@ -84,8 +84,8 @@ def main(port, base_delta, ip_map_path):
                     # which corresponds to a server exactly in the middle of the map
                     response = {str(server_number): ip_list[server_number]}
                     base_delta = int(round(number_of_servers**.5))
-                    sX = server_number//base_delta
-                    sY = server_number % base_delta
+                    sX = server_number % base_delta
+                    sY = server_number//base_delta
                     # north
                     tX, tY = sX, sY
                     b = 1
