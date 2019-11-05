@@ -40,7 +40,7 @@ func (m *Manager) WriteRemoteUsersToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing remote users: %s", m.RemoteUsers)
+	log.Print("Writing remote users.")
 	err = m.FileManager.WriteToFile(DefaultRemoteUsersLocation, marshaledUsers)
 	if err != nil {
 		log.Printf("Failed to write remote users to file: %s", err)

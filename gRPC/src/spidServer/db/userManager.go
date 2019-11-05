@@ -41,7 +41,7 @@ func (m *Manager) WriteUsersToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing users: %s", m.Users)
+	log.Print("Writing users.")
 	err = m.FileManager.WriteToFile(DefaultUsersLocation, marshaledUsers)
 	if err != nil {
 		log.Printf("Failed to write users to file: %s", err)
