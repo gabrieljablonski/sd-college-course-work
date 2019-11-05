@@ -101,7 +101,7 @@ func (s *Server) Register(mapperIP utils.IP) {
 	}
 	serverPoolSize, err := strconv.Atoi(split[1])
 	log.Printf("Server registered as number %d.\n%d servers in total.", serverNumber, serverPoolSize)
-	s.Handler.Number = serverNumber
+	s.Handler.ServerNumber = serverNumber
 	s.Handler.ServerPoolSize = serverPoolSize
 	s.Handler.BaseDelta = int(math.Round(math.Sqrt(float64(serverPoolSize))))
 }
@@ -115,7 +115,7 @@ func (s *Server) UpdateIPMap() error {
 	if err != nil {
 		log.Fatalf("Failed to connect to %s: %s", addr, err)
 	}
-	request := fmt.Sprintf("REQUEST IP MAP %d\n", s.Handler.Number)
+	request := fmt.Sprintf("REQUEST IP MAP %d\n", s.Handler.ServerNumber)
 	log.Print("Sending request: ", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
@@ -144,7 +144,7 @@ func (s *Server) UpdateIPMap() error {
 	//}
 	s.Handler.IPMap = make(map[int]utils.IP)
 	for serverNumber, ip := range ipMap {
-		if serverNumber == s.Handler.Number {
+		if serverNumber == s.Handler.ServerNumber {
 			s.Handler.IPMap[serverNumber] = utils.IP{
 				Address: "localhost",
 				Port:    s.IP.Port,

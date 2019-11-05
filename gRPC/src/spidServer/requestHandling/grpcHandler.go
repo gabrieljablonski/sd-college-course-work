@@ -22,9 +22,9 @@ type Handler struct {
 	DBManager db.Manager
 	IPMap     map[int]utils.IP
 	// number from 1 to `n` indicating index in global IP map
-	Number		int
+	ServerNumber   int
 	ServerPoolSize int
-	BaseDelta   int
+	BaseDelta      int
 
 	pb.SpidHandlerServer
 	pb.UserHandlerServer
@@ -39,8 +39,8 @@ func IsHostLocal(ip utils.IP) bool {
 }
 
 func (h *Handler) HandleRemoteUser(user *entities.User) error {
-	ip := h.WhereIsPosition(user.Position)
-	if IsHostLocal(ip) {
+	targetServerNumber := h.WhereIsPosition(user.Position)
+	if targetServerNumber == h.ServerNumber {
 		return nil
 	}
 	log.Printf("Handling user: %s", user)
@@ -52,8 +52,8 @@ func (h *Handler) HandleRemoteUser(user *entities.User) error {
 }
 
 func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
-	ip := h.WhereIsPosition(spid.Position)
-	if IsHostLocal(ip) {
+	targetServerNumber := h.WhereIsPosition(spid.Position)
+	if targetServerNumber == h.ServerNumber {
 		return nil
 	}
 	log.Printf("Handling spid: %s", spid)
@@ -78,6 +78,9 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 	number := -1
 	closestServer := utils.IP{}
 	for n, ip := range h.IPMap {
+		if IsHostLocal(ip) {
+			continue
+		}
 		nx := n/h.BaseDelta
 		ny := n % h.BaseDelta
 		dist := math.Sqrt(math.Pow(float64(nx-targetX), 2) + math.Pow(float64(ny-targetY), 2))
@@ -99,7 +102,7 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 	return closestServer
 }
 
-func (h *Handler) WhereIsPosition(position gps.GlobalPosition) utils.IP {
+func (h *Handler) WhereIsPosition(position gps.GlobalPosition) int {
 	log.Printf("Calculating where is %s.", position)
 	longitudeDelta := math.Ceil(360.0/float64(h.BaseDelta))
 	latitudeDelta := math.Ceil(180.0/float64(h.BaseDelta))
@@ -115,10 +118,10 @@ func (h *Handler) WhereIsPosition(position gps.GlobalPosition) utils.IP {
 	}
 	serverNumber := h.BaseDelta*bLatitude + bLongitude
 	log.Printf("Server number is %d.", serverNumber)
-	return h.getClosestHost(serverNumber)
+	return serverNumber
 }
 
-func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
+func (h *Handler) WhereIsEntity(id uuid.UUID) int {
 	// static rule for user and spid mapping
 	//   -- all entities have a home server mapped by this rule
 	//   -- all spids are also replicated to server
@@ -130,5 +133,5 @@ func (h *Handler) WhereIsEntity(id uuid.UUID) utils.IP {
 	// uuid has uniform distribution
 	serverNumber := id.ID() % uint32(h.ServerPoolSize)
 	log.Printf("Server number is %d.", serverNumber)
-	return h.getClosestHost(int(serverNumber))
+	return int(serverNumber)
 }
