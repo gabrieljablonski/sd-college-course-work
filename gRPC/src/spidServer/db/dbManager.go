@@ -34,8 +34,6 @@ type Manager struct {
 	RemoteUsers     *entities.Users
 	RemoteSpids     *entities.Spids
 	DirtyLogger     *log.Logger
-	WritingToMemory bool
-	WritingToFile   bool
 }
 
 func NewManager(basePath string) Manager {
