@@ -41,7 +41,7 @@ func (m *Manager) WriteRemoteSpidsToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing remote spids: %s", m.RemoteSpids)
+	log.Print("Writing remote spids.")
 	err = m.FileManager.WriteToFile(DefaultRemoteSpidsLocation, marshaledSpids)
 	if err != nil {
 		log.Printf("Failed to write remote spids to file: %s", err)

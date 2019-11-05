@@ -42,7 +42,7 @@ func (m *Manager) WriteSpidsToFile() {
 	err = os.Rename(src, dst)
 	eh.HandleFatal(err)
 
-	log.Printf("Writing spids: %s", m.Spids)
+	log.Print("Writing spids.")
 	err = m.FileManager.WriteToFile(DefaultSpidsLocation, marshaledSpids)
 	if err != nil {
 		log.Printf("Failed to write spids to file: %s", err)
