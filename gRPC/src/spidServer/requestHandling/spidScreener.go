@@ -31,21 +31,18 @@ func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interfac
 	return remoteCall(client, ctx)
 }
 
-func (h *Handler) routeSpidCall(ip utils.IP, localCall localSpidCall, remoteCall remoteSpidCall) (*pb.Spid, error) {
-	log.Printf("Spid agent: %s", ip)
-	if IsHostLocal(ip) {
-		log.Printf("Agent is local.")
+func (h *Handler) routeSpidCall(targetServerNumber int, localCall localSpidCall, remoteCall remoteSpidCall) (*pb.Spid, error) {
+	log.Printf("Target server number: %d", targetServerNumber)
+	if targetServerNumber == h.ServerNumber {
+		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
 		spid, err := localCall(h)
 		if err != nil || spid == nil {
 			return nil, err
 		}
-		pbSpid, err := spid.ToProtoBufferEntity()
-		if err != nil {
-			return nil, err
-		}
-		return pbSpid, nil
+		return spid.ToProtoBufferEntity()
 	}
-	log.Printf("Agent is remote.")
+	ip := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ip)
 	response, err := h.callSpidGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
@@ -82,8 +79,8 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 		log.Printf("Sending GetSpidInfo request: %s.", request)
 		return client.GetSpidInfo(ctx, request)
 	}
-	ip := h.WhereIsEntity(id)
-	return h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(id)
+	return h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 }
 
 func (h *Handler) registerSpid(pbSpid *pb.Spid) error {
@@ -110,8 +107,8 @@ func (h *Handler) registerSpid(pbSpid *pb.Spid) error {
 		log.Printf("Sending RegisterSpid request: %s.", request)
 		return client.RegisterSpid(ctx, request)
 	}
-	ip := h.WhereIsEntity(spid.ID)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(spid.ID)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -152,8 +149,8 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		log.Printf("Sending UpdateSpid request: %s.", request)
 		return client.UpdateSpid(ctx, request)
 	}
-	ip := h.WhereIsEntity(spid.ID)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(spid.ID)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -180,8 +177,8 @@ func (h *Handler) deleteSpid(spidID string) (*pb.Spid, error) {
 		log.Printf("Sending DeleteSpid request: %s.", request)
 		return client.DeleteSpid(ctx, request)
 	}
-	ip := h.WhereIsEntity(spid.ID)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(spid.ID)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return pbSpid, err
 }
 
@@ -200,8 +197,8 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 		log.Printf("Sending AddRemoteSpid request: %s.", request)
 		return client.AddRemoteSpid(ctx, request)
 	}
-	ip := h.WhereIsPosition(spid.Position)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(spid.Position)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -220,8 +217,8 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 		log.Printf("Sending UpdateRemoteSpid request: %s.", request)
 		return client.UpdateRemoteSpid(ctx, request)
 	}
-	ip := h.WhereIsPosition(spid.Position)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(spid.Position)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -245,8 +242,8 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 		return err
 	}
 	pbPosition, _ := gps.FromProtoBufferEntity(spid.Position)
-	ip := h.WhereIsPosition(pbPosition)
-	_, err = h.routeSpidCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(pbPosition)
+	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -255,8 +252,9 @@ func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) 
 	if err != nil {
 		return "", err
 	}
-	ip := h.WhereIsPosition(position)
-	if IsHostLocal(ip) {
+	targetServerNumber := h.WhereIsPosition(position)
+	if targetServerNumber == h.ServerNumber {
+		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
 		marshaledSpids, err := json.Marshal(h.DBManager.GetRemoteSpids())
 		return string(marshaledSpids), err
 	}
@@ -267,6 +265,8 @@ func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) 
 		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
 		return client.GetRemoteSpids(ctx, request)
 	}
+	ip := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ip)
 	response, err := h.callSpidGRPC(ip, remoteCall)
 	if err != nil {
 		return "", err

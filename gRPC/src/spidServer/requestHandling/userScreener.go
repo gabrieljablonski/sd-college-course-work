@@ -30,17 +30,18 @@ func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interfac
 	return remoteCall(client, ctx)
 }
 
-func (h *Handler) routeUserCall(ip utils.IP, localCall localUserCall, remoteCall remoteUserCall) (*pb.User, error) {
-	log.Printf("User agent: %s", ip)
-	if IsHostLocal(ip) {
-		log.Printf("Agent is local.")
+func (h *Handler) routeUserCall(targetServerNumber int, localCall localUserCall, remoteCall remoteUserCall) (*pb.User, error) {
+	log.Printf("Target server number: %d", targetServerNumber)
+	if targetServerNumber == h.ServerNumber {
+		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
 		user, err := localCall(h)
 		if err != nil || user == nil {
 			return nil, err
 		}
 		return user.ToProtoBufferEntity()
 	}
-	log.Printf("Agent is remote.")
+	ip := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ip)
 	response, err := h.callUserGRPC(ip, remoteCall)
 	if err != nil {
 		return nil, err
@@ -77,8 +78,8 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 		log.Printf("Sending GetUserInfo request: %s.", request)
 		return client.GetUserInfo(ctx, request)
 	}
-	ip := h.WhereIsEntity(id)
-	return h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(id)
+	return h.routeUserCall(targetServerNumber, localCall, remoteCall)
 }
 
 func (h *Handler) registerUser(pbUser *pb.User) error {
@@ -101,8 +102,8 @@ func (h *Handler) registerUser(pbUser *pb.User) error {
 		log.Printf("Sending RegisterUser request: %s.", request)
 		return client.RegisterUser(ctx, request)
 	}
-	ip := h.WhereIsEntity(user.ID)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(user.ID)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -125,8 +126,8 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		log.Printf("Sending UpdateUser request: %s.", request)
 		return client.UpdateUser(ctx, request)
 	}
-	ip := h.WhereIsEntity(user.ID)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(user.ID)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -153,8 +154,8 @@ func (h *Handler) deleteUser(userID string) (*pb.User, error) {
 		log.Printf("Sending DeleteUser request: %s.", request)
 		return client.DeleteUser(ctx, request)
 	}
-	ip := h.WhereIsEntity(user.ID)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsEntity(user.ID)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return pbUser, err
 }
 
@@ -173,8 +174,8 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 		log.Printf("Sending AddRemoteUser request: %s.", request)
 		return client.AddRemoteUser(ctx, request)
 	}
-	ip := h.WhereIsPosition(user.Position)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(user.Position)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -193,8 +194,8 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 		log.Printf("Sending UpdateRemoteUser request: %s.", request)
 		return client.UpdateRemoteUser(ctx, request)
 	}
-	ip := h.WhereIsPosition(user.Position)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(user.Position)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
 
@@ -218,7 +219,7 @@ func (h *Handler) removeRemoteUser(userID string) error {
 		return err
 	}
 	pbPosition, _ := gps.FromProtoBufferEntity(user.Position)
-	ip := h.WhereIsPosition(pbPosition)
-	_, err = h.routeUserCall(ip, localCall, remoteCall)
+	targetServerNumber := h.WhereIsPosition(pbPosition)
+	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
