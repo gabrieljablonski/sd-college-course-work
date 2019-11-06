@@ -3,6 +3,7 @@ package gps
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"spidServer/requestHandling/protoBuffers"
 )
 
@@ -14,6 +15,13 @@ type GlobalPosition struct {
 
 func NullPosition() GlobalPosition {
 	return GlobalPosition{math.NaN(), math.NaN()}
+}
+
+func Random() GlobalPosition {
+	return GlobalPosition{
+		Latitude:  rand.Float64()*180 - 90,
+		Longitude: rand.Float64()*360 - 180,
+	}
 }
 
 func (p GlobalPosition) EqualTo(p2 GlobalPosition) bool {
