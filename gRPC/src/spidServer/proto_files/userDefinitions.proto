@@ -2,22 +2,7 @@ syntax = "proto3";
 package protoBuffers;
 
 import "genericDefinitions.proto";
-import "spidHandler.proto";
-
-service UserHandler {
-    rpc GetUserInfo (GetUserRequest) returns (GetUserResponse) {}
-    rpc RegisterUser (RegisterUserRequest) returns (RegisterUserResponse) {}
-    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {}
-    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {}
-    rpc RequestAssociation (RequestAssociationRequest) returns (RequestAssociationResponse) {}
-    rpc RequestDissociation (RequestDissociationRequest) returns (RequestDissociationResponse) {}
-    rpc RequestSpidInfo (RequestSpidInfoRequest) returns (RequestSpidInfoResponse) {}
-    rpc RequestLockChange (RequestLockChangeRequest) returns (RequestLockChangeResponse) {}
-    rpc AddRemoteUser (AddRemoteUserRequest) returns (AddRemoteUserResponse) {}
-    rpc UpdateRemoteUser (UpdateRemoteUserRequest) returns (UpdateRemoteUserResponse) {}
-    rpc RemoveRemoteUser (RemoveRemoteUserRequest) returns (RemoveRemoteUserResponse) {}
-    rpc GetRemoteSpids (GetRemoteSpidsRequest) returns (GetRemoteSpidsResponse) {}
-}
+import "spidDefinitions.proto";
 
 message User {
     string id = 1;
