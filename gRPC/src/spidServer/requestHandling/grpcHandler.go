@@ -27,7 +27,6 @@ type Handler struct {
 	BaseDelta      int
 
 	pb.SpidHandlerServer
-	pb.UserHandlerServer
 }
 
 func NewHandler(basePath string) Handler {
