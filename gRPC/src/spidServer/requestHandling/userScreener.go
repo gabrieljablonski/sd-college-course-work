@@ -14,7 +14,7 @@ import (
 )
 
 type localUserCall func(handler *Handler) (*entities.User, error)
-type remoteUserCall func(client pb.UserHandlerClient, ctx context.Context) (interface{}, error)
+type remoteUserCall func(client pb.SpidHandlerClient, ctx context.Context) (interface{}, error)
 
 func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interface{}, error) {
 	log.Printf("Making remote call to %s.", ip)
@@ -25,7 +25,7 @@ func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interfac
 	defer func() {
 		_ = conn.Close()
 	}()
-	client := pb.NewUserHandlerClient(conn)
+	client := pb.NewSpidHandlerClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultContextTimeout)
 	defer cancel()
 	return remoteCall(client, ctx)
@@ -72,7 +72,7 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return handler.DBManager.QueryUser(id)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.GetUserRequest{
 			UserID: id.String(),
 		}
@@ -96,7 +96,7 @@ func (h *Handler) registerUser(pbUser *pb.User) error {
 		pbUser, _ := user.ToProtoBufferEntity()
 		return user, handler.addRemoteUser(pbUser)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RegisterUserRequest{
 			User: pbUser,
 		}
@@ -120,7 +120,7 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		}
 		return nil, handler.updateRemoteUser(pbUser)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateUserRequest{
 			User: pbUser,
 		}
@@ -148,7 +148,7 @@ func (h *Handler) deleteUser(userID string) (*pb.User, error) {
 		}
 		return nil, handler.removeRemoteUser(userID)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.DeleteUserRequest{
 			UserID: userID,
 		}
@@ -168,7 +168,7 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return nil, handler.DBManager.AddRemoteUser(user)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.AddRemoteUserRequest{
 			User: pbUser,
 		}
@@ -188,7 +188,7 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return nil, handler.DBManager.UpdateRemoteUser(user)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateRemoteUserRequest{
 			User: pbUser,
 		}
@@ -208,7 +208,7 @@ func (h *Handler) removeRemoteUser(userID string) error {
 	localCall := func(handler *Handler) (*entities.User, error) {
 		return nil, handler.DBManager.RemoveRemoteUser(uid)
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RemoveRemoteUserRequest{
 			UserID: userID,
 		}
@@ -236,7 +236,7 @@ func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) 
 		marshaledSpids, err := json.Marshal(h.DBManager.GetRemoteSpids())
 		return string(marshaledSpids), err
 	}
-	remoteCall := func (client pb.UserHandlerClient, ctx context.Context) (interface{}, error) {
+	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.GetRemoteSpidsRequest{
 			Position: pbPosition,
 		}
