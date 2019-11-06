@@ -190,9 +190,9 @@ func (s *Server) Listen() {
 	if err != nil {
 		log.Fatalf("Failed to create listener: %s", err)
 	}
+	log.Printf("serving on %s:%s...", GetOutboundIP(), s.IP.Port)
 	gs := grpc.NewServer()
 	pb.RegisterSpidHandlerServer(gs, &s.Handler)
-	log.Printf("serving on %s:%s...", GetOutboundIP(), s.IP.Port)
 	// blocking call
 	err = gs.Serve(listener)
 	if err != nil {
