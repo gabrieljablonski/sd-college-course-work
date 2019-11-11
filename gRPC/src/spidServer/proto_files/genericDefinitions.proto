@@ -1,7 +1,0 @@
-syntax = "proto3";
-package protoBuffers;
-
-message GlobalPosition {
-    double latitude = 1;
-    double longitude = 2;
-}
