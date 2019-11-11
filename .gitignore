@@ -4,10 +4,8 @@ uuid/
 pkg/
 venv/
 *.pyc
-grpc_example/
-github.com/
-*golang.org/
 _server_instances/
 _server_connections/
-gRPC/
 
+github.com/
+*golang.org/
