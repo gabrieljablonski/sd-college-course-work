@@ -24,6 +24,8 @@ const (
 	DefaultPort = "45678"
 
 	GoogleDNS = "8.8.8.8:80"
+
+	TryUpdateIPMapPeriod = 1*time.Second
 )
 
 type Server struct {
@@ -104,9 +106,29 @@ func (s *Server) Register(mapperIP utils.IP) {
 	s.Handler.ServerNumber = serverNumber
 	s.Handler.ServerPoolSize = serverPoolSize
 	s.Handler.BaseDelta = int(math.Round(math.Sqrt(float64(serverPoolSize))))
+	return nil
 }
 
-func (s *Server) UpdateIPMap() error {
+func (s *Server) LoadIPMapFromFile() {
+	ipMap, err := s.Handler.DBManager.GetIPMapFromFile()
+	if err != nil {
+		log.Fatalf("Failed to load IP map from file: %s", err)
+	}
+	s.Handler.IPMap = ipMap
+}
+
+func (s *Server) WaitRequestIPMapUpdate() {
+	for {
+		log.Print("Trying ip map update...")
+		err := s.RequestIPMapUpdate()
+		if err == nil {
+			break
+		}
+		time.Sleep(TryUpdateIPMapPeriod)
+	}
+}
+
+func (s *Server) RequestIPMapUpdate() error {
 	if !s.Registered {
 		log.Fatal("Server not registered")
 	}
@@ -158,7 +180,7 @@ func (s *Server) UpdateIPMap() error {
 		}
 	}
 	log.Printf("Updated IP map: %s", s.Handler.IPMap)
-	return nil
+	return s.Handler.DBManager.WriteIPMapToFile(s.Handler.IPMap)
 }
 
 func (s *Server) HandleRemoteEntities() {

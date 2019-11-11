@@ -12,11 +12,9 @@ import (
 	"spidServer/grpcServer"
 	"spidServer/utils"
 	"strings"
-	"time"
 )
 
 const (
-	UpdateIPMapPeriod = 1*time.Second
 )
 
 func main() {
@@ -46,13 +44,14 @@ func main() {
 	mapperAddress := arguments[2]
 	mapperPort := arguments[3]
 	server := grpcServer.NewServer(port)
-	server.Register(utils.IP{
+	err = server.TryRegister(utils.IP{
 		Address: mapperAddress,
 		Port:    mapperPort,
 	})
-	for err := fmt.Errorf(""); err != nil; err = server.UpdateIPMap() {
-		time.Sleep(UpdateIPMapPeriod)
-		log.Print("Trying ip map update...")
+	if err != nil {
+		server.LoadIPMapFromFile()
+	} else {
+		server.WaitRequestIPMapUpdate()
 	}
 	go server.HandleRemoteEntities()
 	server.Listen()
