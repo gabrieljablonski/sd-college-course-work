@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime"
+	"path"
 	"spidServer/db"
 	"spidServer/errorHandling"
 	"spidServer/grpcServer"
@@ -20,8 +20,8 @@ const (
 func main() {
 	basePath, err := osext.ExecutableFolder()
 	errorHandling.HandleFatal(err)
-	path := basePath + db.Sep + "logs.spd"
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logPath := basePath + db.Sep + "logs.spd"
+	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -31,14 +31,11 @@ func main() {
 
 	arguments := os.Args
 	if len(arguments) != 4 {
-		_, filename, _, ok := runtime.Caller(1)
-
-		filenameSlice := strings.Split(filename, "/")
-		filename = filenameSlice[len(filenameSlice)-1]
-		if ok {
-			fmt.Printf("%s usage: go run %s <port> <mapper address> <mapper port>\n", filename, filename)
-		}
-		return
+		filename := arguments[0]
+		filename = strings.ReplaceAll(filename, "\\", "/")
+		filename = path.Base(filename)
+		fmt.Printf("%s usage: %s <port> <mapper address> <mapper port>\n", filename, filename)
+		panic(-1)
 	}
 	port := arguments[1]
 	mapperAddress := arguments[2]
