@@ -2,6 +2,7 @@ package db
 
 import (
 	"bufio"
+	"encoding/json"
 	"github.com/google/uuid"
 	"io"
 	"log"
@@ -18,6 +19,7 @@ const (
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
+	DefaultIPMapLocation       = BaseDataPath + "ip_map.spd"
 	BaseStatePath              = BaseDataPath + "state" + Sep
 	DefaultDirtyRequestsPath   = BaseStatePath + "dirty_requests.spd"
 	DefaultUsersLocation 	   = BaseStatePath + "users.spd"
@@ -130,4 +132,30 @@ func (m *Manager) GetServerID() uuid.UUID {
 
 func (m *Manager) WriteServerID(uid uuid.UUID) error {
 	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
+}
+
+func (m *Manager) GetIPMapFromFile() (map[int]utils.IP, error) {
+	log.Print("Recovering IP map from file...")
+	ipMapPath := DefaultIPMapLocation
+	content, err := m.FileManager.ReadFile(ipMapPath)
+	if err != nil {
+		log.Printf("%s", err)
+		return nil, err
+	}
+	var ipMap map[int]utils.IP
+	err = json.Unmarshal(content, &ipMap)
+	if err != nil {
+		return nil, err
+	}
+	log.Printf("Recovered %v", ipMap)
+	return ipMap, nil
+}
+
+func (m *Manager) WriteIPMapToFile(ipMap map[int]utils.IP) error {
+	log.Print("Saving IP map to file...")
+	ipMapString, err := json.Marshal(ipMap)
+	if err != nil {
+		return err
+	}
+	return m.FileManager.WriteToFile(DefaultIPMapLocation, ipMapString)
 }
