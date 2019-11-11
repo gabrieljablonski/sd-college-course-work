@@ -46,6 +46,8 @@ func main() {
 		Port:    mapperPort,
 	})
 	if err != nil {
+		log.Printf("Failed to register to server mapper: %s", err)
+		log.Print("Trying to load IP map from file")
 		server.LoadIPMapFromFile()
 	} else {
 		server.WaitRequestIPMapUpdate()
