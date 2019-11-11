@@ -1,0 +1,79 @@
+syntax = "proto3";
+package protoBuffers;
+
+import "genericDefinitions.proto";
+
+message LockInfo {
+    bool override = 1;
+    bool pending = 2;
+    string state = 3;
+}
+
+message Spid {
+    string id = 1;
+    uint32 batteryLevel = 2;
+    LockInfo lockInfo = 3;
+    GlobalPosition position = 4;
+    sint64 lastUpdated = 5;
+    string currentUserID = 6;
+}
+
+message GetSpidRequest {
+    string spidID = 1;
+}
+
+message GetSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message RegisterSpidRequest {
+    Spid spid = 1;
+}
+
+message RegisterSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message UpdateSpidRequest {
+    Spid spid = 1;
+}
+
+message UpdateSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message DeleteSpidRequest {
+    string spidID = 1;
+}
+
+message DeleteSpidResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message AddRemoteSpidRequest {
+    Spid spid = 1;
+}
+
+message AddRemoteSpidResponse {
+    string message = 1;
+}
+
+message UpdateRemoteSpidRequest {
+    Spid spid = 1;
+}
+
+message UpdateRemoteSpidResponse {
+    string message = 1;
+}
+
+message RemoveRemoteSpidRequest {
+    string spidID = 1;
+}
+
+message RemoveRemoteSpidResponse {
+    string message = 1;
+}

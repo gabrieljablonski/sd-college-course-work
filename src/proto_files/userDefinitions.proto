@@ -1,0 +1,123 @@
+syntax = "proto3";
+package protoBuffers;
+
+import "genericDefinitions.proto";
+import "spidDefinitions.proto";
+
+message User {
+    string id = 1;
+    string name = 2;
+    GlobalPosition position = 3;
+    sint64 lastUpdated = 4;
+    string currentSpidID = 5;
+}
+
+message GetUserRequest {
+    string userID = 1;
+}
+
+message GetUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RegisterUserRequest {
+    User user = 1;
+}
+
+message RegisterUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message UpdateUserRequest {
+    User user = 1;
+}
+
+message UpdateUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message DeleteUserRequest {
+    string userID = 1;
+}
+
+message DeleteUserResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestAssociationRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestAssociationResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestDissociationRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestDissociationResponse {
+    string message = 1;
+    User user = 2;
+}
+
+message RequestSpidInfoRequest {
+    string userID = 1;
+    string spidID = 2;
+}
+
+message RequestSpidInfoResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message RequestLockChangeRequest {
+    string userID = 1;
+    string spidID = 2;
+    string lockState = 3;
+}
+
+message RequestLockChangeResponse {
+    string message = 1;
+    Spid spid = 2;
+}
+
+message AddRemoteUserRequest {
+    User user = 1;
+}
+
+message AddRemoteUserResponse {
+    string message = 1;
+}
+
+message UpdateRemoteUserRequest {
+    User user = 1;
+}
+
+message UpdateRemoteUserResponse {
+    string message = 1;
+}
+
+message RemoveRemoteUserRequest {
+    string userID = 1;
+}
+
+message RemoveRemoteUserResponse {
+    string message = 1;
+}
+
+message GetRemoteSpidsRequest {
+    GlobalPosition position = 1;
+}
+
+message GetRemoteSpidsResponse {
+    string message = 1;
+    string marshaledSpids = 2;
+}
