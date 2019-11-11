@@ -35,7 +35,7 @@ func main() {
 		filename = strings.ReplaceAll(filename, "\\", "/")
 		filename = path.Base(filename)
 		fmt.Printf("%s usage: %s <port> <mapper address> <mapper port>\n", filename, filename)
-		panic(-1)
+		return
 	}
 	port := arguments[1]
 	mapperAddress := arguments[2]
@@ -52,4 +52,5 @@ func main() {
 	}
 	go server.HandleRemoteEntities()
 	server.Listen()
+	return
 }
