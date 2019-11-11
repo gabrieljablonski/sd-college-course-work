@@ -22,7 +22,6 @@ import (
 const (
 	DefaultProtocol = "tcp"
 	DefaultPort = "45678"
-
 	GoogleDNS = "8.8.8.8:80"
 
 	TryUpdateIPMapPeriod = 1*time.Second
@@ -57,7 +56,7 @@ func NewServer(port string) Server {
 	errorHandling.HandleFatal(err)
 	handler := requestHandling.NewHandler(basePath)
 	return Server{
-		ID: handler.DBManager.GetServerID(),
+		ID: handler.DBManager.GetServerIDFromFile(),
 		Handler: handler,
 		IP: utils.IP{
 			Address: GetOutboundIP(),
@@ -66,13 +65,13 @@ func NewServer(port string) Server {
 	}
 }
 
-func (s *Server) Register(mapperIP utils.IP) {
+func (s *Server) TryRegister(mapperIP utils.IP) error {
 	// placeholder solution
 	// connect to server mapper to get a server number (from 0 to `n`-1)
 	addr := mapperIP.String()
 	conn, err := net.Dial(DefaultProtocol, addr)
 	if err != nil {
-		log.Fatalf("Failed to register server at %s: %s", addr, err)
+		return fmt.Errorf("failed to register server at %s: %s", addr, err)
 	}
 	s.MapperIP = mapperIP
 	s.Registered = true
@@ -80,7 +79,7 @@ func (s *Server) Register(mapperIP utils.IP) {
 		// this should happen only when the whole system is being setup
 		log.Print("Nil server ID. Creating new ID.")
 		s.ID = uuid.New()
-		err = s.Handler.DBManager.WriteServerID(s.ID)
+		err = s.Handler.DBManager.WriteServerIDToFile(s.ID)
 		if err != nil {
 			log.Fatalf("Failed to save new server id: %s", err)
 		}

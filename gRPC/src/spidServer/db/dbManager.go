@@ -19,6 +19,7 @@ const (
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
+	DefaultServerIDLocation    = BaseDataPath + "server_id.spd"
 	DefaultIPMapLocation       = BaseDataPath + "ip_map.spd"
 	BaseStatePath              = BaseDataPath + "state" + Sep
 	DefaultDirtyRequestsPath   = BaseStatePath + "dirty_requests.spd"
@@ -26,7 +27,6 @@ const (
 	DefaultRemoteUsersLocation = BaseStatePath + "users_remote.spd"
 	DefaultSpidsLocation       = BaseStatePath + "spids.spd"
 	DefaultRemoteSpidsLocation = BaseStatePath + "spids_remote.spd"
-	DefaultServerIDLocation    = BaseDataPath + "server_id.spd"
 )
 
 type Manager struct {
@@ -113,12 +113,12 @@ func (m *Manager) writeToFilePeriodically(period time.Duration) {
 	}
 }
 
-func (m *Manager) GetServerID() uuid.UUID {
+func (m *Manager) GetServerIDFromFile() uuid.UUID {
 	log.Print("Recovering server ID from file...")
 	serverIDPath := DefaultServerIDLocation
 	id, err := m.FileManager.ReadFile(serverIDPath)
 	if err != nil {
-		log.Printf("Unable to read file: %s", err)
+		log.Printf("%s", err)
 		return uuid.Nil
 	}
 	uid, err := uuid.Parse(string(id))
@@ -130,7 +130,8 @@ func (m *Manager) GetServerID() uuid.UUID {
 	return uid
 }
 
-func (m *Manager) WriteServerID(uid uuid.UUID) error {
+func (m *Manager) WriteServerIDToFile(uid uuid.UUID) error {
+	log.Printf("Saving server ID `%s` to file", uid.String())
 	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
 }
 
