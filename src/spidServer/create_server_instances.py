@@ -1,6 +1,7 @@
 import os
 import shutil
 
+
 def main(base_delta=3, base_port=45678):
     base_dir = os.path.abspath('_server_instances')
     number_of_servers = base_delta**2
@@ -19,6 +20,7 @@ def main(base_delta=3, base_port=45678):
         with open(os.path.join(dst, "run.bat"), 'w') as f:
             # %1 and %2 -> mapper address and port
             f.write(f"powershell -noexit {os.path.join(dst, 'spidServer.exe')} {base_port+i} %1 %2\n")
+
 
 if __name__ == '__main__':
     import argparse
