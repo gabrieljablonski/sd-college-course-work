@@ -3,6 +3,7 @@ package db
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"io"
 	"log"
@@ -140,13 +141,15 @@ func (m *Manager) GetIPMapFromFile() (map[int]utils.IP, error) {
 	ipMapPath := DefaultIPMapLocation
 	content, err := m.FileManager.ReadFile(ipMapPath)
 	if err != nil {
-		log.Printf("%s", err)
 		return nil, err
 	}
 	var ipMap map[int]utils.IP
 	err = json.Unmarshal(content, &ipMap)
 	if err != nil {
 		return nil, err
+	}
+	if len(ipMap) == 0 {
+		return nil, fmt.Errorf("ip map is empty")
 	}
 	log.Printf("Recovered %v", ipMap)
 	return ipMap, nil
