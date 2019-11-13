@@ -74,6 +74,6 @@ In this example, server `0` is responsible for entities in the range `(-180°, -
 
 This way, data that is already available in the home agents is duplicated, offering some redundancy, and the convenience when requesting the available entities in a given region. The home agent is responsible for keeping track of region changes, sending `add_remote`, `update_remote`, and `remove_remote` requests to the correct servers (the "remote agents") involved when an entity has its position changed.
 
-#### Recovery From Server Failure
+### Recovery From Server Failure
 
 Every few seconds, each server saves its own memory state to file. In case a server fails and goes down after a modification and before a state save, there must be a way to recover these changes made. For that reason, on every write-to-memory action, the exact modification is logged to a separate file, which is cleared after a state save. When a server boots up, it checks it there are any logged (i.e. unprocessed) write actions, then applies theses actions on the previous saved state, effectively recovering the state that was being held in memory before it went down.
