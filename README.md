@@ -20,12 +20,12 @@ Allows the user to request access to the server and unlock a vehicle.
 - Server recovery after crash
 - Client recovery after crash
 
-# TCP Implementation
+## TCP Implementation
 
 The original TCP implementation (including readme) is available with:
 
 ```git checkout d0f4eca```
 
-# gRPC Implementation
+## gRPC Implementation
 
 ...
