@@ -50,7 +50,7 @@ One of the requisites, outlined in the previous section, is that a client connec
 
 Thus, it can be shown that the maximum amount of connections `m` any single server will make is upper-bounded by the number of connections the server at the center of the matrix makes. This upper bound is given by:
 
-![Max server connections](http://latex.codecogs.com/gif.latex?m<=6*\left\lfloor{log_2(n-1)}\right\rfloor)
+![Max server connections](http://latex.codecogs.com/gif.latex?m\leq6*\left\lfloor{log_2(n-1)}\right\rfloor)
 
 This way, when a client makes a request to a random server, this server will be able to redirect the request to the one closest to the server responsible for the data in the request, process which can be repeated until reaching the target server.
 
