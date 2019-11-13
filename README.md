@@ -44,13 +44,17 @@ The server network can be thought of as a 2D square matrix with order `k`, with 
 
 One of the requisites, outlined in the previous section, is that a client connecting to the network must be able to access data maintained by **any** server by making requests to **any** other server. To accomplish this specification, a server must be connected to a reasonable amount of other servers (not connected to all, and not too few connections), the following logic is being used: each server is directly connected to the servers with distances equal to powers of two (i.e. `1, 2, 4, 8...` in all six main cardinal directions (N, S, W, E, NW, NE, SW, SE). The following diagram represents this logic applied to some servers in a network with 2500 servers in total (50 by 50).
 
-![SPID network connections](server_connections_2500.gif)
+<p align="center">
+  <img src="server_connections_2500.gif">
+</p>
 
 *Black dots are the servers. The red `x` is the selected server. The blue circles are the servers to which it is connected.*
 
 Thus, it can be shown that the maximum amount of connections `m` any single server will make is upper-bounded by the number of connections the server at the center of the matrix makes. This upper bound is given by:
 
-![Max server connections](http://latex.codecogs.com/gif.latex?m\leq6*\left\lfloor{log_2(n-1)}\right\rfloor)
+<p align="center">
+  <img src="http://latex.codecogs.com/gif.latex?m\leq6*\left\lfloor{log_2(n-1)}\right\rfloor">
+</p>
 
 This way, when a client makes a request to a random server, this server will be able to redirect the request to the one closest to the server responsible for the data in the request, process which can be repeated until reaching the target server.
 
@@ -62,7 +66,9 @@ The first one considers the entity unique identifier, taking into account the ne
 
 That way, it is possible to use a simple relation, such as 
 
-![Compute server number with modulo](http://latex.codecogs.com/gif.latex?s=uuid\mod{n})
+<p align="center">
+  <img src="http://latex.codecogs.com/gif.latex?s=uuid\mod{n}">
+</p>
 
 to compute the server number for the entity's "home agent", that is, the server which will always be responsible for that entity's data throughout all of it's existence in the network.
 
