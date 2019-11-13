@@ -1,6 +1,6 @@
 # Distributed Systems - College Course Work
 
-This project seeks to implement a distributed system for geolocalization and access control of means of transportion, typically electric (scooters, bikes, etc.).
+This project seeks to implement a distributed system for geolocalization and access control of means of transportation, typically electric (scooters, bikes, etc.).
 
 ## Project Specifications
 
@@ -28,7 +28,7 @@ The original TCP implementation (including readme) is available with:
 
 ## gRPC Implementation
 
-The gRCP implementation used the original network protocol implemented in TCP as a baseline, applying it to the services/remote procedures model, described by [`.proto` files](src/spidServer/proto_files).
+The gRPC implementation used the original network protocol implemented in TCP as a baseline, applying it to the services/remote procedures model, described by [`.proto` files](src/spidServer/proto_files).
 
 ### Multiple Servers
 
@@ -46,6 +46,8 @@ One of the requisites, outlined in the previous section, is that a client connec
 
 ![SPID network connections](server_connections_2500.gif)
 
+*Black dots are the servers. The red `x` is the selected server. The blue circles are the servers to which it is connected.*
+
 Thus, it can be shown that the maximum amount of connections `m` a single server will make is upper-bounded by the case in which we consider the server in the dead center of the matrix. That value is given by:
 
 ![Max server connections](http://latex.codecogs.com/gif.latex?m_{max}=6*\left\lfloor{log_2(n-1)}\right\rfloor)
@@ -60,4 +62,10 @@ The first one considers the entity unique identifier, taking into account the ne
 
 That way, it is possible to use a simple relation, as ![Compute server number with modulo](http://latex.codecogs.com/gif.latex?s=uuid\mod{n}), to compute the server number for the entity's "home agent", that is, the server which will always be responsible for that entity's data throughout all of it's existence in the network.
 
-The second method of mapping offers both data redundancy and convenience for the network clients.
+The second method of mapping offers both data redundancy and convenience to the network clients, and it is based on the location of the entity. Upon registering, an entity must have a global position - a `(Longitude, Latitude)` pair -, ranging from -180° to 180° in longitude and from -90° to 90° in latitude. The network matrix can then be used as an abstraction for a global map: going up and down the rows means going up and down in latitude; going left and right in the columns means going left and right in longitude. A visual representation of what that would look like for ![k=3](http://latex.codecogs.com/gif.latex?k=3) follows:
+
+![Global boundaries for k=3](global_boundaries.png)
+
+In this example, server `0` is responsible for entities in the range `(-180°, -90°)` to `(-60°, -30°)`, `1` for the range `(-60°, -90°)` to `(60°, -30°)`, and so on.
+
+This way, data that is already available in the home agents is duplicated, offering some redundancy, and the convenience when requesting the available entities in a given region. The home agent is responsible for keeping track of region changes, sending `add_remote`, `update_remote`, and `remove_remote` requests to the correct servers (the "remote agents") involved when an entity has its position changed.
