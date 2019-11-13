@@ -15,7 +15,7 @@ import (
 
 const (
 	LocalHost = "localhost"
-	DefaultContextTimeout = 10*time.Second
+	DefaultContextTimeout = 60*time.Second
 )
 
 type Handler struct {
