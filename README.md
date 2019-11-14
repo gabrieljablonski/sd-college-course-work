@@ -56,7 +56,7 @@ Thus, it can be shown that the maximum amount of connections `m` any single serv
   <img src="http://latex.codecogs.com/gif.latex?m\leq6*\left\lfloor{log_2(n-1)}\right\rfloor">
 </p>
 
-This way, when a client makes a request to a random server, this server will be able to redirect the request to the one closest to the server responsible for the data in the request, process which can be repeated until reaching the target server.
+This way, when a client makes a request to a random server, this server will be able to redirect the request to the one closest to the server responsible for the data in the request, process which is repeated until reaching the target server.
 
 #### Data Mapping
 
