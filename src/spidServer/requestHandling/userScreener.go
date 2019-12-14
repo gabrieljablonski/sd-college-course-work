@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"log"
+	"spidServer/db"
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
@@ -70,7 +71,7 @@ func (h *Handler) queryUser(userID string) (*pb.User, error) {
 		return nil, fmt.Errorf("invalid user id: %s", err)
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		return handler.DBManager.QueryUser(id)
+		return handler.ConsensusManager.DBManager.QueryUser(id)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.GetUserRequest{
@@ -89,7 +90,13 @@ func (h *Handler) registerUser(pbUser *pb.User) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		err := handler.DBManager.RegisterUser(user)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.User,
+			Type:       db.Register,
+			UserEntity: user,
+		}
+		err := handler.ConsensusManager.PutCommand(action)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +121,13 @@ func (h *Handler) updateUser(pbUser *pb.User) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		err = handler.DBManager.UpdateUser(user)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.User,
+			Type:       db.Update,
+			UserEntity: user,
+		}
+		err := handler.ConsensusManager.PutCommand(action)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +155,13 @@ func (h *Handler) deleteUser(userID string) (*pb.User, error) {
 		return nil, err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		err = handler.DBManager.DeleteUser(user.ID)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.User,
+			Type:       db.Delete,
+			UserEntity: user,
+		}
+		err := handler.ConsensusManager.PutCommand(action)
 		if err != nil {
 			return nil, err
 		}
@@ -166,7 +185,13 @@ func (h *Handler) addRemoteUser(pbUser *pb.User) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		return nil, handler.DBManager.AddRemoteUser(user)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.User,
+			Type:       db.Add,
+			UserEntity: user,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.AddRemoteUserRequest{
@@ -186,7 +211,13 @@ func (h *Handler) updateRemoteUser(pbUser *pb.User) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		return nil, handler.DBManager.UpdateRemoteUser(user)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.User,
+			Type:       db.Update,
+			UserEntity: user,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateRemoteUserRequest{
@@ -205,8 +236,18 @@ func (h *Handler) removeRemoteUser(userID string) error {
 	if err != nil {
 		return err
 	}
+	user, err := h.ConsensusManager.DBManager.QueryRemoteUser(uid)
+	if err != nil {
+		return err
+	}
 	localCall := func(handler *Handler) (*entities.User, error) {
-		return nil, handler.DBManager.RemoveRemoteUser(uid)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.User,
+			Type:       db.Remove,
+			UserEntity: user,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RemoveRemoteUserRequest{
@@ -215,12 +256,7 @@ func (h *Handler) removeRemoteUser(userID string) error {
 		log.Printf("Sending RemoveRemoteUser request: %s.", request)
 		return client.RemoveRemoteUser(ctx, request)
 	}
-	user, err := h.queryUser(userID)
-	if err != nil {
-		return err
-	}
-	pbPosition, _ := gps.FromProtoBufferEntity(user.Position)
-	targetServerNumber := h.WhereIsPosition(pbPosition)
+	targetServerNumber := h.WhereIsPosition(user.Position)
 	_, err = h.routeUserCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
@@ -233,7 +269,7 @@ func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) 
 	targetServerNumber := h.WhereIsPosition(position)
 	if targetServerNumber == h.ServerNumber {
 		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
-		marshaledSpids, err := json.Marshal(h.DBManager.GetRemoteSpids())
+		marshaledSpids, err := json.Marshal(h.ConsensusManager.DBManager.GetRemoteSpids())
 		return string(marshaledSpids), err
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {

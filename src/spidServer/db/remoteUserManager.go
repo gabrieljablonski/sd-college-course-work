@@ -109,7 +109,7 @@ func (m *Manager) RemoveRemoteUser(userID uuid.UUID) error {
 	return m.logWriteAction(WriteAction{
 		Location:   Remote,
 		EntityType: User,
-		Type:       Delete,
+		Type:       Remove,
 		UserEntity: user,
 	})
 }

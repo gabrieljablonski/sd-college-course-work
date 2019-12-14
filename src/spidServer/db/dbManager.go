@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"spidServer/entities"
@@ -16,7 +17,7 @@ import (
 
 const (
 	DefaultMaxBufferedRequests = 100
-	DefaultWriteToFilePeriod   = 5000*time.Millisecond
+	DefaultWriteToFilePeriod   = 5000*time.Hour
 
 	Sep                        = string(os.PathSeparator)
 	BaseDataPath               = "data" + Sep
@@ -31,12 +32,12 @@ const (
 )
 
 type Manager struct {
-	FileManager     utils.FileManager
-	Users           *entities.Users
-	Spids           *entities.Spids
-	RemoteUsers     *entities.Users
-	RemoteSpids     *entities.Spids
-	DirtyLogger     *log.Logger
+	FileManager      utils.FileManager
+	Users            *entities.Users
+	Spids            *entities.Spids
+	RemoteUsers      *entities.Users
+	RemoteSpids      *entities.Spids
+	DirtyLogger      *log.Logger
 }
 
 func NewManager(basePath string) Manager {
@@ -72,7 +73,7 @@ func (m *Manager) recoverFromSavedLogs() {
 			log.Fatalf("Failed to recover from saved logs: %s", err)
 		}
 		writeAction, err := m.recoverWriteAction(line)
-		err = m.processWriteAction(writeAction)
+		err = m.ProcessWriteAction(writeAction)
 		if err != nil {
 			log.Fatalf("Failed to process write action: %s", err)
 		}
@@ -80,13 +81,36 @@ func (m *Manager) recoverFromSavedLogs() {
 	m.writeEntitiesToFile()
 }
 
+func (m *Manager) createStateFiles() {
+	_, err := os.Stat(BaseStatePath)
+	if os.IsNotExist(err) {
+		if err := os.MkdirAll(BaseStatePath, 0777); err != nil {
+			log.Fatalf("Failed to create state directory: %v", err)
+		}
+
+		fileContentMap := map[string][]byte{
+			DefaultUsersLocation: []byte("{\"users\":{}}"),
+			DefaultRemoteUsersLocation: []byte("{\"users\":{}}"),
+			DefaultSpidsLocation: []byte("{\"spids\":{}}"),
+			DefaultRemoteSpidsLocation: []byte("{\"spids\":{}}"),
+		}
+
+		for f, c := range fileContentMap {
+			if err := ioutil.WriteFile(f, c, 0777); err != nil {
+				log.Fatalf("Failed to create state directory: %v", err)
+			}
+		}
+	}
+}
+
 func (m *Manager) loadFromFile() {
 	log.Print("Recovering previous server state from files...")
+	m.createStateFiles()
 	m.Users = m.GetUsersFromFile()
 	m.Spids = m.GetSpidsFromFile()
 	m.RemoteUsers = m.GetRemoteUsersFromFile()
 	m.RemoteSpids = m.GetRemoteSpidsFromFile()
-	m.recoverFromSavedLogs()
+	//m.recoverFromSavedLogs()
 }
 
 func (m *Manager) writeEntitiesToFile() {

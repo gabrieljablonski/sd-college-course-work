@@ -1,0 +1,43 @@
+2019/12/13 18:14:23 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/13 18:14:23 Finished setting up etcd client.
+2019/12/13 18:14:23 Recovering previous server state from files...
+2019/12/13 18:14:23 Reading users.
+2019/12/13 18:14:23 Read users: {"users":{}}.
+2019/12/13 18:14:23 Reading spids.
+2019/12/13 18:14:23 Read spids: {"spids":{}}.
+2019/12/13 18:14:23 Reading remote users.
+2019/12/13 18:14:23 Read remote users: {"users":{}}.
+2019/12/13 18:14:23 Reading remote spids.
+2019/12/13 18:14:23 Read remote spids: {"spids":{}}.
+2019/12/13 18:14:23 Creating new log file...
+2019/12/13 18:14:23 Recovering server ID from file...
+2019/12/13 18:14:23 Recovered 31b6fee4-31c9-4889-95a1-c2bd43c22e2b
+2019/12/13 18:14:23 Sending request: REGISTER SERVER 31b6fee4-31c9-4889-95a1-c2bd43c22e2b 8888
+2019/12/13 18:14:23 Received response: 0 1
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Server registered as number 0.
+1 servers in total.
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Trying ip map update...
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Sending request: REQUEST IP MAP 0
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Received response: {"0": "127.0.0.1:8888"}
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Updated IP map: map[%!s(int=0):localhost:8888]
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Saving IP map to file...
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Wrote to file.
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 Handling remote entities...
+0 || 192.168.100.3:8888 >> 2019/12/13 18:14:23 serving on 192.168.100.3:8888...
+2019/12/14 15:36:14 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:36:14 Finished setting up etcd client.
+2019/12/14 15:36:14 Recovering previous server state from files...
+2019/12/14 15:36:14 Reading users.
+2019/12/14 15:36:14 Failed to read users from file: failed to open file D:\GitReps\sd-college-course-work\src\spidServer\data\state\users.spd: open D:\GitReps\sd-college-course-work\src\spidServer\data\state\users.spd: The system cannot find the path specified.
+2019/12/14 15:37:24 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:37:24 Finished setting up etcd client.
+2019/12/14 15:37:24 Recovering previous server state from files...
+2019/12/14 15:37:58 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:37:58 Finished setting up etcd client.
+2019/12/14 15:37:58 Recovering previous server state from files...
+2019/12/14 15:55:28 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:55:28 Finished setting up etcd client.
+2019/12/14 15:55:28 Recovering previous server state from files...
+2019/12/14 15:56:09 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:56:09 Finished setting up etcd client.
+2019/12/14 15:56:09 Recovering previous server state from files...

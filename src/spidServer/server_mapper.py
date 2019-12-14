@@ -3,7 +3,7 @@ import json
 import re
 
 
-DEFAULT_PORT = 43210
+DEFAULT_PORT = 54321
 DEFAULT_IP_MAP_PATH = 'ip_map.spd'
 
 

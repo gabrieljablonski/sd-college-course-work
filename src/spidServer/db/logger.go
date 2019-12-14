@@ -66,6 +66,11 @@ func (w WriteAction) String() string {
 	return fmt.Sprintf("%#v", w)
 }
 
+func (w WriteAction) Json() (string, error) {
+	s, err := json.Marshal(w)
+	return string(s), err
+}
+
 func (m *Manager) logWriteAction(action WriteAction) error {
 	if m.DirtyLogger == nil {
 		return nil
@@ -86,7 +91,7 @@ func (m *Manager) recoverWriteAction(data string) (writeAction WriteAction, err 
 	return writeAction, err
 }
 
-func (m *Manager) processWriteAction(action WriteAction) error {
+func (m *Manager) ProcessWriteAction(action WriteAction) error {
 	switch action.Location {
 	default:
 		return fmt.Errorf("invalid write action location `%s`", action.Location)
@@ -149,7 +154,7 @@ func (m *Manager) processRemoteWriteAction(action WriteAction) error {
 		switch action.Type {
 		default:
 			return fmt.Errorf("invalid write action type `%s`", action.Type)
-		case Register:
+		case Add:
 			return m.AddRemoteUser(user)
 		case Update:
 			return m.UpdateRemoteUser(user)

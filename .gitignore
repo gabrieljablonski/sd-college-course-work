@@ -9,3 +9,8 @@ _server_connections/
 
 github.com/
 *golang.org/
+etcd/
+gRPC/
+infra*/
+cloud.google.com/
+gopkg.in/

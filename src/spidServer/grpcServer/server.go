@@ -21,10 +21,10 @@ import (
 
 const (
 	DefaultProtocol = "tcp"
-	DefaultPort = "45678"
-	GoogleDNS = "8.8.8.8:80"
+	DefaultPort     = "45678"
+	GoogleDNS       = "8.8.8.8:80"
 
-	TryUpdateIPMapPeriod = 1*time.Second
+	TryUpdateIPMapPeriod = 1 * time.Second
 )
 
 type Server struct {
@@ -48,15 +48,15 @@ func GetOutboundIP() string {
 	return localAddr.IP.String()
 }
 
-func NewServer(port string) Server {
+func NewServer(clusterEndpoints []string, port string) Server {
 	if port == "" {
 		port = DefaultPort
 	}
 	basePath, err := osext.ExecutableFolder()
 	errorHandling.HandleFatal(err)
-	handler := requestHandling.NewHandler(basePath)
+	handler := requestHandling.NewHandler(clusterEndpoints, basePath)
 	return Server{
-		ID: handler.DBManager.GetServerIDFromFile(),
+		ID:      handler.ConsensusManager.DBManager.GetServerIDFromFile(),
 		Handler: handler,
 		IP: utils.IP{
 			Address: GetOutboundIP(),
@@ -79,7 +79,7 @@ func (s *Server) TryRegister(mapperIP utils.IP) error {
 		// this should happen only when the whole system is being setup
 		log.Print("Nil server ID. Creating new ID.")
 		s.ID = uuid.New()
-		err = s.Handler.DBManager.WriteServerIDToFile(s.ID)
+		err = s.Handler.ConsensusManager.DBManager.WriteServerIDToFile(s.ID)
 		if err != nil {
 			log.Fatalf("Failed to save new server id: %s", err)
 		}
@@ -100,6 +100,7 @@ func (s *Server) TryRegister(mapperIP utils.IP) error {
 	if err != nil {
 		log.Fatalf("Failed to parse register response: %s", err)
 	}
+	log.SetPrefix(fmt.Sprintf("%d || %s >> ", serverNumber, s.IP.String()))
 	serverPoolSize, err := strconv.Atoi(split[1])
 	log.Printf("Server registered as number %d.\n%d servers in total.", serverNumber, serverPoolSize)
 	s.Handler.ServerNumber = serverNumber
@@ -109,7 +110,7 @@ func (s *Server) TryRegister(mapperIP utils.IP) error {
 }
 
 func (s *Server) LoadIPMapFromFile() {
-	ipMap, err := s.Handler.DBManager.GetIPMapFromFile()
+	ipMap, err := s.Handler.ConsensusManager.DBManager.GetIPMapFromFile()
 	if err != nil {
 		log.Fatalf("Failed to load IP map from file: %s", err)
 	}
@@ -179,11 +180,11 @@ func (s *Server) RequestIPMapUpdate() error {
 		}
 	}
 	log.Printf("Updated IP map: %s", s.Handler.IPMap)
-	return s.Handler.DBManager.WriteIPMapToFile(s.Handler.IPMap)
+	return s.Handler.ConsensusManager.DBManager.WriteIPMapToFile(s.Handler.IPMap)
 }
 
 func (s *Server) HandleRemoteEntities() {
-	for ; len(s.Handler.IPMap) == 0; {
+	for len(s.Handler.IPMap) == 0 {
 		// Wait until all servers are setup
 		time.Sleep(time.Second)
 	}
@@ -193,21 +194,25 @@ func (s *Server) HandleRemoteEntities() {
 }
 
 func (s *Server) handleRemoteUsers() {
-	for _, user := range s.Handler.DBManager.Users.Users {
+	for _, user := range s.Handler.ConsensusManager.DBManager.Users.Users {
 		err := s.Handler.HandleRemoteUser(user)
 		log.Print(err)
 	}
 }
 
 func (s *Server) handleRemoteSpids() {
-	for _, spid := range s.Handler.DBManager.Spids.Spids {
+	for _, spid := range s.Handler.ConsensusManager.DBManager.Spids.Spids {
 		err := s.Handler.HandleRemoteSpid(spid)
 		log.Print(err)
 	}
 }
 
+func (s *Server) WatchChanges() {
+	s.Handler.ConsensusManager.WatchChanges()
+}
+
 func (s *Server) Listen() {
-	listener, err := net.Listen(DefaultProtocol, ":" + s.IP.Port)
+	listener, err := net.Listen(DefaultProtocol, ":"+s.IP.Port)
 	if err != nil {
 		log.Fatalf("Failed to create listener: %s", err)
 	}

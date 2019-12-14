@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
-	"math/rand"
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
@@ -23,9 +22,7 @@ func newConnection(host string) (*grpc.ClientConn, context.Context, context.Canc
 }
 
 func main() {
-	nServers := 9
-	server := rand.Intn(nServers)
-	host := fmt.Sprintf("localhost:%d", server+45678)
+	host := fmt.Sprintf("localhost:%d", 8888)
 	log.Print("Host: ", host)
 	//spids := make([]*pb.Spid, 0)
 	//for i:=0; i<100; i++ {
@@ -82,13 +79,13 @@ func main() {
 		log.Fatalf("%s", err)
 	}
 	log.Print(remoteSpids.MarshaledSpids)
-	var spids entities.Spids
-	err = json.Unmarshal([]byte(remoteSpids.MarshaledSpids), &spids)
+	var spidss entities.Spids
+	err = json.Unmarshal([]byte(remoteSpids.MarshaledSpids), &spidss)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
 	var spidID string
-	for _, v := range spids.Spids {
+	for _, v := range spidss.Spids {
 		spidID = v.ID.String()
 	}
 	associate, err := u.RequestAssociation(ctx, &pb.RequestAssociationRequest{

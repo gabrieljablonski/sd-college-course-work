@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"log"
 	"math"
-	"spidServer/db"
+	"spidServer/consensus"
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
@@ -19,7 +19,7 @@ const (
 )
 
 type Handler struct {
-	DBManager db.Manager
+	ConsensusManager consensus.Manager
 	IPMap     map[int]utils.IP
 	// number from 1 to `n` indicating index in global IP map
 	ServerNumber   int
@@ -29,8 +29,10 @@ type Handler struct {
 	pb.SpidHandlerServer
 }
 
-func NewHandler(basePath string) Handler {
-	return Handler{DBManager: db.NewManager(basePath)}
+func NewHandler(clusterEndpoints []string, basePath string) Handler {
+	return Handler{
+		ConsensusManager: consensus.NewManager(clusterEndpoints, basePath),
+	}
 }
 
 func IsHostLocal(ip utils.IP) bool {

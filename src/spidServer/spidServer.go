@@ -14,9 +14,6 @@ import (
 	"strings"
 )
 
-const (
-)
-
 func main() {
 	basePath, err := osext.ExecutableFolder()
 	errorHandling.HandleFatal(err)
@@ -27,20 +24,22 @@ func main() {
 	}
 	defer f.Close()
 	wtr := io.MultiWriter(os.Stdout,f)
+	log.SetFlags(log.LstdFlags)
 	log.SetOutput(wtr)
 
 	arguments := os.Args
-	if len(arguments) != 4 {
+	if len(arguments) != 5 {
 		filename := arguments[0]
 		filename = strings.ReplaceAll(filename, "\\", "/")
 		filename = path.Base(filename)
-		fmt.Printf("%s usage: %s <port> <mapper address> <mapper port>\n", filename, filename)
+		fmt.Printf("%s usage: %s <port> <mapper address> <mapper port> <cluster endpoints>\n", filename, filename)
 		return
 	}
 	port := arguments[1]
 	mapperAddress := arguments[2]
 	mapperPort := arguments[3]
-	server := grpcServer.NewServer(port)
+	clusterEndpoints := strings.Split(arguments[4], ",")
+	server := grpcServer.NewServer(clusterEndpoints, port)
 	err = server.TryRegister(utils.IP{
 		Address: mapperAddress,
 		Port:    mapperPort,
@@ -53,6 +52,6 @@ func main() {
 		server.WaitRequestIPMapUpdate()
 	}
 	go server.HandleRemoteEntities()
+	go server.WatchChanges()
 	server.Listen()
-	return
 }

@@ -1,0 +1,1 @@
+rm -rf $GOPATH/src/github.com/coreos/etcd/vendor/golang.org/x/net/trace

@@ -6,8 +6,8 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"log"
+	"spidServer/db"
 	"spidServer/entities"
-	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
 	"spidServer/utils"
 )
@@ -69,7 +69,7 @@ func (h *Handler) querySpid(spidID string) (*pb.Spid, error) {
 		return nil, fmt.Errorf("invalid spid id: %s", err)
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		return handler.DBManager.QuerySpid(id)
+		return handler.ConsensusManager.DBManager.QuerySpid(id)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.GetSpidRequest{
@@ -88,7 +88,13 @@ func (h *Handler) registerSpid(pbSpid *pb.Spid) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		err := handler.DBManager.RegisterSpid(spid)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.Spid,
+			Type:       db.Register,
+			SpidEntity: spid,
+		}
+		err := handler.ConsensusManager.PutCommand(action)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +123,7 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		oldSpid, err := handler.DBManager.QuerySpid(spid.ID)
+		oldSpid, err := handler.ConsensusManager.DBManager.QuerySpid(spid.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -139,7 +145,13 @@ func (h *Handler) updateSpid(pbSpid *pb.Spid) error {
 				return nil, err
 			}
 		}
-		return nil, handler.DBManager.UpdateSpid(spid)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.Spid,
+			Type:       db.Update,
+			SpidEntity: spid,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateSpidRequest{
@@ -163,7 +175,13 @@ func (h *Handler) deleteSpid(spidID string) (*pb.Spid, error) {
 		return nil, err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		err = handler.DBManager.DeleteSpid(spid.ID)
+		action := db.WriteAction{
+			Location:   db.Local,
+			EntityType: db.Spid,
+			Type:       db.Delete,
+			SpidEntity: spid,
+		}
+		err = handler.ConsensusManager.PutCommand(action)
 		if err != nil {
 			return nil, err
 		}
@@ -187,7 +205,13 @@ func (h *Handler) addRemoteSpid(pbSpid *pb.Spid) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		return nil, handler.DBManager.AddRemoteSpid(spid)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.Spid,
+			Type:       db.Add,
+			SpidEntity: spid,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.AddRemoteSpidRequest{
@@ -207,7 +231,13 @@ func (h *Handler) updateRemoteSpid(pbSpid *pb.Spid) error {
 		return err
 	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		return nil, handler.DBManager.UpdateRemoteSpid(spid)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.Spid,
+			Type:       db.Update,
+			SpidEntity: spid,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.UpdateRemoteSpidRequest{
@@ -226,8 +256,18 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 	if err != nil {
 		return err
 	}
+	spid, err := h.ConsensusManager.DBManager.QueryRemoteSpid(uid)
+	if err != nil {
+		return err
+	}
 	localCall := func(handler *Handler) (*entities.Spid, error) {
-		return nil, handler.DBManager.RemoveRemoteSpid(uid)
+		action := db.WriteAction{
+			Location:   db.Remote,
+			EntityType: db.Spid,
+			Type:       db.Remove,
+			SpidEntity: spid,
+		}
+		return nil, handler.ConsensusManager.PutCommand(action)
 	}
 	remoteCall := func (client pb.SpidHandlerClient, ctx context.Context) (interface{}, error) {
 		request := &pb.RemoveRemoteSpidRequest{
@@ -236,12 +276,7 @@ func (h *Handler) removeRemoteSpid(spidID string) error {
 		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
 		return client.RemoveRemoteSpid(ctx, request)
 	}
-	spid, err := h.querySpid(spidID)
-	if err != nil {
-		return err
-	}
-	pbPosition, _ := gps.FromProtoBufferEntity(spid.Position)
-	targetServerNumber := h.WhereIsPosition(pbPosition)
+	targetServerNumber := h.WhereIsPosition(spid.Position)
 	_, err = h.routeSpidCall(targetServerNumber, localCall, remoteCall)
 	return err
 }
