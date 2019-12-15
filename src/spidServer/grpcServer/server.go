@@ -96,14 +96,8 @@ func (s *Server) TryRegister(mapperIP utils.IP) error {
 	}
 	log.Print("Received response: ", response)
 	split := strings.Split(strings.Trim(response, "\n"), " ")
-	serverNumber, err := strconv.Atoi(split[0])
-	if err != nil {
-		log.Fatalf("Failed to parse register response: %s", err)
-	}
-	log.SetPrefix(fmt.Sprintf("%d || %s >> ", serverNumber, s.IP.String()))
 	serverPoolSize, err := strconv.Atoi(split[1])
-	log.Printf("Server registered as number %d.\n%d servers in total.", serverNumber, serverPoolSize)
-	s.Handler.ServerNumber = serverNumber
+	log.Printf("Server registered as %s.\n%d servers in total.", s.ID, serverPoolSize)
 	s.Handler.ServerPoolSize = serverPoolSize
 	s.Handler.BaseDelta = int(math.Round(math.Sqrt(float64(serverPoolSize))))
 	return nil
@@ -137,7 +131,7 @@ func (s *Server) RequestIPMapUpdate() error {
 	if err != nil {
 		log.Fatalf("Failed to connect to %s: %s", addr, err)
 	}
-	request := fmt.Sprintf("REQUEST IP MAP %d\n", s.Handler.ServerNumber)
+	request := fmt.Sprintf("REQUEST IP MAP %s\n", s.ID)
 	log.Print("Sending request: ", request)
 	_, err = conn.Write([]byte(request))
 	if err != nil {
@@ -145,18 +139,26 @@ func (s *Server) RequestIPMapUpdate() error {
 	}
 	response, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
-		log.Fatalf("Failed to get ip map response: %s", err)
+		log.Fatalf("Failed to get response: %s", err)
 	}
 	log.Print("Received response: ", response)
-	var ipMap map[int]string
-	err = json.Unmarshal([]byte(response), &ipMap)
+	responseSplit := strings.Split(response, "\t")
+	serverNumber, err := strconv.Atoi(responseSplit[0])
 	if err != nil {
-		log.Fatalf("Failed to parse ip map: %s", err)
+		log.Fatalf("Failed to parse server number `%s`: %s", serverNumber, err)
 	}
-	if len(ipMap) == 0 {
+	if serverNumber == -1 {
 		msg := "ip map not ready"
 		log.Print(msg)
 		return fmt.Errorf(msg)
+	}
+	s.Handler.ServerNumber = serverNumber
+	log.SetPrefix(fmt.Sprintf("#%d || %s >> ", serverNumber, s.IP.String()))
+	responseIPMap := responseSplit[1]
+	var ipMap map[int][]string
+	err = json.Unmarshal([]byte(responseIPMap), &ipMap)
+	if err != nil {
+		log.Fatalf("Failed to parse ip map: %s", err)
 	}
 	//map size is dynamic now
 	//if len(ipMap) != s.Handler.ServerPoolSize {
@@ -164,19 +166,21 @@ func (s *Server) RequestIPMapUpdate() error {
 	//	log.Print(msg)
 	//	return fmt.Errorf(msg)
 	//}
-	s.Handler.IPMap = make(map[int]utils.IP)
-	for serverNumber, ip := range ipMap {
+	s.Handler.IPMap = make(map[int][]utils.IP)
+	for serverNumber, ips := range ipMap {
 		if serverNumber == s.Handler.ServerNumber {
-			s.Handler.IPMap[serverNumber] = utils.IP{
+			s.Handler.IPMap[serverNumber] = []utils.IP{{
 				Address: "localhost",
 				Port:    s.IP.Port,
-			}
+			}}
 			continue
 		}
-		split := strings.Split(ip, ":")
-		s.Handler.IPMap[serverNumber] = utils.IP{
-			Address: split[0],
-			Port:    split[1],
+		for _, ip := range ips {
+			split := strings.Split(ip, ":")
+			s.Handler.IPMap[serverNumber] = append(s.Handler.IPMap[serverNumber], utils.IP{
+				Address: split[0],
+				Port:    split[1],
+			})
 		}
 	}
 	log.Printf("Updated IP map: %s", s.Handler.IPMap)
@@ -196,14 +200,18 @@ func (s *Server) HandleRemoteEntities() {
 func (s *Server) handleRemoteUsers() {
 	for _, user := range s.Handler.ConsensusManager.DBManager.Users.Users {
 		err := s.Handler.HandleRemoteUser(user)
-		log.Print(err)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 
 func (s *Server) handleRemoteSpids() {
 	for _, spid := range s.Handler.ConsensusManager.DBManager.Spids.Spids {
 		err := s.Handler.HandleRemoteSpid(spid)
-		log.Print(err)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 }
 

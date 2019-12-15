@@ -41,3 +41,81 @@
 2019/12/14 15:56:09 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
 2019/12/14 15:56:09 Finished setting up etcd client.
 2019/12/14 15:56:09 Recovering previous server state from files...
+2019/12/14 15:57:44 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:57:44 Finished setting up etcd client.
+2019/12/14 15:57:44 Recovering previous server state from files...
+2019/12/14 15:58:54 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:58:54 Finished setting up etcd client.
+2019/12/14 15:58:54 Recovering previous server state from files...
+2019/12/14 15:58:54 Reading users.
+2019/12/14 15:58:54 Failed to read users from file: failed to open file D:\GitReps\sd-college-course-work\src\spidServer\data\state\users.spd: open D:\GitReps\sd-college-course-work\src\spidServer\data\state\users.spd: The system cannot find the path specified.
+2019/12/14 15:59:28 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 15:59:28 Finished setting up etcd client.
+2019/12/14 15:59:28 Recovering previous server state from files...
+2019/12/14 16:01:57 Setting up etcd client with endpoints: localhost:12300 localhost:12400 localhost:12500
+2019/12/14 16:01:57 Finished setting up etcd client.
+2019/12/14 16:01:57 Recovering previous server state from files...
+2019/12/14 16:02:03 Reading users.
+2019/12/14 16:02:03 Read users: {"users":{}}.
+2019/12/14 16:02:03 Reading spids.
+2019/12/14 16:02:03 Read spids: {"spids":{}}.
+2019/12/14 16:02:03 Reading remote users.
+2019/12/14 16:02:03 Read remote users: {"users":{}}.
+2019/12/14 16:02:03 Reading remote spids.
+2019/12/14 16:02:03 Read remote spids: {"spids":{}}.
+2019/12/14 16:02:03 Creating new log file...
+2019/12/14 16:02:03 Recovering server ID from file...
+2019/12/14 16:02:03 failed to open file D:\GitReps\sd-college-course-work\src\spidServer\data\server_id.spd: open D:\GitReps\sd-college-course-work\src\spidServer\data\server_id.spd: The system cannot find the file specified.
+2019/12/14 16:02:04 Nil server ID. Creating new ID.
+2019/12/14 16:02:04 Saving server ID `5b412a58-c233-4702-ad37-a9633c5cbf04` to file
+2019/12/14 16:02:04 Wrote to file.
+2019/12/14 16:02:04 Sending request: REGISTER SERVER 5b412a58-c233-4702-ad37-a9633c5cbf04 8888
+2019/12/14 16:02:04 Received response: 0 1
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Server registered as number 0.
+1 servers in total.
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Trying ip map update...
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Sending request: REQUEST IP MAP 0
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Received response: {"0": "127.0.0.1:8888"}
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Updated IP map: map[%!s(int=0):localhost:8888]
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Saving IP map to file...
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Wrote to file.
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 Handling remote entities...
+0 || 192.168.100.3:8888 >> 2019/12/14 16:02:04 serving on 192.168.100.3:8888...
+2019/12/14 23:48:55 Setting up etcd client with endpoints: localhost:12300
+2019/12/14 23:48:55 Finished setting up etcd client.
+2019/12/14 23:48:55 Recovering previous server state from files...
+2019/12/14 23:48:55 Reading users.
+2019/12/14 23:48:55 Read users: {"users":{}}.
+2019/12/14 23:48:55 Reading spids.
+2019/12/14 23:48:55 Read spids: {"spids":{}}.
+2019/12/14 23:48:55 Reading remote users.
+2019/12/14 23:48:55 Read remote users: {"users":{}}.
+2019/12/14 23:48:55 Reading remote spids.
+2019/12/14 23:48:55 Read remote spids: {"spids":{}}.
+2019/12/14 23:48:55 Creating new log file...
+2019/12/14 23:48:55 Recovering server ID from file...
+2019/12/14 23:48:55 Recovered 5b412a58-c233-4702-ad37-a9633c5cbf04
+2019/12/14 23:48:57 Failed to register to server mapper: failed to register server at localhost:54321: dial tcp [::1]:54321: connectex: No connection could be made because the target machine actively refused it.
+2019/12/14 23:48:57 Trying to load IP map from file
+2019/12/14 23:48:57 Recovering IP map from file...
+2019/12/14 23:48:57 Failed to load IP map from file: json: cannot unmarshal object into Go value of type []utils.IP
+2019/12/14 23:49:38 Setting up etcd client with endpoints: localhost:12300
+2019/12/14 23:49:38 Finished setting up etcd client.
+2019/12/14 23:49:38 Recovering previous server state from files...
+2019/12/14 23:49:38 Reading users.
+2019/12/14 23:49:38 Read users: {"users":{}}.
+2019/12/14 23:49:38 Reading spids.
+2019/12/14 23:49:38 Read spids: {"spids":{}}.
+2019/12/14 23:49:38 Reading remote users.
+2019/12/14 23:49:38 Read remote users: {"users":{}}.
+2019/12/14 23:49:38 Reading remote spids.
+2019/12/14 23:49:38 Read remote spids: {"spids":{}}.
+2019/12/14 23:49:38 Creating new log file...
+2019/12/14 23:49:38 Recovering server ID from file...
+2019/12/14 23:49:38 Recovered 5b412a58-c233-4702-ad37-a9633c5cbf04
+2019/12/14 23:49:40 Failed to register to server mapper: failed to register server at localhost:54321: dial tcp [::1]:54321: connectex: No connection could be made because the target machine actively refused it.
+2019/12/14 23:49:40 Trying to load IP map from file
+2019/12/14 23:49:40 Recovering IP map from file...
+2019/12/14 23:49:40 Recovered map[0:[localhost:8888]]
+2019/12/14 23:49:40 Handling remote entities...
+2019/12/14 23:49:40 serving on 192.168.100.3:8888...

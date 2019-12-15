@@ -62,9 +62,9 @@ type WriteAction struct {
 	UserEntity *entities.User		 `json:"user"`
 }
 
-func (w WriteAction) String() string {
-	return fmt.Sprintf("%#v", w)
-}
+//func (w WriteAction) String() string {
+//	return fmt.Sprintf("%#v", w)
+//}
 
 func (w WriteAction) Json() (string, error) {
 	s, err := json.Marshal(w)

@@ -1,18 +1,17 @@
 import socket
 import json
-import re
 
 
 DEFAULT_PORT = 54321
 DEFAULT_IP_MAP_PATH = 'ip_map.spd'
 
 
-def main(port, base_delta, ip_map_path):
+def main(port, base_delta, nodes_per_cluster, ip_map_path):
     if port is None:
         port = DEFAULT_PORT
     if ip_map_path is None:
         ip_map_path = ''
-    number_of_servers = base_delta**2
+    number_of_servers = base_delta**2 * nodes_per_cluster
     ip_map = {}
     if ip_map_path:
         with open(ip_map_path) as f:
@@ -53,7 +52,7 @@ def main(port, base_delta, ip_map_path):
                 else:
                     ip_map[uuid] = f"{client_addr[0]}:{server_port}"
                     # assuming ordered dictionary
-                    response = f"{list(ip_map).index(uuid)} {number_of_servers}"
+                    response = f"{uuid} {base_delta**2}"
 
                     if len(ip_map) and not ip_map_path:
                         with open(DEFAULT_IP_MAP_PATH, 'w') as f:
@@ -62,15 +61,21 @@ def main(port, base_delta, ip_map_path):
         
         elif 'REQUEST IP MAP' in recv:
             try:
-                server_number = int(recv.split()[-1])
+                uuid = recv.split()[-1]
             except (ValueError, TypeError) as e:
                 response = str(e)
             else:
                 if len(ip_map) != number_of_servers:
-                    response = '{}'
+                    response = '-1\t{}'
                 else:
                     # assuming ordered dictionary
-                    ip_list = list(ip_map.values())
+                    nip_map = {k: v for k, v in sorted(ip_map.items(), key=lambda item: item[1])}
+                    values = list(nip_map.values())
+                    ip_list = []
+                    for i in range(base_delta**2):
+                        ip_list.append([])
+                        for j in range(nodes_per_cluster):
+                            ip_list[i].append(values[nodes_per_cluster*i+j])
                     # creates a map with the server ips in all 6 main cardinal directions
                     # from the server requesting the map.
                     #
@@ -82,8 +87,8 @@ def main(port, base_delta, ip_map_path):
                     # the maximum size for a resulting map is bounded by:
                     # 6*floor(log2(n-1))
                     # which corresponds to a server exactly in the middle of the map
+                    server_number = list(nip_map.keys()).index(uuid)//3
                     response = {str(server_number): ip_list[server_number]}
-                    base_delta = int(round(number_of_servers**.5))
                     sX = server_number % base_delta
                     sY = server_number//base_delta
                     # north
@@ -170,8 +175,9 @@ def main(port, base_delta, ip_map_path):
                         tN = tY*base_delta + tX
                         response[str(tN)] = ip_list[tN]
                         b *= 2
+                    response = f"{server_number}\t{json.dumps(response)}"
         print(f"sending {response}")
-        response = str(response).replace("'",'"')
+        response = str(response).replace("'", '"')
         conn.sendall(f"{response}\n".encode())
         conn.close()
 
@@ -179,10 +185,11 @@ def main(port, base_delta, ip_map_path):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Setup SPID server mapper')
-    parser.add_argument('-d', '--base-delta', type=int, required=True, help='Base delta (number of map lines/columns)')
     parser.add_argument('-p', '--port', type=int, required=False, help='Mapper port')
+    parser.add_argument('-d', '--base-delta', type=int, required=True, help='Base delta (number of map lines/columns)')
+    parser.add_argument('-n', '--nodes-per-cluster', type=int, required=True, help='Number of nodes per cluster')
     parser.add_argument('-t', '--ip-map', type=str, required=False, help='Path to already existing ip map')
 
     args = parser.parse_args()
 
-    main(port=args.port, base_delta=args.base_delta, ip_map_path=args.ip_map)
+    main(port=args.port, base_delta=args.base_delta, nodes_per_cluster=args.nodes_per_cluster, ip_map_path=args.ip_map)

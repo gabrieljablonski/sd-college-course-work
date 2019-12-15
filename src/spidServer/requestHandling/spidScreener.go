@@ -30,7 +30,7 @@ func (h *Handler) callSpidGRPC(ip utils.IP, remoteCall remoteSpidCall) (interfac
 	return remoteCall(client, ctx)
 }
 
-func (h *Handler) routeSpidCall(targetServerNumber int, localCall localSpidCall, remoteCall remoteSpidCall) (*pb.Spid, error) {
+func (h *Handler) routeSpidCall(targetServerNumber int, localCall localSpidCall, remoteCall remoteSpidCall) (pbSpid *pb.Spid, err error) {
 	log.Printf("Target server number: %d", targetServerNumber)
 	if targetServerNumber == h.ServerNumber {
 		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
@@ -40,11 +40,17 @@ func (h *Handler) routeSpidCall(targetServerNumber int, localCall localSpidCall,
 		}
 		return spid.ToProtoBufferEntity()
 	}
-	ip := h.getClosestHost(targetServerNumber)
-	log.Printf("Agent is remote: %s.", ip)
-	response, err := h.callSpidGRPC(ip, remoteCall)
+	ips := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ips)
+	var response interface{}
+	for _, ip := range ips {
+		response, err = h.callSpidGRPC(ip, remoteCall)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to complete request to to any servers in %#v", ips)
 	}
 	switch t := response.(type) {
 	default:

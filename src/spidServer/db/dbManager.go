@@ -82,23 +82,22 @@ func (m *Manager) recoverFromSavedLogs() {
 }
 
 func (m *Manager) createStateFiles() {
-	_, err := os.Stat(BaseStatePath)
-	if os.IsNotExist(err) {
-		if err := os.MkdirAll(BaseStatePath, 0777); err != nil {
+	statePath := m.FileManager.GetAbsolutePath(BaseStatePath)
+	if err := os.MkdirAll(statePath, 0777); err != nil {
+		if !os.IsExist(err){
 			log.Fatalf("Failed to create state directory: %v", err)
 		}
+	}
+	fileContentMap := map[string][]byte{
+		DefaultUsersLocation: []byte("{\"users\":{}}"),
+		DefaultRemoteUsersLocation: []byte("{\"users\":{}}"),
+		DefaultSpidsLocation: []byte("{\"spids\":{}}"),
+		DefaultRemoteSpidsLocation: []byte("{\"spids\":{}}"),
+	}
 
-		fileContentMap := map[string][]byte{
-			DefaultUsersLocation: []byte("{\"users\":{}}"),
-			DefaultRemoteUsersLocation: []byte("{\"users\":{}}"),
-			DefaultSpidsLocation: []byte("{\"spids\":{}}"),
-			DefaultRemoteSpidsLocation: []byte("{\"spids\":{}}"),
-		}
-
-		for f, c := range fileContentMap {
-			if err := ioutil.WriteFile(f, c, 0777); err != nil {
-				log.Fatalf("Failed to create state directory: %v", err)
-			}
+	for f, c := range fileContentMap {
+		if err := ioutil.WriteFile(m.FileManager.GetAbsolutePath(f), c, 0777); err != nil {
+			log.Fatalf("Failed to create state directory: %v", err)
 		}
 	}
 }
@@ -160,14 +159,14 @@ func (m *Manager) WriteServerIDToFile(uid uuid.UUID) error {
 	return m.FileManager.WriteToFile(DefaultServerIDLocation, []byte(uid.String()))
 }
 
-func (m *Manager) GetIPMapFromFile() (map[int]utils.IP, error) {
+func (m *Manager) GetIPMapFromFile() (map[int][]utils.IP, error) {
 	log.Print("Recovering IP map from file...")
 	ipMapPath := DefaultIPMapLocation
 	content, err := m.FileManager.ReadFile(ipMapPath)
 	if err != nil {
 		return nil, err
 	}
-	var ipMap map[int]utils.IP
+	var ipMap map[int][]utils.IP
 	err = json.Unmarshal(content, &ipMap)
 	if err != nil {
 		return nil, err
@@ -179,7 +178,7 @@ func (m *Manager) GetIPMapFromFile() (map[int]utils.IP, error) {
 	return ipMap, nil
 }
 
-func (m *Manager) WriteIPMapToFile(ipMap map[int]utils.IP) error {
+func (m *Manager) WriteIPMapToFile(ipMap map[int][]utils.IP) error {
 	log.Print("Saving IP map to file...")
 	ipMapString, err := json.Marshal(ipMap)
 	if err != nil {

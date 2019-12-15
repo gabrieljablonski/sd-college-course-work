@@ -28,20 +28,27 @@ func main() {
 	log.SetOutput(wtr)
 
 	arguments := os.Args
-	if len(arguments) != 5 {
+	if len(arguments) != 4 {
 		filename := arguments[0]
 		filename = strings.ReplaceAll(filename, "\\", "/")
 		filename = path.Base(filename)
-		fmt.Printf("%s usage: %s <port> <mapper address> <mapper port> <cluster endpoints>\n", filename, filename)
+		fmt.Printf("%s usage: %s <port> <mapper address> <cluster endpoints>\n", filename, filename)
 		return
 	}
 	port := arguments[1]
-	mapperAddress := arguments[2]
-	mapperPort := arguments[3]
-	clusterEndpoints := strings.Split(arguments[4], ",")
+	mapperAddress := strings.Split(arguments[2], ":")
+
+	mapperAddr := mapperAddress[0]
+	mapperPort := mapperAddress[1]
+
+	clusterEndpoints := strings.Split(arguments[3], ",")
 	server := grpcServer.NewServer(clusterEndpoints, port)
+	err = server.Handler.ConsensusManager.Recover()
+	if err != nil {
+		log.Fatalf("Failed to recover from consensus cluster: %v", err)
+	}
 	err = server.TryRegister(utils.IP{
-		Address: mapperAddress,
+		Address: mapperAddr,
 		Port:    mapperPort,
 	})
 	if err != nil {

@@ -20,7 +20,7 @@ const (
 
 type Handler struct {
 	ConsensusManager consensus.Manager
-	IPMap     map[int]utils.IP
+	IPMap     map[int][]utils.IP
 	// number from 1 to `n` indicating index in global IP map
 	ServerNumber   int
 	ServerPoolSize int
@@ -65,7 +65,7 @@ func (h *Handler) HandleRemoteSpid(spid *entities.Spid) error {
 	return h.addRemoteSpid(pbSpid)
 }
 
-func (h *Handler) getClosestHost(targetServer int) utils.IP {
+func (h *Handler) getClosestHost(targetServer int) []utils.IP {
 	if len(h.IPMap) == 0 {
 		log.Fatal("IP map not setup.")
 	}
@@ -77,9 +77,9 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 	targetY := targetServer % h.BaseDelta
 	minDist := math.Inf(1)
 	number := -1
-	closestServer := utils.IP{}
+	var closestServers []utils.IP
 	for n, ip := range h.IPMap {
-		if IsHostLocal(ip) {
+		if IsHostLocal(ip[0]) {
 			continue
 		}
 		nx := n/h.BaseDelta
@@ -88,19 +88,19 @@ func (h *Handler) getClosestHost(targetServer int) utils.IP {
 		if dist <= minDist {
 			minDist = dist
 			number = n
-			closestServer = ip
+			closestServers = ip
 		}
 		if dist == 0 {
 			break
 		}
 	}
-	if closestServer.Address == "" {
+	if len(closestServers) == 0 {
 		// this should never happen
 		log.Fatalf("Unexpected error finding closest host: targetServer=%s; minDist=%.2f; IPMap=%s",
 					strconv.Itoa(targetServer), minDist, h.IPMap)
 	}
-	log.Printf("Target %d not in ip map, closest is %d: %s.", targetServer, number, closestServer)
-	return closestServer
+	log.Printf("Target %d not in ip map, closest is %d: %s.", targetServer, number, closestServers)
+	return closestServers
 }
 
 func (h *Handler) WhereIsPosition(position gps.GlobalPosition) int {

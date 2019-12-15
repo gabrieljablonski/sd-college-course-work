@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
+	"math/rand"
 	"spidServer/entities"
 	"spidServer/gps"
 	pb "spidServer/requestHandling/protoBuffers"
@@ -22,88 +22,92 @@ func newConnection(host string) (*grpc.ClientConn, context.Context, context.Canc
 }
 
 func main() {
-	host := fmt.Sprintf("localhost:%d", 8888)
+	host := fmt.Sprintf("localhost:%d", 8897)
 	log.Print("Host: ", host)
-	//spids := make([]*pb.Spid, 0)
-	//for i:=0; i<100; i++ {
-	//	go func(i int) {
-	//		time.Sleep(time.Duration(rand.Float64())*time.Second)
-	//		log.Print(i)
-	//		conn, ctx, cancel := newConnection(host)
-	//		defer func() {
-	//			_ = conn.Close()
-	//		}()
-	//		defer cancel()
-	//		c := pb.NewSpidHandlerClient(conn)
-	//		spid, _ := entities.NewSpid(1, gps.Random())
-	//		pbSpid, _ := spid.ToProtoBufferEntity()
-	//		log.Print(pbSpid)
-	//		register, err := c.RegisterSpid(ctx, &pb.RegisterSpidRequest{
-	//			Spid: pbSpid,
-	//		})
-	//		if err != nil {
-	//			log.Print(i)
-	//			log.Fatalf("Could not register: %s", err)
-	//		}
-	//		log.Printf("%s", register)
-	//		spids = append(spids, register.Spid)
-	//		getInfo, err := c.GetSpidInfo(ctx, &pb.GetSpidRequest{
-	//			SpidID: register.Spid.Id,
-	//		})
-	//		if err != nil {
-	//			log.Fatalf("Could not get info: %s", err)
-	//		}
-	//		log.Printf("%s", getInfo)
-	//	}(i)
+	spids := make([]*pb.Spid, 0)
+	for i:=0; i<1; i++ {
+		go func(i int) {
+			time.Sleep(time.Duration(rand.Float64())*time.Second)
+			log.Print(i)
+			conn, ctx, cancel := newConnection(host)
+			defer func() {
+				_ = conn.Close()
+			}()
+			defer cancel()
+			c := pb.NewSpidHandlerClient(conn)
+			spid, _ := entities.NewSpid(1, gps.GlobalPosition{
+				Latitude:  90,
+				Longitude: 180,
+			})
+			pbSpid, _ := spid.ToProtoBufferEntity()
+			log.Print(pbSpid)
+			register, err := c.RegisterSpid(ctx, &pb.RegisterSpidRequest{
+				Spid: pbSpid,
+			})
+			if err != nil {
+				log.Print(i)
+				log.Fatalf("Could not register: %s", err)
+			}
+			log.Printf("%s", register)
+			spids = append(spids, register.Spid)
+			time.Sleep(time.Second)
+			getInfo, err := c.GetSpidInfo(ctx, &pb.GetSpidRequest{
+				SpidID: register.Spid.Id,
+			})
+			if err != nil {
+				log.Fatalf("Could not get info: %s", err)
+			}
+			log.Printf("%s", getInfo)
+		}(i)
+	}
+	var a int
+	_, _ = fmt.Scan(&a)
+	//conn, ctx, cancel := newConnection(host)
+	//defer func() {
+	//	_ = conn.Close()
+	//}()
+	//defer cancel()
+	//u := pb.NewSpidHandlerClient(conn)
+	//user, _ := entities.NewUser("João", gps.Random())
+	//pbUser, _ := user.ToProtoBufferEntity()
+	//newUser, err := u.RegisterUser(ctx, &pb.RegisterUserRequest{
+	//	User: pbUser,
+	//})
+	//if err != nil {
+	//	log.Fatalf("%s", err)
 	//}
-	//var a int
-	//_, _ = fmt.Scan(&a)
-	conn, ctx, cancel := newConnection(host)
-	defer func() {
-		_ = conn.Close()
-	}()
-	defer cancel()
-	u := pb.NewSpidHandlerClient(conn)
-	user, _ := entities.NewUser("João", gps.Random())
-	pbUser, _ := user.ToProtoBufferEntity()
-	newUser, err := u.RegisterUser(ctx, &pb.RegisterUserRequest{
-		User: pbUser,
-	})
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-	remoteSpids, err := u.GetRemoteSpids(ctx, &pb.GetRemoteSpidsRequest{
-		Position: newUser.User.Position,
-	})
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-	log.Print(remoteSpids.MarshaledSpids)
-	var spidss entities.Spids
-	err = json.Unmarshal([]byte(remoteSpids.MarshaledSpids), &spidss)
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-	var spidID string
-	for _, v := range spidss.Spids {
-		spidID = v.ID.String()
-	}
-	associate, err := u.RequestAssociation(ctx, &pb.RequestAssociationRequest{
-		UserID: pbUser.Id,
-		SpidID: spidID,
-	})
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-	log.Print(associate)
-	associate, err = u.RequestAssociation(ctx, &pb.RequestAssociationRequest{
-		UserID: pbUser.Id,
-		SpidID: spidID,
-	})
-	if err != nil {
-		log.Fatalf("%s", err)
-	}
-	log.Print(associate)
+	//remoteSpids, err := u.GetRemoteSpids(ctx, &pb.GetRemoteSpidsRequest{
+	//	Position: newUser.User.Position,
+	//})
+	//if err != nil {
+	//	log.Fatalf("%s", err)
+	//}
+	//log.Print(remoteSpids.MarshaledSpids)
+	//var spidss entities.Spids
+	//err = json.Unmarshal([]byte(remoteSpids.MarshaledSpids), &spidss)
+	//if err != nil {
+	//	log.Fatalf("%s", err)
+	//}
+	//var spidID string
+	//for _, v := range spidss.Spids {
+	//	spidID = v.ID.String()
+	//}
+	//associate, err := u.RequestAssociation(ctx, &pb.RequestAssociationRequest{
+	//	UserID: pbUser.Id,
+	//	SpidID: spidID,
+	//})
+	//if err != nil {
+	//	log.Fatalf("%s", err)
+	//}
+	//log.Print(associate)
+	//associate, err = u.RequestAssociation(ctx, &pb.RequestAssociationRequest{
+	//	UserID: pbUser.Id,
+	//	SpidID: spidID,
+	//})
+	//if err != nil {
+	//	log.Fatalf("%s", err)
+	//}
+	//log.Print(associate)
 	//var a int
 	//_, _ = fmt.Scan(&a)
 	//for i, spid := range spids{

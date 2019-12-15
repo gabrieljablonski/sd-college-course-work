@@ -32,7 +32,7 @@ func (h *Handler) callUserGRPC(ip utils.IP, remoteCall remoteUserCall) (interfac
 	return remoteCall(client, ctx)
 }
 
-func (h *Handler) routeUserCall(targetServerNumber int, localCall localUserCall, remoteCall remoteUserCall) (*pb.User, error) {
+func (h *Handler) routeUserCall(targetServerNumber int, localCall localUserCall, remoteCall remoteUserCall) (pbUser *pb.User, err error) {
 	log.Printf("Target server number: %d", targetServerNumber)
 	if targetServerNumber == h.ServerNumber {
 		log.Printf("Agent is local (%s).", h.IPMap[targetServerNumber])
@@ -42,11 +42,17 @@ func (h *Handler) routeUserCall(targetServerNumber int, localCall localUserCall,
 		}
 		return user.ToProtoBufferEntity()
 	}
-	ip := h.getClosestHost(targetServerNumber)
-	log.Printf("Agent is remote: %s.", ip)
-	response, err := h.callUserGRPC(ip, remoteCall)
+	ips := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ips)
+	var response interface{}
+	for _, ip := range ips {
+		response, err = h.callUserGRPC(ip, remoteCall)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to complete request to to any servers in %#v", ips)
 	}
 	switch t := response.(type) {
 	default:
@@ -279,11 +285,17 @@ func (h *Handler) getRemoteSpids(pbPosition *pb.GlobalPosition) (string, error) 
 		log.Printf("Sending RemoveRemoteSpid request: %s.", request)
 		return client.GetRemoteSpids(ctx, request)
 	}
-	ip := h.getClosestHost(targetServerNumber)
-	log.Printf("Agent is remote: %s.", ip)
-	response, err := h.callUserGRPC(ip, remoteCall)
+	ips := h.getClosestHost(targetServerNumber)
+	log.Printf("Agent is remote: %s.", ips)
+	var response interface{}
+	for _, ip := range ips {
+		response, err = h.callUserGRPC(ip, remoteCall)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to complete request to to any servers in %#v", ips)
 	}
 	return response.(*pb.GetRemoteSpidsResponse).MarshaledSpids, nil
 }
